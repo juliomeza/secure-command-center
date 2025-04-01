@@ -25,3 +25,4 @@
 - Naming: camelCase for JS/TS, snake_case for Python
 - Security: No hard-coded credentials, validate all inputs
 - Authentication: All sensitive routes must use ProtectedRoute component
+
