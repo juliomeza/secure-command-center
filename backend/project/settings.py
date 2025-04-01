@@ -136,8 +136,14 @@ AUTHENTICATION_BACKENDS = (
 
 # --- Social Auth (OAuth2/OpenID Connect) Settings ---
 LOGIN_URL = '/auth/login/' # Where to redirect if @login_required fails
-LOGIN_REDIRECT_URL = os.environ.get('LOGIN_REDIRECT_URL', '/') # Redirect after successful social login (frontend URL)
-LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', '/') # Redirect after logout (frontend URL)
+LOGIN_REDIRECT_URL = os.environ.get('LOGIN_REDIRECT_URL', 'http://localhost:5173/') # Redirect after successful social login (frontend URL)
+LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', 'http://localhost:5173/login') # Redirect after logout (frontend URL)
+
+# Forzar el uso de URLs absolutas para las redirecciones
+USE_X_FORWARDED_HOST = True
+SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
+SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:5173', '127.0.0.1:5173', 'localhost:8000', '127.0.0.1:8000']
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:5173/dashboard'  # URL específica para redirección post-login
 
 # Microsoft Azure AD Configuration (Get these from Azure Portal)
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')

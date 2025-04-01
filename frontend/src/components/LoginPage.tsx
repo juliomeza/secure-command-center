@@ -10,8 +10,8 @@ const LoginPage: React.FC = () => {
 
     const handleMicrosoftLogin = () => {
         // Redirect to the backend's Microsoft OAuth2 start URL
-        // Include the 'next' parameter to redirect back after successful login
-        window.location.href = `/auth/login/azuread-oauth2/?next=${encodeURIComponent(from)}`;
+        // No longer include 'next' parameter as we've configured redirection in settings.py
+        window.location.href = `/auth/login/azuread-oauth2/`;
     };
 
     if (isLoading) {

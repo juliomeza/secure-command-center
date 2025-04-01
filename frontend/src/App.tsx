@@ -47,6 +47,8 @@ const App: React.FC = () => {
                         <Route element={<ProtectedRoute />}>
                              {/* Dashboard is the protected home page */}
                             <Route index element={<DashboardPage />} />
+                            {/* Explicit dashboard route for social auth redirect */}
+                            <Route path="/dashboard" element={<DashboardPage />} />
                             {/* Add other protected routes here */}
                             {/* <Route path="/settings" element={<SettingsPage />} /> */}
                         </Route>

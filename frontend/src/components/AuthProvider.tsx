@@ -72,12 +72,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, []);
 
     const logout = () => {
-        // Redirect to Django's logout URL. Django clears the session cookie.
-        // The backend LOGOUT_REDIRECT_URL should point back to the frontend.
-        window.location.href = '/logout/'; // Use Vite proxy or direct backend URL
-        // Clear local state immediately for responsiveness (optional)
-        // setUser(null);
-        // setIsAuthenticated(false);
+        // Reset local state for immediate UI feedback
+        setUser(null);
+        setIsAuthenticated(false);
+        
+        // Call the logout endpoint
+        fetch('/api/logout/', { method: 'GET', credentials: 'include' })
+            .finally(() => {
+                // Redirect to login page regardless of API response
+                window.location.href = '/login';
+            });
     };
 
     // Check authentication status when the provider mounts
