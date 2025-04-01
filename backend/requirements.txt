@@ -1,0 +1,10 @@
+# backend/requirements.txt
+django>=4.2,<5.0        # Use a specific stable range
+djangorestframework>=3.14,<3.15
+psycopg2-binary>=2.9,<3.0 # Or psycopg>=3.1
+python-dotenv>=1.0,<2.0
+social-auth-app-django>=5.2,<5.3
+django-cors-headers>=4.2,<4.3
+django-sslserver>=0.22,<0.23  # For development HTTPS only
+gunicorn>=20.1,<21.0       # For running Django in production/Docker
+whitenoise[brotli]>=6.6,<7.0 # For serving static files

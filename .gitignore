@@ -1,0 +1,39 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.log
+*.pot
+*.mo
+venv/
+.env # --- CRITICAL: Ignore environment variables ---
+
+# Django
+db.sqlite3 # Ignore if using sqlite for quick tests
+staticfiles/
+media/
+
+# Node / React
+node_modules/
+dist/ # Frontend build output (if not needed in repo)
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+
+# Docker
+docker-compose.override.yml # Local overrides
+
+# IDE / OS files
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
