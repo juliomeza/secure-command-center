@@ -9,9 +9,9 @@ const LoginPage: React.FC = () => {
     const from = location.state?.from?.pathname || "/"; // Redirect location after login
 
     const handleMicrosoftLogin = () => {
-        // Redirect to the backend's Microsoft OAuth2 start URL
-        // No longer include 'next' parameter as we've configured redirection in settings.py
-        window.location.href = `/auth/login/azuread-oauth2/`;
+        // Redirect to the backend's Microsoft OAuth2 start URL with prompt=select_account
+        // This forces Microsoft to show the account selection screen
+        window.location.href = `/auth/login/azuread-oauth2/?prompt=select_account`;
     };
 
     if (isLoading) {

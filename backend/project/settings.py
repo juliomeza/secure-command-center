@@ -153,6 +153,11 @@ SOCIAL_AUTH_AZUREAD_OAUTH2_TENANT_ID = os.environ.get('AZURE_AD_TENANT_ID')
 # Scopes requested from Microsoft
 SOCIAL_AUTH_AZUREAD_OAUTH2_SCOPE = ['openid', 'email', 'profile', 'User.Read']
 
+# Additional parameters for Microsoft login
+SOCIAL_AUTH_AZUREAD_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'prompt': 'select_account'  # Always show account selection screen
+}
+
 # Pipeline to save extra data (like company, if available in claims)
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
