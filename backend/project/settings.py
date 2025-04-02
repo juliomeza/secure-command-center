@@ -130,7 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- Authentication Configuration ---
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.azuread.AzureADOAuth2', # Microsoft Azure AD OAuth2
-    # 'social_core.backends.google.GoogleOAuth2', # Example for Google
+    'social_core.backends.google.GoogleOAuth2', # Google OAuth2
     'django.contrib.auth.backends.ModelBackend', # Default Django auth (for admin, etc.)
 )
 
@@ -157,6 +157,13 @@ SOCIAL_AUTH_AZUREAD_OAUTH2_SCOPE = ['openid', 'email', 'profile', 'User.Read']
 SOCIAL_AUTH_AZUREAD_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
     'prompt': 'select_account'  # Always show account selection screen
 }
+
+# Add Google OAuth credentials
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
+
+# Configure Google OAuth scopes
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
 
 # Pipeline to save extra data (like company, if available in claims)
 SOCIAL_AUTH_PIPELINE = (
