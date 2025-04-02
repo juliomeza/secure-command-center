@@ -2,6 +2,7 @@
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
+import { MicrosoftLoginButton } from 'react-social-login-buttons';
 
 const LoginPage: React.FC = () => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -27,9 +28,13 @@ const LoginPage: React.FC = () => {
         <div className="container login-page">
             <h2>Login</h2>
             <p>Please login to access the dashboard.</p>
-            <button onClick={handleMicrosoftLogin} className="ms-login-button">
+            <MicrosoftLoginButton 
+                onClick={handleMicrosoftLogin}
+                style={{ width: '250px', margin: '0 auto' }}
+                light
+            >
                 Login with Microsoft
-            </button>
+            </MicrosoftLoginButton>
             {/*
             // Placeholder for future email/password login form
             <hr />
