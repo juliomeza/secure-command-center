@@ -28,13 +28,25 @@ const LoginPage: React.FC = () => {
         <div className="container login-page">
             <h2>Login</h2>
             <p>Please login to access the dashboard.</p>
+            
+            {/* Microsoft Login Button with correct styling */}
             <MicrosoftLoginButton 
                 onClick={handleMicrosoftLogin}
                 style={{ width: '250px', margin: '0 auto' }}
-                light
-            >
-                Login with Microsoft
-            </MicrosoftLoginButton>
+                
+                // Use the 'text' property to customize button text if needed
+                text="Login with Microsoft"
+                
+                // Instead of 'light', use the 'preventActiveStyles' to prevent default active styles
+                preventActiveStyles={true}
+                
+                // Custom styles to make it look like light theme
+                activeStyle={{}} // Empty object to override any active styles
+                
+                // You can also try setting a custom className if needed
+                className="microsoft-light-button"
+            />
+            
             {/*
             // Placeholder for future email/password login form
             <hr />
