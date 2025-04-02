@@ -30,8 +30,7 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="container login-page">
-            <h2>Login</h2>
-            <p>Please login to access the dashboard.</p>
+            <h2>Welcome back</h2>
             
             {/* Microsoft Login Button - using default styling */}
             <MicrosoftLoginButton 
