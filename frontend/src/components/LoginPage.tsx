@@ -35,7 +35,7 @@ const LoginPage: React.FC = () => {
                 style={{ width: '250px', margin: '0 auto' }}
                 
                 // Use the 'text' property to customize button text if needed
-                text="Login with Microsoft"
+                text="Sign in with Microsoft"
                 
                 // Instead of 'light', use the 'preventActiveStyles' to prevent default active styles
                 preventActiveStyles={true}

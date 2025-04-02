@@ -40,3 +40,36 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Custom styles for Microsoft login button */
+.microsoft-light-button {
+  background-color: #ffffff !important;
+  color: #5e5e5e !important;
+  border: 1px solid #c8c8c8 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.microsoft-light-button:hover {
+  background-color: #f3f3f3 !important;
+}
+
+.microsoft-light-button > div > div {
+  color: #5e5e5e !important;
+}
+
+/* This preserves the Microsoft logo colors in the button */
+.microsoft-light-button > div > div:first-child > svg > g > path:nth-child(1) {
+  fill: #f25022 !important;
+}
+
+.microsoft-light-button > div > div:first-child > svg > g > path:nth-child(2) {
+  fill: #00a4ef !important;
+}
+
+.microsoft-light-button > div > div:first-child > svg > g > path:nth-child(3) {
+  fill: #7fba00 !important;
+}
+
+.microsoft-light-button > div > div:first-child > svg > g > path:nth-child(4) {
+  fill: #ffb900 !important;
+}
