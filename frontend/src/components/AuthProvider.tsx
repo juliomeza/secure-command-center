@@ -25,7 +25,7 @@ interface AuthContextType {
     isLoading: boolean;
     error: string | null;
     checkAuth: () => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<boolean>; // Changed return type to Promise<boolean>
 }
 
 // Create the context
@@ -71,17 +71,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, []);
 
-    const logout = () => {
-        // Reset local state for immediate UI feedback
-        setUser(null);
-        setIsAuthenticated(false);
-        
-        // Call the logout endpoint
-        fetch('/api/logout/', { method: 'GET', credentials: 'include' })
-            .finally(() => {
-                // Redirect to login page regardless of API response
-                window.location.href = '/login';
-            });
+    // Updated logout function
+    const logout = async (): Promise<boolean> => {
+        try {
+            // First call the logout endpoint
+            await fetch('/api/logout/', { method: 'GET', credentials: 'include' });
+            
+            // Then update local state
+            setUser(null);
+            setIsAuthenticated(false);
+            
+            // Return true to indicate successful logout
+            return true;
+        } catch (error) {
+            console.error("Logout failed:", error);
+            return false;
+        }
     };
 
     // Check authentication status when the provider mounts
