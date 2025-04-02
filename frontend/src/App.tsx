@@ -6,9 +6,9 @@ import LoginPage from './components/LoginPage';
 import DashboardPage from './components/DashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Layout component including navigation
-const Layout: React.FC = () => {
-     const { isAuthenticated, logout, user } = useAuth();
+// Layout component with navigation for authenticated pages
+const MainLayout: React.FC = () => {
+    const { isAuthenticated, logout, user } = useAuth();
 
     return (
         <div>
@@ -33,19 +33,36 @@ const Layout: React.FC = () => {
     );
 }
 
+// Special layout for login page without navigation bar
+const LoginLayout: React.FC = () => {
+    return (
+        <div className="login-layout">
+            <div className="company-name">
+                <h3>Company Name</h3>
+            </div>
+            <main>
+                <Outlet />
+            </main>
+        </div>
+    );
+}
+
 // Main App component setting up routes
 const App: React.FC = () => {
     return (
         <AuthProvider> {/* Wrap the entire app in AuthProvider */}
             <Router>
                 <Routes>
-                    <Route path="/" element={<Layout />}> {/* Use Layout for common structure */}
-                        {/* Public Routes */}
-                        <Route path="/login" element={<LoginPage />} />
-
+                    {/* Login route with special layout */}
+                    <Route path="/login" element={<LoginLayout />}>
+                        <Route index element={<LoginPage />} />
+                    </Route>
+                    
+                    {/* Main layout for authenticated routes */}
+                    <Route path="/" element={<MainLayout />}>
                         {/* Protected Routes */}
                         <Route element={<ProtectedRoute />}>
-                             {/* Dashboard is the protected home page */}
+                            {/* Dashboard is the protected home page */}
                             <Route index element={<DashboardPage />} />
                             {/* Explicit dashboard route for social auth redirect */}
                             <Route path="/dashboard" element={<DashboardPage />} />
@@ -53,8 +70,8 @@ const App: React.FC = () => {
                             {/* <Route path="/settings" element={<SettingsPage />} /> */}
                         </Route>
 
-                         {/* Catch-all for 404 Not Found */}
-                         <Route path="*" element={<div><h2>404 Not Found</h2><Link to="/">Go Home</Link></div>} />
+                        {/* Catch-all for 404 Not Found */}
+                        <Route path="*" element={<div><h2>404 Not Found</h2><Link to="/">Go Home</Link></div>} />
                     </Route>
                 </Routes>
             </Router>

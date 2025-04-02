@@ -29,22 +29,32 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <div className="container login-page">
+        <div className="login-page">
             <h2>Welcome back</h2>
+            <p>Please enter your details</p>
             
-            {/* Microsoft Login Button - using default styling */}
+            {/* Microsoft Login Button */}
             <MicrosoftLoginButton 
                 onClick={handleMicrosoftLogin}
-                style={{ width: '250px', margin: '0 auto 10px' }}
+                style={{ width: '250px', margin: '0 auto' }}
+                className="login-button"
                 text="Sign in with Microsoft"
             />
+            
+            <div className="or-separator">or</div>
             
             {/* Google Login Button */}
             <GoogleLoginButton
                 onClick={handleGoogleLogin}
-                style={{ width: '250px', margin: '10px auto 0' }}
+                style={{ width: '250px', margin: '0 auto' }}
+                className="login-button"
                 text="Sign in with Google"
             />
+
+            {/* Don't have an account link */}
+            <div className="signup-link">
+                Don't have an account? <a href="/signup">Sign up</a>
+            </div>
         </div>
     );
 };
