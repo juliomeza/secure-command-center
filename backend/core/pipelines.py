@@ -5,49 +5,64 @@ from django.contrib.auth.models import User
 def save_profile_details(backend, user: User, response, *args, **kwargs):
     """
     Pipeline step to create/update UserProfile and associate Company.
-    This needs customization based on how company info is provided by Azure AD.
-    Example: Using email domain or a specific claim.
+    Handles both Azure AD and Google OAuth responses.
     """
+    # Common variables that will be set regardless of backend
+    company_name = None
+    email = None
+    unique_id = None
+    job_title = None
+    
+    # Extract backend-specific data
     if backend.name == 'azuread-oauth2':
-        # --- Attempt to determine company ---
-        # Option 1: Extract from email domain (simple example)
-        company_name = None
+        # --- Handle Azure AD OAuth2 ---
         email = response.get('mail') or response.get('email') or response.get('upn')
-        if email and '@' in email:
-            domain = email.split('@')[1]
-            # You might have a mapping of domains to company names
-            # For simplicity, we use the domain directly (or a cleaned version)
-            # In a real scenario, you might look up the domain in a predefined list.
-            company_name = domain.split('.')[0].capitalize() # Basic example
-
-        # Option 2: Look for a specific claim (e.g., 'company_name')
-        # company_name = response.get('company_name') # If Azure AD sends this claim
-
-        # --- Find or Create Company ---
-        company = None
-        if company_name:
-            company, created = Company.objects.get_or_create(name=company_name)
-            if created:
-                print(f"Created new company: {company_name}")
-
-        # --- Create or Update UserProfile ---
-        profile, created = UserProfile.objects.update_or_create(
-            user=user,
-            defaults={
-                'company': company,
-                'azure_oid': response.get('oid'), # Azure AD Object ID
-                'job_title': response.get('jobTitle'),
-                # Add other fields from 'response' or 'details' as needed
-            }
-        )
+        unique_id = response.get('oid')  # Azure AD Object ID
+        job_title = response.get('jobTitle')
+        
+    elif backend.name == 'google-oauth2':
+        # --- Handle Google OAuth2 ---
+        email = response.get('email')
+        unique_id = response.get('sub')  # Google's unique user identifier
+        # Google doesn't typically provide job title, but might have occupation in some cases
+        job_title = response.get('occupation', None)
+    
+    # --- Common company determination from email (for both backends) ---
+    if email and '@' in email:
+        domain = email.split('@')[1]
+        # Simple company name derivation from email domain
+        company_name = domain.split('.')[0].capitalize()
+    
+    # --- Find or Create Company ---
+    company = None
+    if company_name:
+        company, created = Company.objects.get_or_create(name=company_name)
         if created:
-            print(f"Created profile for user: {user.username}")
-        else:
-            print(f"Updated profile for user: {user.username}")
-
-        # --- Update User model fields (optional) ---
-        # You might want to update User fields directly if not done automatically
-        # user.first_name = response.get('given_name', '')
-        # user.last_name = response.get('family_name', '')
-        # user.email = email # Ensure email is saved if not handled by create_user step
-        # user.save()
+            print(f"Created new company: {company_name}")
+    
+    # --- Create or Update UserProfile ---
+    # Build defaults dict based on available data
+    defaults = {
+        'company': company,
+        'job_title': job_title,
+    }
+    
+    # Only set azure_oid if it's from Azure AD
+    if backend.name == 'azuread-oauth2' and unique_id:
+        defaults['azure_oid'] = unique_id
+    
+    profile, created = UserProfile.objects.update_or_create(
+        user=user,
+        defaults=defaults
+    )
+    
+    if created:
+        print(f"Created profile for user: {user.username}")
+    else:
+        print(f"Updated profile for user: {user.username}")
+    
+    # You could update User model fields here if needed
+    # user.first_name = response.get('given_name') or response.get('first_name', '')
+    # user.last_name = response.get('family_name') or response.get('last_name', '')
+    # user.email = email
+    # user.save()

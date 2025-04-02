@@ -112,3 +112,8 @@ pre {
     font-weight: bold;
 }
 
+/* Custom styles for Google login button if needed */
+.google-button {
+  width: 250px !important;
+  margin: 10px auto 0 !important;
+}
