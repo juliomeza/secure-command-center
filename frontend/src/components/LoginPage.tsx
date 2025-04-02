@@ -1,10 +1,10 @@
-// Update LoginPage.tsx
+// frontend/src/components/LoginPage.tsx
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { 
     MicrosoftLoginButton,
-    GoogleLoginButton  // Add import for Google button
+    GoogleLoginButton
 } from 'react-social-login-buttons';
 
 const LoginPage: React.FC = () => {
@@ -16,7 +16,6 @@ const LoginPage: React.FC = () => {
         window.location.href = `/auth/login/azuread-oauth2/?prompt=select_account`;
     };
     
-    // Add handler for Google login
     const handleGoogleLogin = () => {
         window.location.href = `/auth/login/google-oauth2/`;
     };
@@ -34,14 +33,11 @@ const LoginPage: React.FC = () => {
             <h2>Login</h2>
             <p>Please login to access the dashboard.</p>
             
-            {/* Microsoft Login Button */}
+            {/* Microsoft Login Button - using default styling */}
             <MicrosoftLoginButton 
                 onClick={handleMicrosoftLogin}
-                style={{ width: '250px', margin: '0 auto 10px' }} // Add bottom margin
+                style={{ width: '250px', margin: '0 auto 10px' }}
                 text="Sign in with Microsoft"
-                preventActiveStyles={true}
-                activeStyle={{}}
-                className="microsoft-light-button"
             />
             
             {/* Google Login Button */}
