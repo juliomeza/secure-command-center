@@ -12,7 +12,7 @@ build/
 *.pot
 *.mo
 venv/
-.env # --- CRITICAL: Ignore environment variables ---
+.env
 
 # Django
 db.sqlite3 # Ignore if using sqlite for quick tests
