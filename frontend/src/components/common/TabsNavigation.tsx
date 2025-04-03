@@ -1,6 +1,4 @@
 // src/components/common/TabsNavigation.tsx
-import React, { useState } from 'react';
-
 interface TabProps<T extends string> {
   tabs: Array<{ id: T; label: string }>;
   activeTab: T;
@@ -14,8 +12,6 @@ export function TabsNavigation<T extends string>({
   onTabChange,
   className = ''
 }: TabProps<T>) {
-  const [hoveredTab, setHoveredTab] = useState<T | null>(null);
-
   return (
     <div style={{ 
       width: '100%', 
@@ -34,8 +30,6 @@ export function TabsNavigation<T extends string>({
             key={tab.id}
             type="button"
             onClick={() => onTabChange(tab.id)}
-            onMouseOver={() => setHoveredTab(tab.id)}
-            onMouseOut={() => setHoveredTab(null)}
             style={{
               position: 'relative',
               padding: '1rem 0',
@@ -46,28 +40,23 @@ export function TabsNavigation<T extends string>({
               border: 'none',
               outline: 'none',
               cursor: 'pointer',
-              color: activeTab === tab.id || hoveredTab === tab.id ? '#2563eb' : '#6b7280',
+              color: activeTab === tab.id ? '#2563eb' : '#6b7280',
               transition: 'all 0.2s ease-in-out'
             }}
           >
             {tab.label}
-            <span 
-              style={{
-                position: 'absolute',
-                bottom: '-1px',
-                left: '-50%',
-                width: '200%',
-                height: '2px',
-                backgroundColor: '#2563eb',
-                transform: activeTab === tab.id 
-                  ? 'scaleX(1)' 
-                  : hoveredTab === tab.id 
-                    ? 'scaleX(1)' 
-                    : 'scaleX(0)',
-                transformOrigin: 'center',
-                transition: 'transform 0.2s ease-in-out'
-              }}
-            />
+            {activeTab === tab.id && (
+              <span 
+                style={{
+                  position: 'absolute',
+                  bottom: '-1px',
+                  left: '-50%',
+                  width: '200%',
+                  height: '2px',
+                  backgroundColor: '#2563eb'
+                }}
+              />
+            )}
           </button>
         ))}
       </div>
