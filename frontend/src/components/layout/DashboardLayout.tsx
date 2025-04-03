@@ -15,7 +15,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <h1 className="text-2xl font-semibold text-blue-900">Secure Command Center</h1>
           <button 
             onClick={logout}
-            className="px-5 py-2.5 text-gray-600 hover:text-blue-600 rounded-lg text-sm font-medium bg-white shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
+            style={{
+              padding: '0.75rem 1.5rem',
+              color: '#6b7280',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '2px solid transparent',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease-in-out',
+              outline: 'none'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.color = '#2563eb';
+              e.currentTarget.style.borderBottom = '2px solid #2563eb';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.color = '#6b7280';
+              e.currentTarget.style.borderBottom = '2px solid transparent';
+            }}
           >
             Logout
           </button>
