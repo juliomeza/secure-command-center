@@ -21,7 +21,7 @@ const tabs: Array<{ id: TabId; label: string }> = [
 ];
 
 const ExecutiveDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>('CEO');
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('monthly');
@@ -54,39 +54,40 @@ const ExecutiveDashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
-      {/* User Welcome Banner */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <h2 className="text-xl font-semibold">Welcome, {user?.first_name || user?.username}!</h2>
-        <p className="text-sm text-gray-600">
-          {user?.profile?.job_title && `${user.profile.job_title} at `}
-          {user?.profile?.company?.name || 'Your Company'}
-        </p>
-      </div>
-
-      {/* Navigation and Selectors Container */}
-      <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-        {/* Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px px-4 sm:px-6 lg:px-8" aria-label="Tabs">
+      {/* Modern tabs design with logout button */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center px-2 py-4">
+          {/* Tabs */}
+          <div className="flex space-x-2">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm mx-2 sm:mx-4
+                className={`px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200 ease-in-out
                   ${activeTab === tab.id
-                    ? 'border-blue-900 text-blue-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200'
+                    : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-blue-600 border border-gray-100'
                   }`
                 }
               >
                 {tab.label}
               </button>
             ))}
-          </nav>
+          </div>
+          
+          {/* Logout button */}
+          <div>
+            <button 
+              onClick={logout} 
+              className="px-5 py-3 text-gray-600 hover:text-blue-600 rounded-lg text-sm font-medium bg-white hover:bg-gray-50 border border-gray-100 transition-all duration-200 ease-in-out flex items-center"
+            >
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
 
-        {/* Selectors */}
-        <div className="flex flex-col sm:flex-row justify-between items-center px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-200 bg-gray-50 space-y-3 sm:space-y-0">
+        {/* Selectors in a clean, modern card */}
+        <div className="mt-4 bg-white rounded-lg shadow-sm p-4 mb-2 flex flex-col sm:flex-row justify-between items-center gap-4">
           <CompanySelector
             companies={companies}
             selectedValue={selectedCompany}

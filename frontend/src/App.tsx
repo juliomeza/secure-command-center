@@ -7,26 +7,10 @@ import DashboardPage from './components/DashboardPage';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Layout component with navigation for authenticated pages
+// Layout component without navigation bar for authenticated pages
 const MainLayout: React.FC = () => {
-    const { isAuthenticated, logout, user } = useAuth();
-
     return (
         <div>
-            <nav>
-                <ul>
-                    <li><Link to="/">Executive Dashboard</Link></li>
-                    <li><Link to="/user-profile">User Profile</Link></li>
-                    {!isAuthenticated && <li><Link to="/login">Login</Link></li>}
-                    {isAuthenticated && (
-                        <li>
-                            <button onClick={logout} className='logout-button'>
-                                Logout ({user?.username})
-                            </button>
-                        </li>
-                    )}
-                </ul>
-            </nav>
             <main>
                 {/* Child routes will render here */}
                 <Outlet />
