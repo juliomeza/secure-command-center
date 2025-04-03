@@ -1,4 +1,6 @@
-# Commands for Claude Code
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Build Commands
 - Frontend dev server: `cd frontend && npm run dev`
@@ -18,11 +20,12 @@
 
 ## Code Style Guidelines
 - TypeScript: Strict types required, unused variables/parameters forbidden
-- React: Use functional components with hooks
+- React: Use functional components with hooks, avoid class components
 - Python: PEP-8 compliant, Django best practices
 - Error handling: Always catch and handle exceptions appropriately
 - Imports: Group by type (standard lib, third-party, local)
 - Naming: camelCase for JS/TS, snake_case for Python
 - Security: No hard-coded credentials, validate all inputs
 - Authentication: All sensitive routes must use ProtectedRoute component
-
+- Frontend API calls: Use axios with proper error handling
+- State management: Use React context/hooks, avoid prop drilling

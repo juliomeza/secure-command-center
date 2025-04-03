@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-rout
 import { AuthProvider, useAuth } from './components/AuthProvider';
 import LoginPage from './components/LoginPage';
 import DashboardPage from './components/DashboardPage';
+import ExecutiveDashboard from './components/ExecutiveDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Layout component with navigation for authenticated pages
@@ -14,7 +15,8 @@ const MainLayout: React.FC = () => {
         <div>
             <nav>
                 <ul>
-                    <li><Link to="/">Home (Dashboard)</Link></li>
+                    <li><Link to="/">Executive Dashboard</Link></li>
+                    <li><Link to="/user-profile">User Profile</Link></li>
                     {!isAuthenticated && <li><Link to="/login">Login</Link></li>}
                     {isAuthenticated && (
                         <li>
@@ -62,10 +64,12 @@ const App: React.FC = () => {
                     <Route path="/" element={<MainLayout />}>
                         {/* Protected Routes */}
                         <Route element={<ProtectedRoute />}>
-                            {/* Dashboard is the protected home page */}
-                            <Route index element={<DashboardPage />} />
+                            {/* Executive Dashboard is the protected home page */}
+                            <Route index element={<ExecutiveDashboard />} />
+                            {/* Legacy dashboard page (for reference) */}
+                            <Route path="/user-profile" element={<DashboardPage />} />
                             {/* Explicit dashboard route for social auth redirect */}
-                            <Route path="/dashboard" element={<DashboardPage />} />
+                            <Route path="/dashboard" element={<ExecutiveDashboard />} />
                             {/* Add other protected routes here */}
                             {/* <Route path="/settings" element={<SettingsPage />} /> */}
                         </Route>

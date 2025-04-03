@@ -1,6 +1,5 @@
 // src/views/CIOView.tsx
 import React from 'react';
-import { TooltipProps } from 'recharts';
 import KpiCard from '../components/common/KpiCard';
 import Card from '../components/common/Card';
 import BarChart from '../components/charts/BarChart';
@@ -10,7 +9,7 @@ import { formatCurrency, formatPercent } from '../utils/formatters';
 import { systemUptimeData, itProjectsData } from '../data/mockData';
 
 // Tooltip Formatter
-const percentTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => `${value}%`;
+const percentTooltipFormatter = (value: number): string => `${value}%`;
 
 const CIOView: React.FC = () => {
   const budgetUsedPercent = (950000 / 1200000) * 100;

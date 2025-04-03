@@ -1,6 +1,5 @@
 // src/views/CEOView.tsx
 import React from 'react';
-import { TooltipProps } from 'recharts'; // Import TooltipProps for type safety
 import KpiCard from '../components/common/KpiCard';
 import Card from '../components/common/Card';
 import LineChart from '../components/charts/LineChart';
@@ -9,12 +8,11 @@ import BarChart from '../components/charts/BarChart';
 import DashboardGrid from '../components/layout/DashboardGrid';
 import { formatCurrency, formatK, formatM } from '../utils/formatters';
 import { revenueGrowthData, salesByRegionData, expenseData } from '../data/mockData';
-import { DataPoint } from '../data/types';
 
 // Define Tooltip formatters with explicit types
-const currencyTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => [formatCurrency(value as number), "Revenue"];
-const expenseTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => formatCurrency(value as number);
-const salesTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => formatCurrency(value as number);
+const currencyTooltipFormatter = (value: number): [string, string] => [formatCurrency(value), "Revenue"];
+const expenseTooltipFormatter = (value: number): string => formatCurrency(value);
+const salesTooltipFormatter = (value: number): string => formatCurrency(value);
 
 const CEOView: React.FC = () => {
   return (

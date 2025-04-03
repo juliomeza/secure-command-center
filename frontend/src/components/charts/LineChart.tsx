@@ -9,19 +9,28 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineProps, // Import types for props if needed
   XAxisProps,
   YAxisProps,
   TooltipProps
 } from 'recharts';
 
-// Define props more explicitly if needed, or use Recharts types directly
+// Define props more explicitly using generics
+interface LineConfig {
+  dataKey: string;
+  type?: 'basis' | 'basisClosed' | 'basisOpen' | 'linear' | 'linearClosed' | 'natural' | 'monotoneX' | 'monotoneY' | 'monotone' | 'step' | 'stepBefore' | 'stepAfter';
+  stroke?: string;
+  strokeWidth?: number;
+  dot?: boolean | object;
+  name?: string;
+  [key: string]: any;
+}
+
 interface CustomLineChartProps {
-  data: any[]; // Be more specific with types if possible
-  lines: LineProps[];
+  data: Array<Record<string, any>>;
+  lines: LineConfig[];
   xAxisProps?: XAxisProps;
   yAxisProps?: YAxisProps;
-  tooltipProps?: TooltipProps<any, any>; // Adjust value/name types
+  tooltipProps?: Partial<TooltipProps<number, string>>;
   showGrid?: boolean;
   showLegend?: boolean;
   height?: number;
@@ -47,9 +56,11 @@ const LineChart: React.FC<CustomLineChartProps> = ({
         <YAxis {...yAxisProps} />
         <Tooltip {...tooltipProps} />
         {showLegend && <Legend />}
-        {lines.map((lineProps, index) => (
-          <Line key={index} {...lineProps} />
-        ))}
+        {lines.map((lineProps, index) => {
+          // Extraer la propiedad dataKey para evitar errores de tipado
+          const { dataKey, ...otherProps } = lineProps;
+          return <Line key={index} dataKey={dataKey} {...otherProps} />;
+        })}
       </RechartsLineChart>
     </ResponsiveContainer>
   );

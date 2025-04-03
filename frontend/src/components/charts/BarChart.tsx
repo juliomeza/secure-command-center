@@ -9,19 +9,25 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  BarProps, // Import types for props if needed
   XAxisProps,
   YAxisProps,
   TooltipProps
 } from 'recharts';
 
+interface BarConfig {
+  dataKey: string;
+  fill?: string;
+  radius?: number | [number, number, number, number];
+  [key: string]: any;
+}
+
 interface CustomBarChartProps {
-  data: any[];
-  bars: BarProps[];
+  data: Array<Record<string, any>>;
+  bars: BarConfig[];
   layout?: 'horizontal' | 'vertical';
   xAxisProps?: XAxisProps;
   yAxisProps?: YAxisProps;
-  tooltipProps?: TooltipProps<any, any>;
+  tooltipProps?: Partial<TooltipProps<number, string>>;
   showGrid?: boolean;
   showLegend?: boolean;
   height?: number;
@@ -48,9 +54,11 @@ const BarChart: React.FC<CustomBarChartProps> = ({
         <YAxis {...yAxisProps} type={layout === 'vertical' ? 'category' : 'number'} />
         <Tooltip {...tooltipProps} />
         {showLegend && <Legend />}
-        {bars.map((barProps, index) => (
-          <Bar key={index} {...barProps} />
-        ))}
+        {bars.map((barProps, index) => {
+          // Extraer la propiedad dataKey para evitar errores de tipado
+          const { dataKey, ...otherProps } = barProps;
+          return <Bar key={index} dataKey={dataKey} {...otherProps} />;
+        })}
       </RechartsBarChart>
     </ResponsiveContainer>
   );

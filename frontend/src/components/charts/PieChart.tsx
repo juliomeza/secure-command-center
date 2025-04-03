@@ -5,22 +5,31 @@ import {
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  PieProps,
   TooltipProps
 } from 'recharts';
 import { DataPoint } from '../../data/types'; // Assuming DataPoint has 'name', 'value', 'color'
 
+interface PieConfig {
+  dataKey?: string;
+  cx?: string | number;
+  cy?: string | number;
+  innerRadius?: number | string;
+  outerRadius?: number | string;
+  paddingAngle?: number;
+  nameKey?: string;
+  [key: string]: any;
+}
+
 interface CustomPieChartProps {
   data: DataPoint[]; // Use specific type
-  pieProps?: Partial<PieProps>; // Use Partial for optional overrides
-  tooltipProps?: TooltipProps<any, any>;
+  pieProps?: PieConfig; // Use custom config type
+  tooltipProps?: Partial<TooltipProps<number, string>>;
   showLegend?: boolean;
   height?: number;
   innerRadius?: number | string;
   outerRadius?: number | string;
-  legendItems?: { name: string, color: string }[]; // Optional separate legend items
+  legendItems?: Array<{ name: string, color: string }>; // Optional separate legend items
 }
 
 const PieChart: React.FC<CustomPieChartProps> = ({
@@ -34,7 +43,7 @@ const PieChart: React.FC<CustomPieChartProps> = ({
   legendItems // Allow passing legend items explicitly if needed
 }) => {
 
-  const defaultPieProps: Partial<PieProps> = {
+  const defaultPieProps: PieConfig = {
     dataKey: "value",
     cx: "50%",
     cy: "50%",
@@ -50,7 +59,15 @@ const PieChart: React.FC<CustomPieChartProps> = ({
     <div className="flex flex-col items-center">
       <ResponsiveContainer width="100%" height={height}>
         <RechartsPieChart>
-          <Pie {...finalPieProps} data={data} >
+          <Pie 
+            dataKey={finalPieProps.dataKey || "value"}
+            cx={finalPieProps.cx}
+            cy={finalPieProps.cy}
+            innerRadius={finalPieProps.innerRadius}
+            outerRadius={finalPieProps.outerRadius}
+            paddingAngle={finalPieProps.paddingAngle}
+            data={data}
+          >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} /> // Provide default color
             ))}

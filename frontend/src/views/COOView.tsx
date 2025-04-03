@@ -1,6 +1,5 @@
 // src/views/COOView.tsx
 import React from 'react';
-import { TooltipProps } from 'recharts';
 import KpiCard from '../components/common/KpiCard';
 import Card from '../components/common/Card';
 import LineChart from '../components/charts/LineChart';
@@ -11,8 +10,8 @@ import { formatPercent } from '../utils/formatters';
 import { projectStatusData, marketShareData, teamPerformanceData } from '../data/mockData';
 
 // Tooltip Formatters
-const percentTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => `${value}%`;
-const projectTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => `${value} projects`;
+const percentTooltipFormatter = (value: number): string => `${value}%`;
+const projectTooltipFormatter = (value: number): string => `${value} projects`;
 
 const COOView: React.FC = () => {
   return (

@@ -1,6 +1,5 @@
 // src/views/CFOView.tsx
 import React from 'react';
-import { TooltipProps } from 'recharts';
 import KpiCard from '../components/common/KpiCard';
 import Card from '../components/common/Card';
 import LineChart from '../components/charts/LineChart';
@@ -10,7 +9,7 @@ import { formatCurrency, formatM } from '../utils/formatters';
 import { cashFlowData, expenseData } from '../data/mockData';
 
 // Tooltip Formatters
-const currencyTooltipFormatter: TooltipProps<number, string>['formatter'] = (value) => formatCurrency(value as number);
+const currencyTooltipFormatter = (value: number): string => formatCurrency(value);
 
 const CFOView: React.FC = () => {
   return (
