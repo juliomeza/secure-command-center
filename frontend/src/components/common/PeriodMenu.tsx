@@ -40,6 +40,17 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
     const selectedPeriodObj = periods.find(period => period.id === selectedPeriod);
     return selectedPeriodObj?.name || 'Select Period';
   };
+  
+  // Get icon for period
+  const getCalendarIcon = () => {
+    return (
+      <Calendar 
+        size={18} 
+        strokeWidth={1.5} 
+        className="opacity-80" 
+      />
+    );
+  };
 
   return (
     <div 
@@ -56,7 +67,7 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '0 16px',
+          width: '130px',
           height: '40px',
           borderRadius: '20px',
           backgroundColor: 'var(--blue-primary, #3b82f6)',
@@ -87,7 +98,7 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
         <div 
           style={{
             position: 'absolute',
-            right: 0,
+            right: 86,
             marginTop: '0.5rem',
             width: '12rem',
             borderRadius: '0.375rem',
@@ -143,6 +154,9 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
                 }}
                 role="menuitem"
               >
+                <span style={{ marginRight: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                  {getCalendarIcon()}
+                </span>
                 {period.name}
               </button>
             ))}
