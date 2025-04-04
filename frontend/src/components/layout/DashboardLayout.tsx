@@ -11,6 +11,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const [selectedCompany, setSelectedCompany] = useState('');
+  const [showWelcome, setShowWelcome] = useState(true);
   
   // Get user initials from first and last name
   const getUserInitials = (): string => {
@@ -26,6 +27,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const getFullName = (): string => {
     if (!user) return '';
     return `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username;
+  };
+  
+  // Get first name for welcome message
+  const getFirstName = (): string => {
+    if (!user) return '';
+    return user.first_name || user.username;
   };
   
   // Set the company name based on user profile
@@ -61,6 +68,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       label: 'Empresa 1',
       onClick: () => {
         setSelectedCompany('Empresa 1');
+        setShowWelcome(false);
         console.log('Empresa 1 seleccionada');
       }
     },
@@ -69,6 +77,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       label: 'Empresa 2',
       onClick: () => {
         setSelectedCompany('Empresa 2');
+        setShowWelcome(false);
         console.log('Empresa 2 seleccionada');
       }
     },
@@ -77,6 +86,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       label: 'Empresa 3',
       onClick: () => {
         setSelectedCompany('Empresa 3');
+        setShowWelcome(false);
         console.log('Empresa 3 seleccionada');
       }
     },
@@ -85,6 +95,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       label: 'Empresa 4',
       onClick: () => {
         setSelectedCompany('Empresa 4');
+        setShowWelcome(false);
         console.log('Empresa 4 seleccionada');
       }
     },
@@ -93,6 +104,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       label: 'Empresa 5',
       onClick: () => {
         setSelectedCompany('Empresa 5');
+        setShowWelcome(false);
         console.log('Empresa 5 seleccionada');
       }
     }
@@ -105,7 +117,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className="flex items-center gap-3">
             <HamburgerMenu menuItems={companyMenuItems} position="left" />
             <h1 className="text-2xl font-semibold text-blue-900">
-              {selectedCompany}
+              {showWelcome ? `Welcome back, ${getFirstName()}` : selectedCompany}
             </h1>
           </div>
           
