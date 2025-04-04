@@ -47,6 +47,14 @@ const CEOView: React.FC = () => {
           <KpiCard
             title="Revenue"
             value={formatCurrency(3580000)}
+            trend={
+              <span className="text-green-600 flex items-center text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                7.2%
+              </span>
+            }
           />
         </div>
 
@@ -67,7 +75,7 @@ const CEOView: React.FC = () => {
         
         <div style={{ flex: isSmallScreen ? 'none' : '1', width: isSmallScreen ? '100%' : '33.33%' }}>
           <KpiCard
-            title="Customer Satisfaction"
+            title="Customer Retention Rate"
             value="94%"
             trend={
               <span className="text-green-600 flex items-center text-sm">
