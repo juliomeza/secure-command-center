@@ -1,5 +1,6 @@
 // src/components/common/HamburgerMenu.tsx
 import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Building } from 'lucide-react';
 
 interface MenuItem {
   id: string;
@@ -43,34 +44,35 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
       {/* Hamburger Icon Button */}
       <button
         onClick={toggleMenu}
-        className="p-2 rounded-md hover:bg-gray-100 focus:outline-none"
+        className="focus:outline-none"
         aria-label="Menu"
         style={{
-          display: 'inline-flex',
+          display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'transparent',
+          width: '40px',
+          height: '40px',
+          borderRadius: '20px',
+          backgroundColor: 'var(--blue-dark, #1e3a8a)',
+          color: 'white',
+          fontWeight: 600,
+          fontSize: '0.875rem',
+          cursor: 'pointer',
           border: 'none',
-          cursor: 'pointer'
+          transition: 'background-color 0.2s ease-in-out'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--blue-primary, #3b82f6)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--blue-dark, #1e3a8a)';
         }}
       >
-        {/* Using inline SVG for hamburger icon to avoid style conflicts */}
-        <svg 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ color: 'var(--blue-dark, #1e3a8a)' }}
-        >
-          <path 
-            d="M4 6H20M4 12H20M4 18H20" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Menu 
+          size={18} 
+          strokeWidth={1.5} 
+          className="opacity-80" 
+        />
       </button>
 
       {/* Dropdown Menu - Using more explicit styling */}
@@ -78,12 +80,12 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
         <div 
           style={{
             position: 'absolute',
-            left: 24,
+            left: position === 'left' ? 0 : 'auto',
             right: position === 'right' ? 0 : 'auto',
             marginTop: '0.5rem',
             width: '14rem',
             borderRadius: '0.375rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 4px 15px -3px rgba(0, 0, 0, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.1)',
             backgroundColor: 'white',
             zIndex: 50,
             border: '1px solid rgba(229, 231, 235, 1)',
@@ -115,10 +117,12 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
                   backgroundColor: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s, color 0.2s'
+                  transition: 'background-color 0.2s, color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#eff6ff';
+                  e.currentTarget.style.backgroundColor = '#f9fafb';
                   e.currentTarget.style.color = '#1e3a8a';
                 }}
                 onMouseOut={(e) => {
@@ -127,6 +131,9 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
                 }}
                 role="menuitem"
               >
+                <span style={{ marginRight: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                  <Building size={18} strokeWidth={1.5} className="opacity-80" />
+                </span>
                 {item.label}
               </button>
             ))}

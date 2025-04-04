@@ -83,7 +83,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
           width: '40px',
           height: '40px',
           borderRadius: '50%',
-          backgroundColor: 'var(--blue-primary, #3b82f6)',
+          backgroundColor: 'var(--blue-dark, #1e3a8a)',
           color: 'white',
           fontWeight: 600,
           fontSize: '0.875rem',
@@ -92,10 +92,10 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
           transition: 'background-color 0.2s ease-in-out'
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--blue-dark, #1e3a8a)';
+          e.currentTarget.style.backgroundColor = 'var(--blue-primary, #3b82f6)';
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--blue-primary, #3b82f6)';
+          e.currentTarget.style.backgroundColor = 'var(--blue-dark, #1e3a8a)';
         }}
       >
         {initials}
