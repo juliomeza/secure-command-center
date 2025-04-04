@@ -1,5 +1,5 @@
 // src/components/layout/DashboardLayout.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../AuthProvider';
 import HamburgerMenu from '../common/HamburgerMenu';
 
@@ -9,9 +9,10 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { logout } = useAuth();
+  const [selectedCompany, setSelectedCompany] = useState('Empresa 1');
   
-  // Define the menu items
-  const menuItems = [
+  // Define the user menu items (right side)
+  const userMenuItems = [
     {
       id: 'profile',
       label: 'Mi Perfil',
@@ -38,41 +39,65 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       onClick: logout
     }
   ];
+  
+  // Define the company menu items (left side)
+  const companyMenuItems = [
+    {
+      id: 'company1',
+      label: 'Empresa 1',
+      onClick: () => {
+        setSelectedCompany('Empresa 1');
+        console.log('Empresa 1 seleccionada');
+      }
+    },
+    {
+      id: 'company2',
+      label: 'Empresa 2',
+      onClick: () => {
+        setSelectedCompany('Empresa 2');
+        console.log('Empresa 2 seleccionada');
+      }
+    },
+    {
+      id: 'company3',
+      label: 'Empresa 3',
+      onClick: () => {
+        setSelectedCompany('Empresa 3');
+        console.log('Empresa 3 seleccionada');
+      }
+    },
+    {
+      id: 'company4',
+      label: 'Empresa 4',
+      onClick: () => {
+        setSelectedCompany('Empresa 4');
+        console.log('Empresa 4 seleccionada');
+      }
+    },
+    {
+      id: 'company5',
+      label: 'Empresa 5',
+      onClick: () => {
+        setSelectedCompany('Empresa 5');
+        console.log('Empresa 5 seleccionada');
+      }
+    }
+  ];
 
   return (
     <div className="bg-gray-50 p-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8 pt-2">
-          <h1 className="text-2xl font-semibold text-blue-900">Secure Command Center</h1>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={logout}
-              style={{
-                padding: '0.75rem 1.5rem',
-                color: '#6b7280',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '2px solid transparent',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                outline: 'none'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.color = '#2563eb';
-                e.currentTarget.style.borderBottom = '2px solid #2563eb';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.color = '#6b7280';
-                e.currentTarget.style.borderBottom = '2px solid transparent';
-              }}
-            >
-              Logout
-            </button>
-            <HamburgerMenu menuItems={menuItems} />
+          <div className="flex items-center gap-3">
+            <HamburgerMenu menuItems={companyMenuItems} position="left" />
+            <h1 className="text-2xl font-semibold text-blue-900">
+              {selectedCompany}
+            </h1>
           </div>
           
+          <div className="flex items-center">
+            <HamburgerMenu menuItems={userMenuItems} position="right" />
+          </div>
         </div>
         
         {children}

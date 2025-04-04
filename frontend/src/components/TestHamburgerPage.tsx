@@ -38,8 +38,13 @@ const TestHamburgerPage: React.FC = () => {
       
       <div className="flex gap-6 mb-10">
         <div className="border p-4 rounded-md">
-          <h2 className="mb-4">Menú Hamburguesa (Aislado)</h2>
-          <HamburgerMenu menuItems={menuItems} />
+          <h2 className="mb-4">Menú Hamburguesa (Izquierda)</h2>
+          <HamburgerMenu menuItems={menuItems} position="left" />
+        </div>
+        
+        <div className="border p-4 rounded-md">
+          <h2 className="mb-4">Menú Hamburguesa (Derecha)</h2>
+          <HamburgerMenu menuItems={menuItems} position="right" />
         </div>
       </div>
 

@@ -9,9 +9,10 @@ interface MenuItem {
 
 interface HamburgerMenuProps {
   menuItems: MenuItem[];
+  position?: 'left' | 'right';
 }
 
-const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems }) => {
+const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'right' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +78,8 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems }) => {
         <div 
           style={{
             position: 'absolute',
-            right: 0,
+            left: position === 'left' ? 0 : 'auto',
+            right: position === 'right' ? 0 : 'auto',
             marginTop: '0.5rem',
             width: '14rem',
             borderRadius: '0.375rem',
