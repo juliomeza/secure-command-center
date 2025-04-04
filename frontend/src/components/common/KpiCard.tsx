@@ -17,7 +17,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, description, cla
         
         <div className="flex items-center">
           <p className="text-4xl font-bold text-blue-900" style={{ lineHeight: '1', marginTop: '-4px', marginBottom: '24px' }}>{value}</p>
-          {trend && <span className="ml-2 flex items-center">{trend}</span>}
+          {trend && <span className="ml-2 flex items-center" style={{ marginBottom: '24px' }}>{trend}</span>}
         </div>
         
         {description && <p className="text-sm text-gray-600 mt-1">{description}</p>}
