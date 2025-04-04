@@ -82,10 +82,10 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
         <div 
           style={{
             position: 'absolute',
-            right: 0,
+            right: 0, // Alineamos con el borde derecho del avatar
             marginTop: '0.5rem',
             width: '16rem',
-            transform: 'translateX(calc(40px - 100%))',  // Alinear con el borde derecho del avatar
+            // Eliminamos la transformación que causa el desplazamiento
             borderRadius: '0.375rem',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
             backgroundColor: 'white',
