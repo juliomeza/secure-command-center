@@ -6,6 +6,7 @@ import LoginPage from './components/LoginPage';
 import DashboardPage from './components/DashboardPage';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import TestHamburgerPage from './components/TestHamburgerPage';
 
 // Layout component without navigation bar for authenticated pages
 const MainLayout: React.FC = () => {
@@ -58,6 +59,9 @@ const App: React.FC = () => {
                             {/* <Route path="/settings" element={<SettingsPage />} /> */}
                         </Route>
 
+                        {/* Test route for HamburgerMenu */}
+                        <Route path="/test-hamburger" element={<TestHamburgerPage />} />
+                        
                         {/* Catch-all for 404 Not Found */}
                         <Route path="*" element={<div><h2>404 Not Found</h2><Link to="/">Go Home</Link></div>} />
                     </Route>
