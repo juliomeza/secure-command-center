@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthProvider';
 import HamburgerMenu from '../common/HamburgerMenu';
+import AvatarMenu from '../common/AvatarMenu';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -11,8 +12,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { logout } = useAuth();
   const [selectedCompany, setSelectedCompany] = useState('Empresa 1');
   
-  // Define the user menu items (right side)
-  const userMenuItems = [
+  // User avatar menu options
+  const avatarMenuOptions = [
     {
       id: 'profile',
       label: 'Mi Perfil',
@@ -22,16 +23,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       id: 'settings',
       label: 'Configuración',
       onClick: () => console.log('Configuración clicked')
-    },
-    {
-      id: 'reports',
-      label: 'Reportes',
-      onClick: () => console.log('Reportes clicked')
-    },
-    {
-      id: 'notifications',
-      label: 'Notificaciones',
-      onClick: () => console.log('Notificaciones clicked')
     },
     {
       id: 'logout',
@@ -96,7 +87,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
           
           <div className="flex items-center">
-            <HamburgerMenu menuItems={userMenuItems} position="right" />
+            <AvatarMenu 
+              initials="JM" 
+              fullName="Juan Martínez" 
+              companyName={selectedCompany} 
+              menuOptions={avatarMenuOptions} 
+            />
           </div>
         </div>
         

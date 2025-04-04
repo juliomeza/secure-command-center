@@ -1,6 +1,7 @@
 // src/components/TestHamburgerPage.tsx
 import React from 'react';
 import HamburgerMenu from './common/HamburgerMenu';
+import AvatarMenu from './common/AvatarMenu';
 
 const TestHamburgerPage: React.FC = () => {
   // Define menu items for testing
@@ -45,6 +46,32 @@ const TestHamburgerPage: React.FC = () => {
         <div className="border p-4 rounded-md">
           <h2 className="mb-4">Menú Hamburguesa (Derecha)</h2>
           <HamburgerMenu menuItems={menuItems} position="right" />
+        </div>
+        
+        <div className="border p-4 rounded-md">
+          <h2 className="mb-4">Menú Avatar</h2>
+          <AvatarMenu 
+            initials="JM" 
+            fullName="Juan Martínez" 
+            companyName="Empresa 1" 
+            menuOptions={[
+              {
+                id: 'profile',
+                label: 'Mi Perfil',
+                onClick: () => console.log('Perfil clicked')
+              },
+              {
+                id: 'settings',
+                label: 'Configuración',
+                onClick: () => console.log('Configuración clicked')
+              },
+              {
+                id: 'logout',
+                label: 'Cerrar Sesión',
+                onClick: () => console.log('Logout clicked')
+              }
+            ]} 
+          />
         </div>
       </div>
 
