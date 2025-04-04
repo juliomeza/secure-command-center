@@ -78,7 +78,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
         <div 
           style={{
             position: 'absolute',
-            left: position === 'left' ? 0 : 'auto',
+            left: 24,
             right: position === 'right' ? 0 : 'auto',
             marginTop: '0.5rem',
             width: '14rem',
