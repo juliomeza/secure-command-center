@@ -1,10 +1,14 @@
 // src/components/common/AvatarMenu.tsx
 import React, { useState, useRef, useEffect } from 'react';
+// Importamos los iconos específicos que necesitamos de Lucide
+import { User, Settings, LogOut } from 'lucide-react';
 
 interface AvatarMenuOption {
   id: string;
   label: string;
   onClick: () => void;
+  icon?: React.ReactNode;
+  color?: string;
 }
 
 interface AvatarMenuProps {
@@ -40,6 +44,26 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Función para obtener los iconos de Lucide basados en el ID
+  const getIcon = (id: string) => {
+    const iconProps = { 
+      size: 18, // Tamaño más pequeño para ajustarse mejor al menú
+      strokeWidth: 1.5, // Grosor de línea, similar a los iconos de referencia
+      className: "opacity-80" // Aplica opacidad para que no sean tan intensos
+    };
+    
+    switch (id) {
+      case 'profile':
+        return <User {...iconProps} />;
+      case 'settings':
+        return <Settings {...iconProps} />;
+      case 'logout':
+        return <LogOut {...iconProps} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div 
@@ -77,27 +101,26 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
         {initials}
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu - Más compacto y con mejor diseño */}
       {isOpen && (
         <div 
           style={{
             position: 'absolute',
-            right: 24, // Alineamos con el borde derecho del avatar
+            right: 24,
             marginTop: '0.5rem',
-            width: '16rem',
-            // Eliminamos la transformación que causa el desplazamiento
+            width: '14rem',
             borderRadius: '0.375rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 4px 15px -3px rgba(0, 0, 0, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.1)',
             backgroundColor: 'white',
             zIndex: 50,
             border: '1px solid rgba(229, 231, 235, 1)',
             overflow: 'hidden'
           }}
         >
-          {/* User Info Section */}
+          {/* User Info Section - Más compacto */}
           <div
             style={{
-              padding: '1rem',
+              padding: '0.75rem 1rem',
               borderBottom: '1px solid rgba(229, 231, 235, 1)',
               display: 'flex',
               flexDirection: 'column'
@@ -108,7 +131,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
                 fontWeight: 600,
                 fontSize: '0.9375rem',
                 color: '#1e293b',
-                marginBottom: '0.25rem'
+                marginBottom: '0.125rem'
               }}
             >
               {fullName}
@@ -123,10 +146,10 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
             </span>
           </div>
 
-          {/* Menu Options */}
+          {/* Menu Options - Con iconos y más compactas */}
           <div 
             style={{
-              padding: '0.5rem 0',
+              padding: '0.25rem 0',
               display: 'flex',
               flexDirection: 'column'
             }}  
@@ -145,22 +168,28 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
                   textAlign: 'left',
                   padding: '0.5rem 1rem',
                   fontSize: '0.875rem',
-                  color: '#4b5563',
+                  color: option.id === 'logout' ? '#dc2626' : '#4b5563',
                   backgroundColor: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s, color 0.2s'
+                  transition: 'background-color 0.2s, color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#eff6ff';
-                  e.currentTarget.style.color = '#1e3a8a';
+                  e.currentTarget.style.backgroundColor = '#f9fafb';
+                  e.currentTarget.style.color = option.id === 'logout' ? '#b91c1c' : '#1e3a8a';
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = '#4b5563';
+                  e.currentTarget.style.color = option.id === 'logout' ? '#dc2626' : '#4b5563';
                 }}
                 role="menuitem"
               >
+                {/* Icono para cada opción */}
+                <span style={{ marginRight: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                  {option.icon || getIcon(option.id)}
+                </span>
                 {option.label}
               </button>
             ))}

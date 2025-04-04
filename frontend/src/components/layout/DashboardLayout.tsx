@@ -1,4 +1,4 @@
-// src/components/layout/DashboardLayout.tsx
+// src/components/layout/DashboardLayout.tsx - Actualizado
 import React, { useState } from 'react';
 import { useAuth } from '../AuthProvider';
 import HamburgerMenu from '../common/HamburgerMenu';
@@ -12,7 +12,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { logout } = useAuth();
   const [selectedCompany, setSelectedCompany] = useState('Empresa 1');
   
-  // User avatar menu options
+  // User avatar menu options con iconos personalizados
   const avatarMenuOptions = [
     {
       id: 'profile',
