@@ -39,7 +39,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
     <div 
       className="relative inline-block text-left" 
       ref={menuRef}
-      style={{ zIndex: 100 }}  // Ensure it appears above other elements
+      style={{ zIndex: 100, paddingRight: '10px' }}  // Ensure it appears above other elements and add padding
     >
       {/* Hamburger Icon Button */}
       <button

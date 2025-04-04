@@ -117,9 +117,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     <div className="bg-gray-50 p-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8 pt-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <HamburgerMenu menuItems={companyMenuItems} position="left" />
-            <h1 className="text-2xl font-semibold text-blue-900">
+            <h1 className="text-2xl font-semibold text-blue-900 pl-4">
               {showWelcome ? `Welcome back, ${getFirstName()}` : selectedCompany}
             </h1>
           </div>
