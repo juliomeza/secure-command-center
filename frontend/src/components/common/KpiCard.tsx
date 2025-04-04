@@ -13,7 +13,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, description, cla
   return (
     <Card noPadding className={className}>
       <div className="px-4 py-2 flex flex-col">
-        <h3 className="text-sm font-medium text-gray-600 mb-[-1.2rem]">{title}</h3>
+        <h3 className="text-lg font-medium text-blue-900 mb-[-1.2rem]">{title}</h3>
         
         <div className="flex items-center">
           <p className="text-4xl font-bold text-blue-900" style={{ lineHeight: '1', marginTop: '-4px', marginBottom: '24px' }}>{value}</p>
