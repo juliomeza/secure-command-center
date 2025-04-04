@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthProvider';
 import HamburgerMenu from '../common/HamburgerMenu';
 import AvatarMenu from '../common/AvatarMenu';
+import PeriodMenu from '../common/PeriodMenu';
+import { periods } from '../../data/mockData';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,6 +14,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const [selectedCompany, setSelectedCompany] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   
   // Get user initials from first and last name
   const getUserInitials = (): string => {
@@ -121,7 +124,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </h1>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
+            <PeriodMenu 
+              periods={periods}
+              selectedPeriod={selectedPeriod}
+              onPeriodChange={setSelectedPeriod}
+            />
             <AvatarMenu 
               initials={getUserInitials()} 
               fullName={getFullName()} 
