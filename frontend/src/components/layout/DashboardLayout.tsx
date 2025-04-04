@@ -1,5 +1,5 @@
-// src/components/layout/DashboardLayout.tsx - Actualizado
-import React, { useState } from 'react';
+// src/components/layout/DashboardLayout.tsx
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthProvider';
 import HamburgerMenu from '../common/HamburgerMenu';
 import AvatarMenu from '../common/AvatarMenu';
@@ -9,8 +9,31 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { logout } = useAuth();
-  const [selectedCompany, setSelectedCompany] = useState('Empresa 1');
+  const { user, logout } = useAuth();
+  const [selectedCompany, setSelectedCompany] = useState('');
+  
+  // Get user initials from first and last name
+  const getUserInitials = (): string => {
+    if (!user) return '';
+    
+    const firstInitial = user.first_name ? user.first_name.charAt(0) : '';
+    const lastInitial = user.last_name ? user.last_name.charAt(0) : '';
+    
+    return (firstInitial + lastInitial).toUpperCase();
+  };
+  
+  // Get user full name
+  const getFullName = (): string => {
+    if (!user) return '';
+    return `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username;
+  };
+  
+  // Set the company name based on user profile
+  useEffect(() => {
+    if (user?.profile?.company?.name) {
+      setSelectedCompany(user.profile.company.name);
+    }
+  }, [user]);
   
   // User avatar menu options con iconos personalizados
   const avatarMenuOptions = [
@@ -88,8 +111,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           
           <div className="flex items-center">
             <AvatarMenu 
-              initials="JM" 
-              fullName="Juan Martínez" 
+              initials={getUserInitials()} 
+              fullName={getFullName()} 
               companyName={selectedCompany} 
               menuOptions={avatarMenuOptions} 
             />
