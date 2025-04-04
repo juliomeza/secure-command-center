@@ -16,6 +16,7 @@ const salesTooltipFormatter = (value: number): string => formatCurrency(value);
 
 const CEOView: React.FC = () => {
   return (
+    
     <DashboardGrid>
       <KpiCard
         title="Revenue"
