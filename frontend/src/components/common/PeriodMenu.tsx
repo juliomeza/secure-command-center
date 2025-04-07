@@ -88,7 +88,8 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
         <Calendar 
           size={18} 
           strokeWidth={1.5} 
-          className="opacity-80 mr-2" 
+          className="opacity-80"
+          style={{ marginRight: '8px' }}
         />
         {getSelectedPeriodLabel()}
       </button>
