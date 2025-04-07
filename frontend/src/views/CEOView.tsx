@@ -108,6 +108,7 @@ const CEOView: React.FC = () => {
             tooltipProps={{ formatter: expenseTooltipFormatter }}
             height={180}
             centerLabel={formatCurrency(870000)}
+            showLegend={false}
           />
         </Card>
 

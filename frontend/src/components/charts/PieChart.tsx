@@ -104,9 +104,12 @@ const PieChart: React.FC<CustomPieChartProps> = ({
       {showLegend && itemsForLegend.length > 0 && (
          <div className="flex justify-center mt-4 flex-wrap">
            {itemsForLegend.map((entry, index) => (
-             <div key={`legend-${index}`} className="flex items-center mx-3 mb-1">
-               <div style={{ backgroundColor: entry.color }} className="w-4 h-4 mr-2"></div>
-               <span className="text-sm text-gray-700">{entry.name}</span>
+             <div key={`legend-${index}`} className="flex items-center mx-3 mb-2">
+               <div 
+                 style={{ backgroundColor: entry.color }} 
+                 className="w-4 h-4 mr-2 rounded-sm shadow-sm"
+               ></div>
+               <span className="text-sm font-medium text-gray-700">{entry.name}</span>
              </div>
            ))}
          </div>

@@ -94,6 +94,7 @@ const COOView: React.FC = () => {
             data={projectStatusData}
             tooltipProps={{ formatter: projectTooltipFormatter }}
             height={180}
+            showLegend={false}
           />
         </Card>
 
