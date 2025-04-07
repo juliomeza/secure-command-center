@@ -7,12 +7,14 @@ interface PeriodMenuProps {
   periods: Period[];
   selectedPeriod: string;
   onPeriodChange: (periodId: string) => void;
+  position?: 'left' | 'right';
 }
 
 const PeriodMenu: React.FC<PeriodMenuProps> = ({ 
   periods, 
   selectedPeriod, 
-  onPeriodChange 
+  onPeriodChange ,
+  position = 'right'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -99,7 +101,8 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
         <div 
           style={{
             position: 'absolute',
-            right: 86,
+            left: position === 'left' ? 0 : 'auto',
+            right: position === 'right' ? 84 : 'auto',
             marginTop: '0.5rem',
             width: '12rem',
             borderRadius: '0.375rem',
