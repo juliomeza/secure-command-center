@@ -3,7 +3,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
 import { AuthProvider } from './components/AuthProvider';
 import LoginPage from './components/LoginPage';
-import DashboardPage from './components/DashboardPage';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -47,8 +46,6 @@ const App: React.FC = () => {
                         <Route element={<ProtectedRoute />}>
                             {/* Executive Dashboard is the protected home page */}
                             <Route index element={<ExecutiveDashboard />} />
-                            {/* Legacy dashboard page (for reference) */}
-                            <Route path="/user-profile" element={<DashboardPage />} />
                             {/* Explicit dashboard route for social auth redirect */}
                             <Route path="/dashboard" element={<ExecutiveDashboard />} />
                             {/* Add other protected routes here */}
