@@ -6,7 +6,8 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  TooltipProps
+  TooltipProps,
+  Text
 } from 'recharts';
 import { DataPoint } from '../../data/types'; // Assuming DataPoint has 'name', 'value', 'color'
 
@@ -30,6 +31,7 @@ interface CustomPieChartProps {
   innerRadius?: number | string;
   outerRadius?: number | string;
   legendItems?: Array<{ name: string, color: string }>; // Optional separate legend items
+  centerLabel?: string; // New prop for showing a value in the center
 }
 
 const PieChart: React.FC<CustomPieChartProps> = ({
@@ -40,7 +42,8 @@ const PieChart: React.FC<CustomPieChartProps> = ({
   height = 200,
   innerRadius = 60,
   outerRadius = 90,
-  legendItems // Allow passing legend items explicitly if needed
+  legendItems, // Allow passing legend items explicitly if needed
+  centerLabel // New prop for center text
 }) => {
 
   const defaultPieProps: PieConfig = {
@@ -54,6 +57,24 @@ const PieChart: React.FC<CustomPieChartProps> = ({
 
   const finalPieProps = { ...defaultPieProps, ...pieProps }; // Merge default and passed props
   const itemsForLegend = legendItems || data; // Use passed items or derive from data
+
+  // Custom label renderer for center text
+  const renderCenterLabel = () => {
+    if (!centerLabel) return null;
+    
+    return (
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        className="text-lg font-bold text-gray-900"
+        style={{ fontSize: '20px', fontWeight: 'bold' }}
+      >
+        {centerLabel}
+      </text>
+    );
+  };
 
   return (
     <div className="flex flex-col items-center">
@@ -72,6 +93,7 @@ const PieChart: React.FC<CustomPieChartProps> = ({
               <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} /> // Provide default color
             ))}
           </Pie>
+          {centerLabel && renderCenterLabel()}
           <Tooltip {...tooltipProps} />
           {/* Note: Recharts Legend doesn't automatically work well with custom Cell colors easily. */}
           {/* A custom legend component might be better if needed consistently */}

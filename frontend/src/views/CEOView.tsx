@@ -103,13 +103,11 @@ const CEOView: React.FC = () => {
         </Card>
 
         <Card title="Expense Breakdown">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(870000)}</p>
-          </div>
           <PieChart
             data={expenseData}
             tooltipProps={{ formatter: expenseTooltipFormatter }}
             height={180}
+            centerLabel={formatCurrency(870000)}
           />
         </Card>
 
