@@ -1,7 +1,7 @@
 // frontend/src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
-import { AuthProvider, useAuth } from './components/AuthProvider';
+import { AuthProvider } from './components/AuthProvider';
 import LoginPage from './components/LoginPage';
 import DashboardPage from './components/DashboardPage';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
@@ -24,9 +24,6 @@ const MainLayout: React.FC = () => {
 const LoginLayout: React.FC = () => {
     return (
         <div className="login-layout">
-            <div className="company-name">
-                <h3>Company Name</h3>
-            </div>
             <main>
                 <Outlet />
             </main>

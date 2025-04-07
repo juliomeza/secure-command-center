@@ -378,30 +378,12 @@ nav a:hover, nav button:hover, .top-nav a:hover, .top-nav button:hover {
   margin-bottom: 15px;
   font-size: 24px;
   font-weight: 600;
-  color: var(--blue-dark);
 }
 
 .login-page p {
   color: #666;
   margin-bottom: 30px;
   font-size: 14px;
-}
-
-.login-button {
-  width: 250px !important;
-  margin: 0 auto !important;
-  border-radius: 4px !important;
-  height: 42px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.2s ease !important;
-  background-color: var(--blue-primary) !important;
-  color: white !important;
-}
-
-.login-button:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
-  background-color: var(--blue-dark) !important;
 }
 
 .or-separator {

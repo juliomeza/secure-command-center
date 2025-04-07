@@ -2,10 +2,7 @@
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
-import { 
-    MicrosoftLoginButton,
-    GoogleLoginButton
-} from 'react-social-login-buttons';
+import { MicrosoftLoginButton, GoogleLoginButton} from 'react-social-login-buttons';
 
 const LoginPage: React.FC = () => {
     const { isAuthenticated, isLoading } = useAuth();
