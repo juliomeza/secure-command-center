@@ -70,7 +70,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ menuItems, position = 'ri
       >
         <Menu 
           size={18} 
-          strokeWidth={1.5} 
+          strokeWidth={3} 
           className="opacity-80" 
         />
       </button>
