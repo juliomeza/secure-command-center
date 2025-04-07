@@ -49,17 +49,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const avatarMenuOptions = [
     {
       id: 'profile',
-      label: 'Mi Perfil',
-      onClick: () => console.log('Perfil clicked')
+      label: 'Profile',
+      onClick: () => console.log('Profile clicked')
     },
     {
       id: 'settings',
-      label: 'Configuración',
-      onClick: () => console.log('Configuración clicked')
+      label: 'Settings',
+      onClick: () => console.log('Settings clicked')
     },
     {
       id: 'logout',
-      label: 'Cerrar Sesión',
+      label: 'Logout',
       onClick: logout
     }
   ];
@@ -68,47 +68,47 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const companyMenuItems = [
     {
       id: 'company1',
-      label: 'Empresa 1',
+      label: 'Company 1',
       onClick: () => {
-        setSelectedCompany('Empresa 1');
+        setSelectedCompany('Company 1');
         setShowWelcome(false);
-        console.log('Empresa 1 seleccionada');
+        console.log('Company 1 seleccionada');
       }
     },
     {
       id: 'company2',
-      label: 'Empresa 2',
+      label: 'Company 2',
       onClick: () => {
-        setSelectedCompany('Empresa 2');
+        setSelectedCompany('Company 2');
         setShowWelcome(false);
-        console.log('Empresa 2 seleccionada');
+        console.log('Company 2 seleccionada');
       }
     },
     {
       id: 'company3',
-      label: 'Empresa 3',
+      label: 'Company 3',
       onClick: () => {
-        setSelectedCompany('Empresa 3');
+        setSelectedCompany('Company 3');
         setShowWelcome(false);
-        console.log('Empresa 3 seleccionada');
+        console.log('Company 3 seleccionada');
       }
     },
     {
       id: 'company4',
-      label: 'Empresa 4',
+      label: 'Company 4',
       onClick: () => {
-        setSelectedCompany('Empresa 4');
+        setSelectedCompany('Company 4');
         setShowWelcome(false);
-        console.log('Empresa 4 seleccionada');
+        console.log('Company 4 seleccionada');
       }
     },
     {
       id: 'company5',
-      label: 'Empresa 5',
+      label: 'Company 5',
       onClick: () => {
-        setSelectedCompany('Empresa 5');
+        setSelectedCompany('Company 5');
         setShowWelcome(false);
-        console.log('Empresa 5 seleccionada');
+        console.log('Company 5 seleccionada');
       }
     }
   ];
