@@ -120,7 +120,7 @@ const CEOView: React.FC = () => {
             xAxisProps={{ dataKey: 'name', axisLine: false, tickLine: false }}
             yAxisProps={{ tickFormatter: formatM, axisLine: false, tickLine: false, width: 40 }}
             tooltipProps={{ formatter: salesTooltipFormatter }}
-            height={200}
+            height={300}
             margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
           />
         </Card>
