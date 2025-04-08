@@ -111,45 +111,93 @@ const CFOView: React.FC = () => {
             centerLabel={formatCurrency(870000)}
             showLegend={false}
           />
-        </Card>        <Card title="Investments and Returns" className="md:col-span-2">
+        </Card>        
+        
+        <Card title="Investments and Returns" className="md:col-span-2">
           <div style={{ 
             display: 'flex', 
             flexDirection: isSmallScreen ? 'column' : 'row',
-            gap: '1rem', 
-            width: '100%' 
+            gap: '0.75rem', 
+            width: '100%',
+            padding: '0.25rem'
           }}>
             <div style={{ 
               flex: isSmallScreen ? 'none' : '1', 
               width: isSmallScreen ? '100%' : '33.33%',
-              padding: '1rem',
+              padding: '0.0rem 1rem',
               backgroundColor: '#eff6ff',
               borderRadius: '0.5rem',
               textAlign: isSmallScreen ? 'center' : 'left'
             }}>
-              <h4 className="text-sm font-medium text-gray-600">Total Investment</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(1250000)}</p>
+              <h4 style={{ 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#4b5563',
+                marginBottom: '0.0rem'
+              }}>
+                Total Investment
+              </h4>
+              <p style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: '700', 
+                color: '#111827', 
+                marginTop: '0',
+                marginBottom: '0.95rem'
+              }}>
+                {formatCurrency(1250000)}
+              </p>
             </div>
             <div style={{ 
               flex: isSmallScreen ? 'none' : '1', 
               width: isSmallScreen ? '100%' : '33.33%',
-              padding: '1rem',
+              padding: '0.0rem 1rem',
               backgroundColor: '#eff6ff',
               borderRadius: '0.5rem',
               textAlign: isSmallScreen ? 'center' : 'left'
             }}>
-              <h4 className="text-sm font-medium text-gray-600">Annual ROI</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">18.5%</p>
+              <h4 style={{ 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#4b5563',
+                marginBottom: '0.0rem'
+              }}>
+                Annual ROI
+              </h4>
+              <p style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: '700', 
+                color: '#111827', 
+                marginTop: '0',
+                marginBottom: '0.95'
+              }}>
+                18.5%
+              </p>
             </div>
             <div style={{ 
               flex: isSmallScreen ? 'none' : '1', 
               width: isSmallScreen ? '100%' : '33.33%',
-              padding: '1rem',
+              padding: '0.0rem 1rem',
               backgroundColor: '#eff6ff',
               borderRadius: '0.5rem',
               textAlign: isSmallScreen ? 'center' : 'left'
             }}>
-              <h4 className="text-sm font-medium text-gray-600">Payback Period</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">2.4 years</p>
+              <h4 style={{ 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#4b5563',
+                marginBottom: '0.0rem'
+              }}>
+                Payback Period
+              </h4>
+              <p style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: '700', 
+                color: '#111827', 
+                marginTop: '0',
+                marginBottom: '0.95'
+              }}>
+                2.4 years
+              </p>
             </div>
           </div>
         </Card>
