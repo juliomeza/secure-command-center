@@ -2,6 +2,7 @@
 import React from 'react';
 import KpiCard from '../components/common/KpiCard';
 import Card from '../components/common/Card';
+import SubCard from '../components/common/SubCard';
 import LineChart from '../components/charts/LineChart';
 import PieChart from '../components/charts/PieChart';
 import DashboardGrid from '../components/layout/DashboardGrid';
@@ -112,8 +113,7 @@ const CFOView: React.FC = () => {
             showLegend={false}
           />
         </Card>        
-        
-        <Card title="Investments and Returns" className="md:col-span-2">
+          <Card title="Investments and Returns" className="md:col-span-2">
           <div style={{ 
             display: 'flex', 
             flexDirection: isSmallScreen ? 'column' : 'row',
@@ -121,84 +121,21 @@ const CFOView: React.FC = () => {
             width: '100%',
             padding: '0.25rem'
           }}>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '33.33%',
-              padding: '0.0rem 1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 style={{ 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: '#4b5563',
-                marginBottom: '0.0rem'
-              }}>
-                Total Investment
-              </h4>
-              <p style={{ 
-                fontSize: '1.25rem', 
-                fontWeight: '700', 
-                color: '#111827', 
-                marginTop: '0',
-                marginBottom: '0.95rem'
-              }}>
-                {formatCurrency(1250000)}
-              </p>
-            </div>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '33.33%',
-              padding: '0.0rem 1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 style={{ 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: '#4b5563',
-                marginBottom: '0.0rem'
-              }}>
-                Annual ROI
-              </h4>
-              <p style={{ 
-                fontSize: '1.25rem', 
-                fontWeight: '700', 
-                color: '#111827', 
-                marginTop: '0',
-                marginBottom: '0.95'
-              }}>
-                18.5%
-              </p>
-            </div>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '33.33%',
-              padding: '0.0rem 1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 style={{ 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: '#4b5563',
-                marginBottom: '0.0rem'
-              }}>
-                Payback Period
-              </h4>
-              <p style={{ 
-                fontSize: '1.25rem', 
-                fontWeight: '700', 
-                color: '#111827', 
-                marginTop: '0',
-                marginBottom: '0.95'
-              }}>
-                2.4 years
-              </p>
-            </div>
+            <SubCard 
+              title="Total Investment" 
+              value={formatCurrency(1250000)} 
+              isSmallScreen={isSmallScreen} 
+            />
+            <SubCard 
+              title="Annual ROI" 
+              value="18.5%" 
+              isSmallScreen={isSmallScreen} 
+            />
+            <SubCard 
+              title="Payback Period" 
+              value="2.4 years" 
+              isSmallScreen={isSmallScreen} 
+            />
           </div>
         </Card>
       </DashboardGrid>
