@@ -101,7 +101,8 @@ const CIOView: React.FC = () => {
             height={200}
             margin={{ top: 5, right: 30, bottom: 5, left: 80 }} // Keep original margin
           />
-        </Card>        <Card title="IT Budget Status">
+        </Card>        
+        <Card title="IT Budget Status">
           <div className="flex items-center justify-between mb-4">
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(950000)}</p>
             <p className="text-lg font-medium text-gray-600">of {formatCurrency(1200000)}</p>
@@ -131,7 +132,9 @@ const CIOView: React.FC = () => {
         </Card>
 
         <Card title="Active IT Projects" className="md:col-span-2">
-          <ProjectTable projects={itProjectsData} />
+          <div className="w-full -mx-6 -mb-6 overflow-hidden rounded-b-lg">
+            <ProjectTable projects={itProjectsData} />
+          </div>
         </Card>
       </DashboardGrid>
     </>
