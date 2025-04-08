@@ -94,9 +94,9 @@ const CEOView: React.FC = () => {
         <Card title="Revenue Growth">
           <LineChart
             data={revenueGrowthData}
-            lines={[{ type: 'monotone', dataKey: 'value', stroke: '#1e3a8a', strokeWidth: 2, dot: false }]}
-            xAxisProps={{ dataKey: 'name', axisLine: false, tickLine: false }}
-            yAxisProps={{ tickFormatter: formatK, axisLine: false, tickLine: false, width: 40 }}
+            lines={[{ type: 'monotone', dataKey: 'value', stroke: '#1e3a8a', strokeWidth: 2, dot: true }]}
+            xAxisProps={{ dataKey: 'name', axisLine: true, tickLine: true }}
+            yAxisProps={{ tickFormatter: formatK, axisLine: true, tickLine: false, width: 45 }}
             tooltipProps={{ formatter: currencyTooltipFormatter }}
             height={180}
           />
