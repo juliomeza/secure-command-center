@@ -49,7 +49,10 @@ const SubCard: React.FC<SubCardProps> = ({
         {value}
       </p>
       {trend && (
-        <div style={{ marginBottom: '0.95rem' }}>
+        <div style={{
+          marginBottom: '0.95rem',
+          textAlign: isSmallScreen ? 'center' : 'left'
+        }}>
           {trend}
         </div>
       )}
