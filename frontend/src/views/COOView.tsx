@@ -132,7 +132,6 @@ const COOView: React.FC = () => {
               value="2.3 days" 
               isSmallScreen={isSmallScreen}
               width="25%"
-              padding="1rem"
               trend={
                 <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
                   <span>0.2</span>
@@ -148,7 +147,6 @@ const COOView: React.FC = () => {
               value="0.8%" 
               isSmallScreen={isSmallScreen}
               width="25%"
-              padding="1rem"
               trend={
                 <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
                   <span>0.3%</span>
@@ -164,7 +162,6 @@ const COOView: React.FC = () => {
               value="92.5%" 
               isSmallScreen={isSmallScreen}
               width="25%"
-              padding="1rem"
               trend={
                 <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
                   <span>3.5%</span>
@@ -180,7 +177,6 @@ const COOView: React.FC = () => {
               value="94.2%" 
               isSmallScreen={isSmallScreen}
               width="25%"
-              padding="1rem"
               trend={
                 <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
                   <span>1.8%</span>
