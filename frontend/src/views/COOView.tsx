@@ -126,6 +126,7 @@ const COOView: React.FC = () => {
             gap: '1rem', 
             width: '100%' 
           }}>
+
             <SubCard 
               title="Delivery Time" 
               value="2.3 days" 
@@ -133,14 +134,15 @@ const COOView: React.FC = () => {
               width="25%"
               padding="1rem"
               trend={
-                <span className="text-green-600 text-sm flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span>0.2</span>
+                  <svg style={{ width: '18px', height: '18px', marginLeft: '2px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  0.2
                 </span>
               }
             />
+
             <SubCard 
               title="Defect Rate" 
               value="0.8%" 
@@ -148,14 +150,15 @@ const COOView: React.FC = () => {
               width="25%"
               padding="1rem"
               trend={
-                <span className="text-green-600 text-sm flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span>0.3%</span>
+                  <svg style={{ width: '18px', height: '18px', marginLeft: '2px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  0.3%
                 </span>
               }
             />
+
             <SubCard 
               title="Capacity Utilized" 
               value="92.5%" 
@@ -163,14 +166,15 @@ const COOView: React.FC = () => {
               width="25%"
               padding="1rem"
               trend={
-                <span className="text-green-600 text-sm flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span>3.5%</span>
+                  <svg style={{ width: '18px', height: '18px', marginLeft: '2px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>
-                  3.5%
                 </span>
               }
             />
+
             <SubCard 
               title="Satisfaction" 
               value="94.2%" 
@@ -178,11 +182,11 @@ const COOView: React.FC = () => {
               width="25%"
               padding="1rem"
               trend={
-                <span className="text-green-600 text-sm flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <span className="text-green-600 text-sm" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span>1.8%</span>
+                  <svg style={{ width: '18px', height: '18px', marginLeft: '2px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>
-                  1.8%
                 </span>
               }
             />
