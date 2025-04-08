@@ -92,11 +92,11 @@ const CFOView: React.FC = () => {
           <LineChart
             data={cashFlowData}
             lines={[
-              { type: 'monotone', dataKey: 'inflow', name: 'Inflow', stroke: '#1e3a8a', strokeWidth: 2, dot: false },
-              { type: 'monotone', dataKey: 'outflow', name: 'Outflow', stroke: '#ef4444', strokeWidth: 2, dot: false }
+              { type: 'monotone', dataKey: 'inflow', name: 'Inflow', stroke: '#1e3a8a', strokeWidth: 2, dot: true },
+              { type: 'monotone', dataKey: 'outflow', name: 'Outflow', stroke: '#ef4444', strokeWidth: 2, dot: true }
             ]}
-            xAxisProps={{ dataKey: 'name', axisLine: false, tickLine: false }}
-            yAxisProps={{ tickFormatter: formatM, axisLine: false, tickLine: false, width: 40 }}
+            xAxisProps={{ dataKey: 'name', axisLine: true, tickLine: false }}
+            yAxisProps={{ tickFormatter: formatM, axisLine: true, tickLine: false, width: 40 }}
             tooltipProps={{ formatter: currencyTooltipFormatter }}
             showLegend={true}
             height={180}
@@ -111,19 +111,43 @@ const CFOView: React.FC = () => {
             centerLabel={formatCurrency(870000)}
             showLegend={false}
           />
-        </Card>
-
-        <Card title="Investments and Returns" className="md:col-span-2">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg text-center sm:text-left">
+        </Card>        <Card title="Investments and Returns" className="md:col-span-2">
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: isSmallScreen ? 'column' : 'row',
+            gap: '1rem', 
+            width: '100%' 
+          }}>
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '33.33%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Total Investment</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(1250000)}</p>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg text-center sm:text-left">
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '33.33%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Annual ROI</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">18.5%</p>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg text-center sm:text-left">
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '33.33%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Payback Period</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">2.4 years</p>
             </div>
