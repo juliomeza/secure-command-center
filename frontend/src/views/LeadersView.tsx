@@ -18,6 +18,10 @@ import {
   warehouseIssuesData
 } from '../data/mockData';
 
+// Tooltip Formatters
+const spaceTooltipFormatter = (value: number, name: string): string => `${name}: ${value}%`;
+const categoryTooltipFormatter = (value: number, name: string): string => `${name}: ${value} SKUs`;
+
 const LeadersView: React.FC = () => {
   // Responsive layout handling
   const [windowWidth, setWindowWidth] = React.useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -118,8 +122,7 @@ const LeadersView: React.FC = () => {
               </div>
             </div>
           </div>
-        </Card>{/* Space Utilization Card */}
-        <Card title="Space Utilization">
+        </Card>{/* Space Utilization Card */}        <Card title="Space Utilization">
           <PieChart
             data={warehouseSpaceUtilizationData}
             pieProps={{
@@ -127,9 +130,9 @@ const LeadersView: React.FC = () => {
               endAngle: -270
             }}
             tooltipProps={{
-              formatter: (value) => [`${value}%`, ""]
+              formatter: (value, name) => spaceTooltipFormatter(value, name)
             }}
-            showLegend={true}
+            showLegend={false}
             height={200}
           />
           <div className="mt-2 text-sm text-gray-500 text-center">
@@ -153,8 +156,7 @@ const LeadersView: React.FC = () => {
               <p className="text-sm text-gray-600">Average Daily: 409</p>
             </div>
           </div>
-        </Card>        {/* Inventory by Category Card */}
-        <Card title="Inventory by Category">
+        </Card>        {/* Inventory by Category Card */}        <Card title="Inventory by Category">
           <PieChart
             data={warehouseCategoryData}
             pieProps={{
@@ -163,12 +165,11 @@ const LeadersView: React.FC = () => {
               outerRadius: 90
             }}
             tooltipProps={{
-              formatter: (value) => [`${value} SKUs`, ""]
+              formatter: (value, name) => categoryTooltipFormatter(value, name)
             }}
             showLegend={true}
             height={200}
-          />
-        </Card>        <Card title="Performance by Operation" className="md:col-span-2">
+          />        </Card><Card title="Performance by Operation">
           <BarChart 
             data={warehousePerformanceData}
             bars={[{ dataKey: "value", fill: "#3b82f6", radius: [0, 4, 4, 0] }]}
