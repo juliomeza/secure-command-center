@@ -101,15 +101,28 @@ const CIOView: React.FC = () => {
             height={200}
             margin={{ top: 5, right: 30, bottom: 5, left: 80 }} // Keep original margin
           />
-        </Card>
-
-        <Card title="IT Budget Status">
+        </Card>        <Card title="IT Budget Status">
           <div className="flex items-center justify-between mb-4">
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(950000)}</p>
             <p className="text-lg font-medium text-gray-600">of {formatCurrency(1200000)}</p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-            <div className="bg-blue-600 h-4 rounded-full" style={{ width: `${budgetUsedPercent}%` }}></div>
+          <div style={{ 
+            width: '100%', 
+            backgroundColor: '#e5e7eb', 
+            borderRadius: '9999px', 
+            height: '16px',
+            overflow: 'hidden',
+            marginBottom: '8px'
+          }}>
+            <div 
+              style={{ 
+                backgroundColor: '#2563eb', 
+                height: '100%', 
+                borderRadius: '9999px',
+                width: `${budgetUsedPercent}%`,
+                transition: 'width 0.5s ease-in-out'
+              }} 
+            />
           </div>
           <div className="flex justify-between mt-2 text-sm text-gray-600">
             <span>Used: {budgetUsedPercent.toFixed(0)}%</span>
