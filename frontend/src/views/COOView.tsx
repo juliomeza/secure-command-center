@@ -101,9 +101,9 @@ const COOView: React.FC = () => {
         <Card title="Market Share">
           <LineChart
             data={marketShareData}
-            lines={[{ type: 'monotone', dataKey: 'value', stroke: '#1e3a8a', strokeWidth: 2, dot: false }]}
-            xAxisProps={{ dataKey: 'name', axisLine: false, tickLine: false }}
-            yAxisProps={{ domain: [25, 40], tickFormatter: formatPercent, axisLine: false, tickLine: false, width: 40 }}
+            lines={[{ type: 'monotone', dataKey: 'value', stroke: '#1e3a8a', strokeWidth: 2, dot: true }]}
+            xAxisProps={{ dataKey: 'name', axisLine: true, tickLine: true }}
+            yAxisProps={{ domain: [25, 40], tickFormatter: formatPercent, axisLine: true, tickLine: false, width: 40 }}
             tooltipProps={{ formatter: percentTooltipFormatter }}
             height={180}
           />

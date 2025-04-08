@@ -95,7 +95,7 @@ const CFOView: React.FC = () => {
               { type: 'monotone', dataKey: 'inflow', name: 'Inflow', stroke: '#1e3a8a', strokeWidth: 2, dot: true },
               { type: 'monotone', dataKey: 'outflow', name: 'Outflow', stroke: '#ef4444', strokeWidth: 2, dot: true }
             ]}
-            xAxisProps={{ dataKey: 'name', axisLine: true, tickLine: false }}
+            xAxisProps={{ dataKey: 'name', axisLine: true, tickLine: true }}
             yAxisProps={{ tickFormatter: formatM, axisLine: true, tickLine: false, width: 40 }}
             tooltipProps={{ formatter: currencyTooltipFormatter }}
             showLegend={true}
