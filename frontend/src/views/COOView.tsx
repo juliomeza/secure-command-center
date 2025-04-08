@@ -2,6 +2,7 @@
 import React from 'react';
 import KpiCard from '../components/common/KpiCard';
 import Card from '../components/common/Card';
+import SubCard from '../components/common/SubCard';
 import LineChart from '../components/charts/LineChart';
 import PieChart from '../components/charts/PieChart';
 import BarChart from '../components/charts/BarChart';
@@ -118,81 +119,73 @@ const COOView: React.FC = () => {
             height={250} // Keep original height
             margin={{ top: 5, right: 30, bottom: 5, left: 100 }} // Keep original margin
           />
-        </Card><Card title="Key Operational Metrics" className="md:col-span-2">
+        </Card>        <Card title="Key Operational Metrics" className="md:col-span-2">
           <div style={{ 
             display: 'flex', 
             flexDirection: isSmallScreen ? 'column' : 'row',
             gap: '1rem', 
             width: '100%' 
           }}>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '25%',
-              padding: '1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 className="text-sm font-medium text-gray-600">Delivery Time</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">2.3 days</p>
-              <span className="text-green-600 text-sm flex items-center">
+            <SubCard 
+              title="Delivery Time" 
+              value="2.3 days" 
+              isSmallScreen={isSmallScreen}
+              width="25%"
+              padding="1rem"
+              trend={
+                <span className="text-green-600 text-sm flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" /> {/* Down Arrow */}
+                    <path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                   0.2
-              </span>
-            </div>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '25%',
-              padding: '1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 className="text-sm font-medium text-gray-600">Defect Rate</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">0.8%</p>
-               <span className="text-green-600 text-sm flex items-center">
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                       <path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                   </svg>
-                   0.3%
-               </span>
-            </div>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '25%',
-              padding: '1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 className="text-sm font-medium text-gray-600">Capacity Utilized</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">92.5%</p>
-              <span className="text-green-600 text-sm flex items-center">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                   <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" /> {/* Up arrow */}
-                 </svg>
-                  3.5%
-              </span>
-            </div>
-            <div style={{ 
-              flex: isSmallScreen ? 'none' : '1', 
-              width: isSmallScreen ? '100%' : '25%',
-              padding: '1rem',
-              backgroundColor: '#eff6ff',
-              borderRadius: '0.5rem',
-              textAlign: isSmallScreen ? 'center' : 'left'
-            }}>
-              <h4 className="text-sm font-medium text-gray-600">Satisfaction</h4>
-              <p className="text-xl font-bold text-gray-900 mt-1">94.2%</p>
-              <span className="text-green-600 text-sm flex items-center">
+                  0.2
+                </span>
+              }
+            />
+            <SubCard 
+              title="Defect Rate" 
+              value="0.8%" 
+              isSmallScreen={isSmallScreen}
+              width="25%"
+              padding="1rem"
+              trend={
+                <span className="text-green-600 text-sm flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  0.3%
+                </span>
+              }
+            />
+            <SubCard 
+              title="Capacity Utilized" 
+              value="92.5%" 
+              isSmallScreen={isSmallScreen}
+              width="25%"
+              padding="1rem"
+              trend={
+                <span className="text-green-600 text-sm flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>
-                   1.8%
-               </span>
-            </div>
+                  3.5%
+                </span>
+              }
+            />
+            <SubCard 
+              title="Satisfaction" 
+              value="94.2%" 
+              isSmallScreen={isSmallScreen}
+              width="25%"
+              padding="1rem"
+              trend={
+                <span className="text-green-600 text-sm flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                  1.8%
+                </span>
+              }
+            />
           </div>
         </Card>
       </DashboardGrid>
