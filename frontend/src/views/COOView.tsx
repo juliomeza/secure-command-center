@@ -107,9 +107,7 @@ const COOView: React.FC = () => {
             tooltipProps={{ formatter: percentTooltipFormatter }}
             height={180}
           />
-        </Card>
-
-        <Card title="Team Performance">
+        </Card>        <Card title="Team Performance" className="md:col-span-2">
           <BarChart
             data={teamPerformanceData}
             layout="vertical"
@@ -120,11 +118,21 @@ const COOView: React.FC = () => {
             height={250} // Keep original height
             margin={{ top: 5, right: 30, bottom: 5, left: 100 }} // Keep original margin
           />
-        </Card>
-
-        <Card title="Key Operational Metrics" className="md:col-span-2">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
+        </Card><Card title="Key Operational Metrics" className="md:col-span-2">
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: isSmallScreen ? 'column' : 'row',
+            gap: '1rem', 
+            width: '100%' 
+          }}>
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '25%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Delivery Time</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">2.3 days</p>
               <span className="text-green-600 text-sm flex items-center">
@@ -134,7 +142,14 @@ const COOView: React.FC = () => {
                    0.2
               </span>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '25%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Defect Rate</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">0.8%</p>
                <span className="text-green-600 text-sm flex items-center">
@@ -144,7 +159,14 @@ const COOView: React.FC = () => {
                    0.3%
                </span>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '25%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Capacity Utilized</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">92.5%</p>
               <span className="text-green-600 text-sm flex items-center">
@@ -154,7 +176,14 @@ const COOView: React.FC = () => {
                   3.5%
               </span>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
+            <div style={{ 
+              flex: isSmallScreen ? 'none' : '1', 
+              width: isSmallScreen ? '100%' : '25%',
+              padding: '1rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '0.5rem',
+              textAlign: isSmallScreen ? 'center' : 'left'
+            }}>
               <h4 className="text-sm font-medium text-gray-600">Satisfaction</h4>
               <p className="text-xl font-bold text-gray-900 mt-1">94.2%</p>
               <span className="text-green-600 text-sm flex items-center">
