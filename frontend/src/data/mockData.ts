@@ -134,3 +134,39 @@ export const warehouseReturnRateData = [
   { name: 'Apr', value: 1.9 },
   { name: 'May', value: 1.7 },
 ];
+
+// Warehouse Issues Mock Data
+export const warehouseIssuesData = [
+  { 
+    id: '1', 
+    issue: 'Inventory Count Discrepancy - Zone B4', 
+    priority: 'High' as const, 
+    status: 'In Progress' as const, 
+    assignedTo: 'Inventory Team', 
+    dueDate: '04/10/2025'
+  },
+  { 
+    id: '2', 
+    issue: 'Conveyor System Maintenance', 
+    priority: 'Medium' as const, 
+    status: 'Scheduled' as const, 
+    assignedTo: 'Maintenance Team', 
+    dueDate: '04/15/2025'
+  },
+  { 
+    id: '3', 
+    issue: 'Staff Training - New Picking System', 
+    priority: 'Medium' as const, 
+    status: 'On Track' as const, 
+    assignedTo: 'Operations Manager', 
+    dueDate: '04/22/2025'
+  },
+  { 
+    id: '4', 
+    issue: 'Seasonal Inventory Planning', 
+    priority: 'Low' as const, 
+    status: 'Not Started' as const, 
+    assignedTo: 'Planning Team', 
+    dueDate: '05/05/2025'
+  },
+];

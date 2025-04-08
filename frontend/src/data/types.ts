@@ -28,3 +28,12 @@ export interface DataPoint {
       progress: number; // Porcentaje 0-100
       endDate: string; // Formato 'MM/DD/YYYY' o similar
   }
+  
+  export interface WarehouseIssue {
+    id: string;
+    issue: string;
+    priority: 'High' | 'Medium' | 'Low';
+    status: 'In Progress' | 'Scheduled' | 'On Track' | 'Not Started';
+    assignedTo: string;
+    dueDate: string;
+  }

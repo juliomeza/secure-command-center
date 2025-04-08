@@ -6,13 +6,16 @@ import LineChart from '../components/charts/LineChart';
 import PieChart from '../components/charts/PieChart';
 import BarChart from '../components/charts/BarChart';
 import DashboardGrid from '../components/layout/DashboardGrid';
+import SubCard from '../components/common/SubCard';
+import WarehouseIssueTable from '../components/tables/WarehouseIssueTable';
 import { 
   warehouseInventoryData, 
   warehouseSpaceUtilizationData, 
   warehouseShipmentData,
   warehouseCategoryData,
   warehousePerformanceData,
-  warehouseReturnRateData
+  warehouseReturnRateData,
+  warehouseIssuesData
 } from '../data/mockData';
 
 const LeadersView: React.FC = () => {
@@ -212,99 +215,98 @@ const LeadersView: React.FC = () => {
               <span>Target: &lt; 2.0%</span>
             </div>
           </div>
-        </Card>
-
-        {/* Key Metrics Card */}
+        </Card>        {/* Key Metrics Card */}
         <Card title="Key Warehouse Metrics" className="md:col-span-2">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-600">Order Cycle Time</h4>
-              <p className="text-xl font-bold text-gray-900">1.7 days</p>
-              <span className="text-green-600 text-sm">↓ 0.3</span>
-            </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-600">Pick Rate</h4>
-              <p className="text-xl font-bold text-gray-900">148/hr</p>
-              <span className="text-green-600 text-sm">↑ 12</span>
-            </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-600">Cost per Order</h4>
-              <p className="text-xl font-bold text-gray-900">$3.82</p>
-              <span className="text-green-600 text-sm">↓ $0.28</span>
-            </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-600">Dock to Stock</h4>
-              <p className="text-xl font-bold text-gray-900">4.2 hrs</p>
-              <span className="text-green-600 text-sm">↓ 0.5</span>
-            </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-600">Perfect Orders</h4>
-              <p className="text-xl font-bold text-gray-900">96.8%</p>
-              <span className="text-green-600 text-sm">↑ 1.2%</span>
-            </div>
-          </div>
-        </Card>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: isSmallScreen ? 'column' : 'row',
+            gap: '1rem', 
+            width: '100%' 
+          }}>
+            <SubCard 
+              title="Order Cycle Time" 
+              value="1.7 days" 
+              isSmallScreen={isSmallScreen}
+              width="20%"
+              trend={
+                <span className="text-green-600 text-sm" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isSmallScreen ? 'center' : 'flex-start'
+                }}>
+                  <span>↓ 0.3</span>
+                </span>
+              }
+            />
 
-        {/* Active Warehouse Issues Table */}
+            <SubCard 
+              title="Pick Rate" 
+              value="148/hr" 
+              isSmallScreen={isSmallScreen}
+              width="20%"
+              trend={
+                <span className="text-green-600 text-sm" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isSmallScreen ? 'center' : 'flex-start'
+                }}>
+                  <span>↑ 12</span>
+                </span>
+              }
+            />
+
+            <SubCard 
+              title="Cost per Order" 
+              value="$3.82" 
+              isSmallScreen={isSmallScreen}
+              width="20%"
+              trend={
+                <span className="text-green-600 text-sm" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isSmallScreen ? 'center' : 'flex-start'
+                }}>
+                  <span>↓ $0.28</span>
+                </span>
+              }
+            />
+
+            <SubCard 
+              title="Dock to Stock" 
+              value="4.2 hrs" 
+              isSmallScreen={isSmallScreen}
+              width="20%"
+              trend={
+                <span className="text-green-600 text-sm" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isSmallScreen ? 'center' : 'flex-start'
+                }}>
+                  <span>↓ 0.5</span>
+                </span>
+              }
+            />
+
+            <SubCard 
+              title="Perfect Orders" 
+              value="96.8%" 
+              isSmallScreen={isSmallScreen}
+              width="20%"
+              trend={
+                <span className="text-green-600 text-sm" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isSmallScreen ? 'center' : 'flex-start'
+                }}>
+                  <span>↑ 1.2%</span>
+                </span>
+              }
+            />
+          </div>
+        </Card>        {/* Active Warehouse Issues Table */}
         <Card title="Active Warehouse Issues" className="md:col-span-2">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Inventory Count Discrepancy - Zone B4</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">High</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">In Progress</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Inventory Team</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">04/10/2025</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Conveyor System Maintenance</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Medium</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Scheduled</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Maintenance Team</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">04/15/2025</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Staff Training - New Picking System</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Medium</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">On Track</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Operations Manager</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">04/22/2025</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Seasonal Inventory Planning</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Low</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Not Started</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Planning Team</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">05/05/2025</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="w-full -mx-6 -mb-6 overflow-hidden rounded-b-lg">
+            <WarehouseIssueTable issues={warehouseIssuesData} />
           </div>
         </Card>
       </DashboardGrid>
