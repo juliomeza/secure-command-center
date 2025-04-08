@@ -6,16 +6,18 @@ import CEOView from '../views/CEOView';
 import CFOView from '../views/CFOView';
 import COOView from '../views/COOView';
 import CIOView from '../views/CIOView';
+import LeadersView from '../views/LeadersView';
 // Importamos iconos de Lucide para cada rol ejecutivo
 import { 
   BarChart2, // CEO - Indicadores generales
   DollarSign, // CFO - Finanzas
   Settings, // COO - Operaciones
-  Monitor // CIO - Tecnología
+  Monitor, // CIO - Tecnología
+  Users // Leaders - Warehouse Managers
 } from 'lucide-react';
 
 // Define Tab type
-type TabId = 'CEO' | 'CFO' | 'COO' | 'CIO';
+type TabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS';
 
 // Configuración de iconos
 const iconProps = {
@@ -29,11 +31,11 @@ const tabs: Array<{ id: TabId; label: string; icon: React.ReactNode }> = [
   { id: 'CFO', label: 'CFO', icon: <DollarSign {...iconProps} /> },
   { id: 'COO', label: 'COO', icon: <Settings {...iconProps} /> },
   { id: 'CIO', label: 'CIO', icon: <Monitor {...iconProps} /> },
+  { id: 'LEADERS', label: 'Leaders', icon: <Users {...iconProps} /> },
 ];
 
 const ExecutiveDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('CEO');
-
   const renderContent = () => {
     switch (activeTab) {
       case 'CEO':
@@ -44,6 +46,8 @@ const ExecutiveDashboard: React.FC = () => {
         return <COOView />;
       case 'CIO':
         return <CIOView />;
+      case 'LEADERS':
+        return <LeadersView />;
       default:
         return <div>Select a tab</div>;
     }

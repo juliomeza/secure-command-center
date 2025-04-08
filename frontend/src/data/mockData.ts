@@ -87,3 +87,50 @@ export const itProjectsData: Project[] = [
      { id: '2', name: 'ERP Update', status: 'At risk', progress: 45, endDate: '07/30/2025' },
      { id: '3', name: 'Security Audit', status: 'On track', progress: 90, endDate: '04/15/2025' },
 ];
+
+// Warehouse Leaders Mock Data
+export const warehouseInventoryData = [
+  { name: 'Jan', turnover: 5.2, accuracy: 99.1 },
+  { name: 'Feb', turnover: 5.1, accuracy: 99.2 },
+  { name: 'Mar', turnover: 5.4, accuracy: 99.5 },
+  { name: 'Apr', turnover: 5.6, accuracy: 99.7 },
+  { name: 'May', turnover: 5.8, accuracy: 99.8 },
+];
+
+export const warehouseSpaceUtilizationData = [
+  { name: 'Used', value: 82, color: '#1e3a8a' },
+  { name: 'Reserved', value: 10, color: '#3b82f6' },
+  { name: 'Available', value: 8, color: '#93c5fd' },
+];
+
+export const warehouseShipmentData = [
+  { name: 'Mon', value: 580 },
+  { name: 'Tue', value: 620 },
+  { name: 'Wed', value: 590 },
+  { name: 'Thu', value: 540 },
+  { name: 'Fri', value: 530 },
+];
+
+export const warehouseCategoryData = [
+  { name: 'Electronics', value: 420, color: '#1e3a8a' },
+  { name: 'Apparel', value: 310, color: '#3b82f6' },
+  { name: 'Home Goods', value: 280, color: '#93c5fd' },
+  { name: 'Accessories', value: 190, color: '#bfdbfe' },
+  { name: 'Other', value: 140, color: '#dbeafe' },
+];
+
+export const warehousePerformanceData = [
+  { name: 'Receiving', value: 95.8 },
+  { name: 'Put-away', value: 96.2 },
+  { name: 'Picking', value: 97.5 },
+  { name: 'Packing', value: 98.1 },
+  { name: 'Shipping', value: 97.9 },
+];
+
+export const warehouseReturnRateData = [
+  { name: 'Jan', value: 2.8 },
+  { name: 'Feb', value: 2.5 },
+  { name: 'Mar', value: 2.2 },
+  { name: 'Apr', value: 1.9 },
+  { name: 'May', value: 1.7 },
+];
