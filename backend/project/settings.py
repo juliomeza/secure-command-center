@@ -160,8 +160,15 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', 'http://localhost:51
 # Forzar el uso de URLs absolutas para las redirecciones
 USE_X_FORWARDED_HOST = True
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
-SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:5173', '127.0.0.1:5173', 'localhost:8000', '127.0.0.1:8000']
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:5173/dashboard'  # URL específica para redirección post-login
+SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
+    'localhost:5173',
+    '127.0.0.1:5173',
+    'localhost:8000',
+    '127.0.0.1:8000',
+    'dashboard-control-front.onrender.com',
+    'dashboard-control-back.onrender.com']
+FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', 'http://localhost:5173')# URL base (dominio)
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = f'{FRONTEND_BASE_URL}/dashboard'
 
 # Microsoft Azure AD Configuration (Get these from Azure Portal)
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
