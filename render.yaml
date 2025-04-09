@@ -3,7 +3,7 @@ services:
   - type: web
     name: dashboard-control-back
     env: python
-    region: oregon  # Choose your region
+    region: virginia  # Choose your region
     buildCommand: ./build.sh
     startCommand: gunicorn project.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
@@ -11,6 +11,8 @@ services:
         generateValue: true
       - key: DJANGO_DEBUG
         value: False
+      - key: IS_RENDER
+        value: True
       - key: POSTGRES_DB
         fromDatabase:
           name: dashboard-control-db
