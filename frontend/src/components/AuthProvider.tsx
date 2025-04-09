@@ -31,9 +31,12 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Define the base URL for the API
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: '/api', // Use relative path, Vite proxy will handle it in dev
+    baseURL: API_BASE_URL || '/api',
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',

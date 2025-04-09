@@ -4,17 +4,20 @@ import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { MicrosoftLoginButton, GoogleLoginButton} from 'react-social-login-buttons';
 
+// URL base for authentication
+const AUTH_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const LoginPage: React.FC = () => {
     const { isAuthenticated, isLoading } = useAuth();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
 
     const handleMicrosoftLogin = () => {
-        window.location.href = `/auth/login/azuread-oauth2/?prompt=select_account`;
+        window.location.href = `${AUTH_BASE_URL}/auth/login/azuread-oauth2/?prompt=select_account`;
     };
     
     const handleGoogleLogin = () => {
-        window.location.href = `/auth/login/google-oauth2/`;
+        window.location.href = `${AUTH_BASE_URL}/auth/login/google-oauth2/`;
     };
 
     if (isLoading) {
