@@ -2,13 +2,14 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Load environment variables from .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(os.path.join(BASE_DIR.parent, '.env')) # Load .env from root
+load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 
-print(f"POSTGRES_USER: {os.environ.get('POSTGRES_USER')}")
-print(f"POSTGRES_PASSWORD: {os.environ.get('POSTGRES_PASSWORD')}")
+# print(f"POSTGRES_USER: {os.environ.get('POSTGRES_USER')}")
+# print(f"POSTGRES_PASSWORD: {os.environ.get('POSTGRES_PASSWORD')}")
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-fallback-key-for-dev') # CHANGE IN PRODUCTION!
 
@@ -89,17 +90,34 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project.wsgi.application'
 
 # --- Database Configuration ---
-# https://docs.djangoproject.com/en/stable/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB'),
-        'USER': os.environ.get('POSTGRES_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST'),
-        'PORT': os.environ.get('POSTGRES_PORT', '5433'),
+IS_RENDER = os.environ.get('IS_RENDER', False)
+
+# Luego, en la sección de DATABASES, reemplaza con esto:
+if IS_RENDER:
+    # Configuración de base de datos para Render (producción)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}:{os.environ.get('POSTGRES_PORT')}/{os.environ.get('POSTGRES_DB')}",
+            conn_max_age=600
+        )
     }
-}
+else:
+    # Mantener tu configuración de base de datos actual para desarrollo
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('POSTGRES_DB'),
+            'USER': os.environ.get('POSTGRES_USER'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+            'HOST': os.environ.get('POSTGRES_HOST'),
+            'PORT': os.environ.get('POSTGRES_PORT', '5433'),  # Mantiene tu puerto local
+        }
+    }
+
+# Añade esta configuración para Render
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # --- Password validation ---
 # https://docs.djangoproject.com/en/stable/ref/settings/#auth-password-validators
