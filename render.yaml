@@ -45,6 +45,8 @@ services:
         value: True
       - key: DJANGO_CSRF_COOKIE_SECURE
         value: True
+      - key: FRONTEND_BASE_URL
+        value: "https://dashboard-control-front.onrender.com"
 
   # Frontend service
   - type: web
