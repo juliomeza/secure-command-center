@@ -29,8 +29,8 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True # Keep False if frontend needs to read it, True otherwise. Usually True.
 
 # SameSite Cookie attribute
-SESSION_COOKIE_SAMESITE = 'Lax' # Recommended default. Can be 'Strict' if needed.
-CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None' # Recommended default. Can be 'Strict' if needed.
+CSRF_COOKIE_SAMESITE = 'None'
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
