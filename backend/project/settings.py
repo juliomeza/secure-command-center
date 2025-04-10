@@ -20,8 +20,8 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 # For production behind a reverse proxy (like Nginx in Docker setup)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False') == 'True'
-SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False') == 'True'
-CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False') == 'True'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 # Set to True in production if behind HTTPS
 
 # HttpOnly flags are True by default for Session and CSRF cookies which is good.
