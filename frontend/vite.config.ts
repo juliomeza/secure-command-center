@@ -5,7 +5,8 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Cargar variables de entorno basadas en el modo
-  const env = loadEnv(mode, process.cwd(), '')
+  // Remove process.cwd() - Vite usually finds the correct directory
+  const env = loadEnv(mode, '', '')
   
   return {
     plugins: [react()],
