@@ -36,7 +36,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: API_BASE_URL || '/api',
+    baseURL: `${API_BASE_URL}/api`,
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
