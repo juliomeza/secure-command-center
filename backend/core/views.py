@@ -1,7 +1,7 @@
 # backend/core/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from .serializers import UserSerializer
 from django.middleware.csrf import get_token
@@ -15,7 +15,7 @@ class UserProfileView(APIView):
     """
     API endpoint to get the authenticated user's profile information.
     """
-    #permission_classes = [IsAuthenticated] # Ensure user is logged in
+    permission_classes = [AllowAny]  # Permitir acceso a todos temporalmente para depuración
 
     def get(self, request):
         # Add debug print statements
@@ -54,7 +54,3 @@ def get_csrf_token(request):
     """
     token = get_token(request)
     return JsonResponse({'csrfToken': token})
-
-# Note: If you rely purely on social login and GET requests for data,
-# you might not need the explicit CSRF endpoint immediately, but it's
-# good practice for future POST/PUT/DELETE operations from the SPA.

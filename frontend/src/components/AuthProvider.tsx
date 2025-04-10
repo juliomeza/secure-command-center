@@ -36,13 +36,29 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: `${API_BASE_URL}/api`,
+    baseURL: API_BASE_URL || '/api',
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
-        // CSRF token will be added dynamically if needed for POST/PUT/DELETE
     },
 });
+
+// Add request and response interceptors for debugging
+apiClient.interceptors.request.use(request => {
+    console.log('API Request:', request);
+    return request;
+});
+
+apiClient.interceptors.response.use(
+    response => {
+        console.log('API Response:', response);
+        return response;
+    },
+    error => {
+        console.error('API Error:', error);
+        return Promise.reject(error);
+    }
+);
 
 // AuthProvider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

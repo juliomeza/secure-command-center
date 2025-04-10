@@ -20,17 +20,18 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 # For production behind a reverse proxy (like Nginx in Docker setup)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False') == 'True'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-# Set to True in production if behind HTTPS
 
-# HttpOnly flags are True by default for Session and CSRF cookies which is good.
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = False # Keep False if frontend needs to read it, True otherwise. Usually True.
+# Temporalmente desactivamos algunas configuraciones de seguridad para depuración
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
-# SameSite Cookie attribute
-SESSION_COOKIE_SAMESITE = 'None' # Recommended default. Can be 'Strict' if needed.
-CSRF_COOKIE_SAMESITE = 'None'
+# Configuración de cookies para permitir acceso entre dominios
+SESSION_COOKIE_SAMESITE = 'None'  # Permite que las cookies de sesión se envíen en solicitudes cross-site
+CSRF_COOKIE_SAMESITE = 'None'     # Permite que las cookies CSRF se envíen en solicitudes cross-site
+
+# Configuración adicional para cookies
+SESSION_COOKIE_HTTPONLY = True    # Evita acceso JavaScript a la cookie de sesión (recomendado)
+CSRF_COOKIE_HTTPONLY = False      # Permite que JavaScript acceda a la cookie CSRF
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
@@ -235,11 +236,12 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 ]
 
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
-CORS_ALLOW_CREDENTIALS = True # IMPORTANT: Allows cookies to be sent cross-origin
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
+CORS_ALLOW_CREDENTIALS = True  # IMPORTANT: Allows cookies to be sent cross-origin
+CORS_ALLOW_ALL_ORIGINS = True  # Temporalmente permitir todas las solicitudes para depuración
 
 # CSRF Trusted Origins (Necessary when frontend is on a different port/domain)
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
 
 # --- Logging Configuration (Optional but Recommended) ---
 # Add basic logging configuration here if needed
