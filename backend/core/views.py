@@ -15,11 +15,21 @@ class UserProfileView(APIView):
     """
     API endpoint to get the authenticated user's profile information.
     """
-    permission_classes = [IsAuthenticated] # Ensure user is logged in
+    #permission_classes = [IsAuthenticated] # Ensure user is logged in
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        # Add debug print statements
+        print("Request user:", request.user)
+        print("Is authenticated:", request.user.is_authenticated)
+        
+        # Return data even if not authenticated (for testing)
+        if request.user.is_authenticated:
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data)
+        else:
+            # For debugging - return something even if not authenticated
+            return Response({"status": "not_authenticated", "message": "Session not recognized"}, 
+                           status=status.HTTP_200_OK)
 
 # --- Company Access Restriction Logic ---
 # This needs to be implemented based on your specific requirements.
