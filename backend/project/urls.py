@@ -6,6 +6,7 @@ from django.contrib.auth.views import LogoutView
 from django.contrib.auth import logout as auth_logout
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 # Simple API logout handler
 def api_logout(request):
@@ -16,7 +17,7 @@ def api_logout(request):
 def complete_auth_redirect(request):
     # Simply redirect to the frontend dashboard
     from django.shortcuts import redirect
-    return redirect('http://localhost:5173/dashboard')
+    return redirect(f'{settings.FRONTEND_BASE_URL}/dashboard')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,7 +29,7 @@ urlpatterns = [
     path('api/logout/', csrf_exempt(api_logout), name='api_logout'),
 
     # Keep original logout for backward compatibility
-    path('logout/', LogoutView.as_view(next_page='http://localhost:5173/login'), name='logout'),
+    path('logout/', LogoutView.as_view(next_page=f'{settings.FRONTEND_BASE_URL}/login'), name='logout'),
 
     # Catch-all for React routing, if serving React build files from Django (less common with Vite dev server)
     # re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
