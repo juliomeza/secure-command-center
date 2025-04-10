@@ -7,6 +7,7 @@ from django.contrib.auth import logout as auth_logout
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings # Import settings
+from django.shortcuts import redirect
 
 # Simple API logout handler
 def api_logout(request):
@@ -24,11 +25,20 @@ def complete_auth_redirect(request):
     print(f"Redirecting to: {frontend_url}/dashboard")
     return redirect(f"{frontend_url}/dashboard")
 
+# Profile redirect handler
+def profile_redirect(request):
+    # Redirigir /profile/ a /api/profile/
+    print("Redirecting from /profile/ to /api/profile/")
+    return redirect('/api/profile/')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('social_django.urls', namespace='social')), # OAuth URLs
     path('auth/complete/', complete_auth_redirect, name='auth_complete'), # Override default completion
     path('api/', include('core.urls')), # Your app's API endpoints
+    
+    # Add profile redirect
+    path('profile/', profile_redirect, name='profile-redirect'),
     
     # API logout endpoint that just performs logout without redirect
     path('api/logout/', csrf_exempt(api_logout), name='api_logout'),

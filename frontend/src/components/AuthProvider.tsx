@@ -36,12 +36,15 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: API_BASE_URL || '/api',
+    baseURL: API_BASE_URL || '/api',  // Aseguramos que siempre tenga /api como base
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+// Log the base URL for debugging
+console.log('API Base URL:', API_BASE_URL || '/api');
 
 // Add request and response interceptors for debugging
 apiClient.interceptors.request.use(request => {
@@ -72,18 +75,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(true);
         setError(null);
         try {
+            // Log the full URL we're trying to access
+            const profileUrl = `${API_BASE_URL}/api/profile/`;
+            console.log("Attempting to fetch profile from:", profileUrl);
+            
             // Attempt to fetch user profile. Success means authenticated.
-            const response = await apiClient.get<User>('/profile/');
-             console.log("Authentication check successful:", response.data);
+            const response = await apiClient.get<User>('/api/profile/');
+            console.log("Authentication check successful:", response.data);
             setUser(response.data);
             setIsAuthenticated(true);
         } catch (err) {
             console.log("Authentication check failed:", err);
             setUser(null);
             setIsAuthenticated(false);
-            if (axios.isAxiosError(err) && err.response?.status !== 401 && err.response?.status !== 403) {
-                // Only set error for unexpected issues, not for unauthenticated status
-                setError('Failed to check authentication status.');
+            if (axios.isAxiosError(err)) {
+                console.log("Error status:", err.response?.status);
+                console.log("Error data:", err.response?.data);
+                
+                if (err.response?.status !== 401 && err.response?.status !== 403) {
+                    // Only set error for unexpected issues, not for unauthenticated status
+                    setError(`Failed to check authentication status: ${err.message}`);
+                }
             }
         } finally {
             setIsLoading(false);
