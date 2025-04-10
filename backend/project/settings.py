@@ -26,7 +26,7 @@ CSRF_COOKIE_SECURE = True
 
 # HttpOnly flags are True by default for Session and CSRF cookies which is good.
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True # Keep False if frontend needs to read it, True otherwise. Usually True.
+CSRF_COOKIE_HTTPONLY = False # Keep False if frontend needs to read it, True otherwise. Usually True.
 
 # SameSite Cookie attribute
 SESSION_COOKIE_SAMESITE = 'None' # Recommended default. Can be 'Strict' if needed.
