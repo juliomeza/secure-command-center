@@ -9,10 +9,11 @@ const LoginPage: React.FC = () => {
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
     
+    // Determine if we're in production based on hostname
+    const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
+    
     // Get base URL for API calls
-    const baseURL = process.env.NODE_ENV === 'production' 
-        ? window.location.origin 
-        : '';
+    const baseURL = isProduction ? window.location.origin : '';
     
     useEffect(() => {
         // Check for authentication on mount and URL parameters

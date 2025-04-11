@@ -31,12 +31,12 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Determine the API base URL
-const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : '/api';
+// Determine if we're in production based on window.location
+const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
 
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: API_BASE_URL, // Use relative path or empty for production
+    baseURL: isProduction ? '' : '/api', // Use relative path or empty for production
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
