@@ -7,6 +7,7 @@ from django.contrib.auth import logout as auth_logout
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.shortcuts import redirect
 
 # Simple API logout handler
 def api_logout(request):
@@ -15,9 +16,11 @@ def api_logout(request):
 
 # Custom completion handler for OAuth login
 def complete_auth_redirect(request):
-    # Simply redirect to the frontend dashboard
-    from django.shortcuts import redirect
-    return redirect(f'{settings.FRONTEND_BASE_URL}/dashboard')
+    # Si ya estás autenticado, redirigir al dashboard
+    if request.user.is_authenticated:
+        return redirect(f'{settings.FRONTEND_BASE_URL}/dashboard')
+    # Si no estás autenticado, redirigir al login
+    return redirect(f'{settings.FRONTEND_BASE_URL}/login')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

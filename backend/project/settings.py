@@ -165,7 +165,10 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL
 USE_X_FORWARDED_HOST = True
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
 SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:5173', '127.0.0.1:5173', 'localhost:8000', '127.0.0.1:8000', 'dashboard-control-front.onrender.com']
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')  # URL específica para redirección post-login
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
+# Configuraciones adicionales para asegurar redirecciones adecuadas
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
+SOCIAL_AUTH_SANITIZE_REDIRECTS = True
 
 # Microsoft Azure AD Configuration (Get these from Azure Portal)
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
@@ -232,11 +235,11 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 ]
 
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
 CORS_ALLOW_CREDENTIALS = True # IMPORTANT: Allows cookies to be sent cross-origin
 
 # CSRF Trusted Origins (Necessary when frontend is on a different port/domain)
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
 
 # --- Logging Configuration (Optional but Recommended) ---
 # Add basic logging configuration here if needed
