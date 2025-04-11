@@ -31,12 +31,9 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Determine if we're in production based on window.location
-const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
-
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: isProduction ? '' : '/api', // Use relative path or empty for production
+    baseURL: '/api', // Always use /api prefix for backend calls
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
@@ -115,18 +112,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const logout = async (): Promise<boolean> => {
         console.log("[AuthProvider] Attempting to logout");
         try {
-            // First call the logout endpoint
-            const logoutUrl = isProduction 
-                ? `${window.location.origin}/api/logout/` 
-                : '/api/logout/';
+            // First call the logout endpoint using apiClient for consistency
+            console.log("[AuthProvider] Calling logout endpoint: /api/logout/");
+            await apiClient.get('/logout/'); // Use apiClient to call /api/logout/
             
-            console.log("[AuthProvider] Calling logout endpoint:", logoutUrl);
-            const response = await fetch(logoutUrl, { 
-                method: 'GET', 
-                credentials: 'include' 
-            });
-            
-            console.log("[AuthProvider] Logout response:", response);
+            console.log("[AuthProvider] Logout API call successful");
             
             // Then update local state
             setUser(null);
@@ -136,10 +126,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('auth_logout', 'true');
             
             // Return true to indicate successful logout
-            console.log("[AuthProvider] Logout successful");
+            console.log("[AuthProvider] Logout state updated successfully");
             return true;
         } catch (error) {
             console.error("[AuthProvider] Logout failed:", error);
+            // Log specific error details if available
+            if (axios.isAxiosError(error)) {
+                console.error("[AuthProvider] Logout error details:", {
+                    status: error.response?.status,
+                    data: error.response?.data
+                });
+            }
             return false;
         }
     };
