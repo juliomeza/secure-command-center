@@ -31,9 +31,12 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Determine the API base URL
+const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : '/api';
+
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: '/api', // Use relative path, Vite proxy will handle it in dev
+    baseURL: API_BASE_URL, // Use relative path or empty for production
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
@@ -55,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
             // Attempt to fetch user profile. Success means authenticated.
             const response = await apiClient.get<User>('/profile/');
-             console.log("Authentication check successful:", response.data);
+            console.log("Authentication check successful:", response.data);
             setUser(response.data);
             setIsAuthenticated(true);
         } catch (err) {
@@ -92,6 +95,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Check authentication status when the provider mounts
     useEffect(() => {
         checkAuth();
+        
+        // Add event listener for storage changes (for multi-tab logout)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'auth_logout' && e.newValue === 'true') {
+                setUser(null);
+                setIsAuthenticated(false);
+                localStorage.removeItem('auth_logout');
+            }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, [checkAuth]);
 
     return (

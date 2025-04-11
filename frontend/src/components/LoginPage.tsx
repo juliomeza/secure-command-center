@@ -1,27 +1,53 @@
 // frontend/src/components/LoginPage.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { MicrosoftLoginButton, GoogleLoginButton} from 'react-social-login-buttons';
 
 const LoginPage: React.FC = () => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, checkAuth } = useAuth();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
+    
+    // Get base URL for API calls
+    const baseURL = process.env.NODE_ENV === 'production' 
+        ? window.location.origin 
+        : '';
+    
+    useEffect(() => {
+        // Check for authentication on mount and URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasAuthParams = urlParams.has('code') || urlParams.has('token');
+        
+        if (hasAuthParams) {
+            console.log('Auth parameters detected in URL, checking auth status');
+            checkAuth();
+        }
+    }, [checkAuth]);
 
     const handleMicrosoftLogin = () => {
-        window.location.href = `/auth/login/azuread-oauth2/?prompt=select_account`;
+        console.log('Redirecting to Microsoft login');
+        window.location.href = `${baseURL}/auth/login/azuread-oauth2/?prompt=select_account`;
     };
     
     const handleGoogleLogin = () => {
-        window.location.href = `/auth/login/google-oauth2/`;
+        console.log('Redirecting to Google login');
+        window.location.href = `${baseURL}/auth/login/google-oauth2/`;
     };
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Cargando...</p>
+                </div>
+            </div>
+        );
     }
 
     if (isAuthenticated) {
+       console.log(`User is authenticated, redirecting to: ${from}`);
        return <Navigate to={from} replace />;
     }
 
