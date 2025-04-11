@@ -1,6 +1,21 @@
 # backend/core/pipelines.py
 from .models import Company, UserProfile
 from django.contrib.auth.models import User
+from social_core.exceptions import AuthAlreadyAssociated
+from social_django.models import UserSocialAuth
+
+def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):
+    """
+    Custom pipeline function to handle cases where a social account is already associated 
+    with a different user. Automatically logs in the existing user instead of raising an error.
+    """
+    social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
+    if social:
+        if user and social.user != user:
+            # Si el usuario está tratando de vincular una cuenta que ya está asociada a otro usuario,
+            # autenticamos con el usuario vinculado en lugar de lanzar un error
+            return {'user': social.user, 'is_new': False}
+    return {}
 
 def save_profile_details(backend, user: User, response, *args, **kwargs):
     """
