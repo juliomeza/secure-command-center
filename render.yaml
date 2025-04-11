@@ -3,6 +3,7 @@ services:
   - type: web
     name: dashboard-control-back
     env: python
+    rootDir: backend  # Especificar que el backend está en la carpeta backend
     region: virginia  # Choose your region
     buildCommand: ./build.sh
     startCommand: gunicorn project.wsgi:application --bind 0.0.0.0:$PORT
@@ -48,8 +49,9 @@ services:
   - type: web
     name: dashboard-control-front
     env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
+    rootDir: frontend  # Especificar que el frontend está en la carpeta frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
