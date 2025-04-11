@@ -14,7 +14,8 @@ load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-fallback-key-for-dev') # CHANGE IN PRODUCTION!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+# Cambiar a 'True' temporalmente para diagnosticar problemas de OAuth
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # --- IMPORTANT SECURITY SETTINGS ---
 # For production behind a reverse proxy (like Nginx in Docker setup)
