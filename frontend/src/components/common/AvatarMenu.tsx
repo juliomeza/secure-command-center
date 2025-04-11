@@ -6,7 +6,7 @@ import { User, Settings, LogOut } from 'lucide-react';
 interface AvatarMenuOption {
   id: string;
   label: string;
-  onClick: () => void;
+  onClick: () => Promise<boolean> | void;  // Actualizado para permitir tanto Promise<boolean> como void
   icon?: React.ReactNode;
   color?: string;
 }
@@ -159,9 +159,18 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
             {menuOptions.map((option) => (
               <button
                 key={option.id}
-                onClick={() => {
-                  option.onClick();
-                  setIsOpen(false);
+                onClick={async () => {
+                  if (option.id === 'logout') {
+                    console.log("[AvatarMenu] Logout button clicked");
+                    const success = await option.onClick();
+                    if (success) {
+                      console.log("[AvatarMenu] Logout successful, redirecting to login page");
+                      // Redirigir explícitamente a la página de login después de logout
+                      window.location.href = '/login';
+                    }
+                  } else {
+                    option.onClick();
+                  }
                 }}
                 style={{
                   width: '100%',

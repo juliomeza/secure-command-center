@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
-    const { isAuthenticated, isLoading, checkAuth, user } = useAuth();
+    const { isAuthenticated, isLoading, checkAuth, user, error } = useAuth();
     const location = useLocation();
 
     // Force authentication check when route is accessed directly
@@ -17,12 +17,36 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
         // If we're not authenticated and not currently loading, check again
         // This helps when the route is accessed directly via URL
         if (!isAuthenticated && !isLoading) {
+            console.log("[ProtectedRoute] Not authenticated, rechecking...");
             checkAuth();
         }
         
+        // Check if the user object is actually HTML (invalid response)
+        const isUserObjectHTML = user && typeof user === 'object' && 
+                               'id' in user && typeof user.id === 'number' ? false : true;
+        
         // Log the auth state for debugging
-        console.log('ProtectedRoute state:', { isAuthenticated, isLoading, user });
-    }, [isAuthenticated, isLoading, checkAuth, location.pathname]);
+        console.log('[ProtectedRoute] Auth state:', {
+            path: location.pathname,
+            isAuthenticated,
+            isLoading,
+            hasUser: user !== null,
+            userType: user ? typeof user : 'null',
+            isUserObjectHTML,
+            error
+        });
+        
+        // Log actual user details
+        if (user && !isUserObjectHTML) {
+            console.log('[ProtectedRoute] Authenticated user:', {
+                id: user.id,
+                username: user.username,
+                fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                email: user.email,
+                company: user.profile?.company?.name || 'No company'
+            });
+        }
+    }, [isAuthenticated, isLoading, checkAuth, location.pathname, user, error]);
 
     if (isLoading) {
         // Show a better loading indicator
@@ -36,8 +60,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
         );
     }
 
+    // Extra validation to detect invalid user objects
+    const isInvalidUser = user && (
+        typeof user === 'string' || 
+        !('id' in user) || 
+        typeof user.id !== 'number'
+    );
+    
+    if (isInvalidUser) {
+        console.error("[ProtectedRoute] Invalid user object detected:", user);
+        // Force logout/redirect when invalid user is detected
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
     if (!isAuthenticated) {
-        console.log('User not authenticated, redirecting to login');
+        console.log('[ProtectedRoute] User not authenticated, redirecting to login');
         // Redirect them to the /login page, but save the current location they were
         // trying to go to. This allows us to send them along to that page after they login,
         // which is a nicer user experience than dropping them off on the home page.

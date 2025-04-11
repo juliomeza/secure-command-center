@@ -52,22 +52,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [error, setError] = useState<string | null>(null);
 
     const checkAuth = useCallback(async () => {
-        console.log("Checking authentication status...");
+        console.log("[AuthProvider] Checking authentication status...");
         setIsLoading(true);
         setError(null);
         try {
             // Attempt to fetch user profile. Success means authenticated.
             const response = await apiClient.get<User>('/profile/');
-            console.log("Authentication check successful:", response.data);
+            
+            // Log the raw response for debugging
+            console.log("[AuthProvider] Raw API response:", response);
+            
+            // Check if the response contains HTML instead of a user object
+            const responseData = response.data;
+            const isHtmlResponse = typeof responseData === 'string' && 
+                                  (responseData as string).trim().startsWith('<!doctype html>');
+            
+            if (isHtmlResponse) {
+                console.error("[AuthProvider] Received HTML response instead of user data. API endpoint might be redirecting.");
+                setUser(null);
+                setIsAuthenticated(false);
+                setError('Invalid API response format. Please try again.');
+                return;
+            }
+            
+            // Log the user data with specific fields for debugging
+            console.log("[AuthProvider] Authentication successful, user data:", {
+                id: response.data.id,
+                username: response.data.username,
+                email: response.data.email,
+                firstName: response.data.first_name,
+                lastName: response.data.last_name,
+                company: response.data.profile?.company?.name || 'No company'
+            });
+            
             setUser(response.data);
             setIsAuthenticated(true);
         } catch (err) {
-            console.log("Authentication check failed:", err);
+            console.error("[AuthProvider] Authentication check failed:", err);
             setUser(null);
             setIsAuthenticated(false);
-            if (axios.isAxiosError(err) && err.response?.status !== 401 && err.response?.status !== 403) {
-                // Only set error for unexpected issues, not for unauthenticated status
-                setError('Failed to check authentication status.');
+            
+            if (axios.isAxiosError(err)) {
+                console.log("[AuthProvider] Error details:", {
+                    status: err.response?.status,
+                    statusText: err.response?.statusText,
+                    data: err.response?.data
+                });
+                
+                if (err.response?.status !== 401 && err.response?.status !== 403) {
+                    // Only set error for unexpected issues, not for unauthenticated status
+                    setError(`Authentication check failed: ${err.message}`);
+                }
+            } else {
+                setError('Unknown error checking authentication status.');
             }
         } finally {
             setIsLoading(false);
@@ -76,18 +113,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Updated logout function
     const logout = async (): Promise<boolean> => {
+        console.log("[AuthProvider] Attempting to logout");
         try {
             // First call the logout endpoint
-            await fetch('/api/logout/', { method: 'GET', credentials: 'include' });
+            const logoutUrl = isProduction 
+                ? `${window.location.origin}/api/logout/` 
+                : '/api/logout/';
+            
+            console.log("[AuthProvider] Calling logout endpoint:", logoutUrl);
+            const response = await fetch(logoutUrl, { 
+                method: 'GET', 
+                credentials: 'include' 
+            });
+            
+            console.log("[AuthProvider] Logout response:", response);
             
             // Then update local state
             setUser(null);
             setIsAuthenticated(false);
             
+            // Add a marker in localStorage to handle multi-tab logout
+            localStorage.setItem('auth_logout', 'true');
+            
             // Return true to indicate successful logout
+            console.log("[AuthProvider] Logout successful");
             return true;
         } catch (error) {
-            console.error("Logout failed:", error);
+            console.error("[AuthProvider] Logout failed:", error);
             return false;
         }
     };
@@ -99,6 +151,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Add event listener for storage changes (for multi-tab logout)
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === 'auth_logout' && e.newValue === 'true') {
+                console.log("[AuthProvider] Detected logout in another tab");
                 setUser(null);
                 setIsAuthenticated(false);
                 localStorage.removeItem('auth_logout');
