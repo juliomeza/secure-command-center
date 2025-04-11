@@ -3,7 +3,7 @@ services:
   - type: web
     name: dashboard-control-back
     env: python
-    region: oregon  # Choose your region
+    region: virginia  # Choose your region
     buildCommand: ./build.sh
     startCommand: gunicorn project.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
@@ -48,8 +48,8 @@ services:
   - type: web
     name: dashboard-control-front
     env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
     routes:
       - type: rewrite
         source: /*
