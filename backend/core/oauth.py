@@ -2,6 +2,7 @@ from social_django.strategy import DjangoStrategy
 from django.conf import settings
 import logging
 from django.contrib.sessions.backends.db import SessionStore
+from rest_framework_simplejwt.tokens import RefreshToken
 
 logger = logging.getLogger('core')
 
@@ -109,3 +110,29 @@ class PersistentSessionStrategy(DjangoStrategy):
             uri = uri.replace('http:', 'https:')
         logger.info(f"Built URI: {uri}")
         return uri
+
+class JWTStrategy(DjangoStrategy):
+    """Strategy that handles OAuth authentication and returns JWT tokens"""
+    
+    def complete_login(self, request, user, *args, **kwargs):
+        """Override complete_login to return JWT tokens instead of session"""
+        # Call parent's complete_login first
+        result = super().complete_login(request, user, *args, **kwargs)
+        
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        
+        # Add user info to token payload
+        refresh['email'] = user.email
+        refresh['full_name'] = f"{user.first_name} {user.last_name}"
+        if hasattr(user, 'profile') and user.profile.company:
+            refresh['company'] = user.profile.company.name
+        
+        # Log token generation
+        logger.info(f"Generated JWT tokens for user: {user.email}")
+        
+        # Store tokens in session temporarily for the redirect
+        self.session['access_token'] = str(refresh.access_token)
+        self.session['refresh_token'] = str(refresh)
+        
+        return result

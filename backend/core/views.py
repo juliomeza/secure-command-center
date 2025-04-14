@@ -1,8 +1,11 @@
 # backend/core/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.shortcuts import redirect
+from django.conf import settings
 from .serializers import UserSerializer
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
@@ -10,49 +13,45 @@ import logging
 
 logger = logging.getLogger('core')
 
+class TokenObtainView(APIView):
+    """Vista para obtener tokens después de OAuth"""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # Verificar si tenemos tokens temporales en la sesión
+        access_token = request.session.pop('access_token', None)
+        refresh_token = request.session.pop('refresh_token', None)
+
+        if not access_token or not refresh_token:
+            return Response({
+                'error': 'No tokens found in session'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Construir la URL de redirección con los tokens
+        redirect_url = f"{settings.FRONTEND_BASE_URL}/auth-callback?access_token={access_token}&refresh_token={refresh_token}"
+        
+        return redirect(redirect_url)
+
 class UserProfileView(APIView):
-    """API endpoint to get the authenticated user's profile information."""
+    """API endpoint para obtener información del usuario autenticado."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Get user profile with detailed logging."""
-        logger.info("=== UserProfileView Accessed ===")
-        logger.info(f"User: {request.user}")
-        logger.info(f"Authenticated: {request.user.is_authenticated}")
-        logger.info(f"Session ID: {request.session.session_key}")
-        logger.info(f"Session Keys: {list(request.session.keys())}")
-        logger.info(f"Headers: {dict(request.headers)}")
-        logger.info(f"Cookies: {request.COOKIES}")
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
-        if not request.user.is_authenticated:
-            logger.warning("User not authenticated in UserProfileView")
-            return Response(
-                {"detail": "Authentication credentials were not provided."}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+class LogoutView(APIView):
+    """Vista para cerrar sesión y revocar tokens"""
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
         try:
-            serializer = UserSerializer(request.user)
-            logger.info("User data serialized successfully")
-            logger.debug(f"Serialized data: {serializer.data}")
-            return Response(serializer.data)
+            refresh_token = request.data.get('refresh_token')
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            logger.error(f"Error in UserProfileView: {str(e)}", exc_info=True)
-            return Response(
-                {"detail": "Error retrieving user profile", "error": str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-# --- Company Access Restriction Logic ---
-# This needs to be implemented based on your specific requirements.
-# Options:
-# 1. Filter QuerySets: In views that return lists (e.g., ListAPIView), filter
-#    the queryset based on `request.user.profile.company`.
-#    Example: `queryset = MyModel.objects.filter(company=request.user.profile.company)`
-# 2. Custom Permissions: Create a DRF permission class that checks if the requested
-#    object belongs to the user's company or if the user has rights based on company.
-# 3. Middleware: For more global checks, middleware can inspect the request path
-#    or parameters and verify against the user's company.
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 def get_csrf_token(request):
     """Endpoint to provide the CSRF token to the frontend."""

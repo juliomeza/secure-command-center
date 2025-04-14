@@ -2,14 +2,15 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.contrib.auth import logout as auth_logout
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import redirect
 from django.views.decorators.http import require_http_methods
-from core.views import UserProfileView  # Agregando el import necesario
+from rest_framework_simplejwt.views import TokenRefreshView
+from core.views import TokenObtainView, LogoutView, UserProfileView
 import logging
 
 logger = logging.getLogger('django.request')
@@ -70,8 +71,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('social_django.urls', namespace='social')),
     path('auth/complete/azuread-oauth2/', complete_auth_redirect, name='azure_complete'),
-    path('api/', include('core.urls')),
+    path('api/token/', TokenObtainView.as_view(), name='token_obtain'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/logout/', csrf_exempt(LogoutView.as_view()), name='auth_logout'),
+    path('api/profile/', UserProfileView.as_view(), name='user-profile'),
     path('profile/', UserProfileView.as_view(), name='user-profile-root'),
-    path('api/logout/', csrf_exempt(api_logout), name='api_logout'),
-    path('logout/', LogoutView.as_view(next_page=f'{settings.FRONTEND_BASE_URL}/login'), name='logout'),
+    path('logout/', DjangoLogoutView.as_view(next_page=f'{settings.FRONTEND_BASE_URL}/login'), name='logout'),
 ]
