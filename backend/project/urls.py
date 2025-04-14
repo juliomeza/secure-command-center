@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import redirect
 from core.views import UserProfileView
+import logging
 
 # Simple API logout handler
 def api_logout(request):
@@ -17,10 +18,23 @@ def api_logout(request):
 
 # Custom completion handler for OAuth login
 def complete_auth_redirect(request):
-    # Add debug logging
-    print("OAuth completion handler called")
-    print(f"Request GET params: {request.GET}")
-    print(f"Session keys: {request.session.keys()}")
+    """Handle OAuth completion and ensure session state is preserved"""
+    logger = logging.getLogger('django.request')
+    
+    logger.debug("=== OAuth Completion Handler ===")
+    logger.debug(f"Session ID: {request.session.session_key}")
+    logger.debug(f"Session Keys: {list(request.session.keys())}")
+    logger.debug(f"Cookies: {request.COOKIES}")
+    logger.debug(f"Headers: {dict(request.headers)}")
+    
+    # Ensure session is saved
+    request.session.save()
+    
+    # Store state in session if not present
+    if 'state' not in request.session and 'state' in request.GET:
+        request.session['state'] = request.GET.get('state')
+        request.session.modified = True
+        logger.debug(f"Stored state in session: {request.GET.get('state')}")
     
     return redirect(f"{settings.FRONTEND_BASE_URL}/dashboard")
 

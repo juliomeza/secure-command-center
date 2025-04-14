@@ -172,6 +172,7 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL
 # Forzar el uso de URLs absolutas para las redirecciones
 USE_X_FORWARDED_HOST = True
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
+SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
 SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
     'localhost:5173',
     '127.0.0.1:5173',
@@ -181,6 +182,9 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL'
 # Configuraciones adicionales para asegurar redirecciones adecuadas
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS_TIMEOUT = 300
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_SESSION_EXPIRATION = False  # Don't expire sessions
 
 # Microsoft Azure AD Configuration (Get these from Azure Portal)
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
@@ -192,8 +196,10 @@ SOCIAL_AUTH_AZUREAD_OAUTH2_SCOPE = ['openid', 'email', 'profile', 'User.Read']
 
 # Additional parameters for Microsoft login
 SOCIAL_AUTH_AZUREAD_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
-    'prompt': 'select_account'  # Always show account selection screen
+    'prompt': 'select_account',
+    'response_mode': 'form_post'
 }
+SOCIAL_AUTH_AZUREAD_OAUTH2_WHITELISTED_DOMAINS = ['*']  # Be more restrictive in production
 
 # Add Google OAuth credentials
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
@@ -207,12 +213,9 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
-    'core.pipelines.handle_already_associated_auth',  # Nuestra función personalizada para manejar cuentas ya asociadas
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
-    # Add a custom pipeline step to associate company or save extra data
-    'core.pipelines.save_profile_details', # Custom step (implement below)
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
@@ -254,7 +257,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'https://dashboard-control-front.onrender.com',
 ]
-
+CORS_EXPOSE_HEADERS = ['Set-Cookie', 'Cookie']
 CORS_ALLOW_METHODS = [
     'GET',
     'POST',
@@ -274,6 +277,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'cookie',
 ]
 
 # CSRF settings
@@ -290,10 +294,12 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # --- Session and Cookie Settings ---
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_DOMAIN = '.onrender.com' if os.environ.get('IS_RENDER', False) else None
+SESSION_COOKIE_SECURE = os.environ.get('IS_RENDER', False)
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
-SESSION_COOKIE_DOMAIN = None  # Allow subdomains to access the cookie
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None' if os.environ.get('IS_RENDER', False) else 'Lax'  # Important for OAuth redirects
+SESSION_SAVE_EVERY_REQUEST = True  # Important for OAuth state
 
 # Security and Cookie settings based on environment
 IS_RENDER = os.environ.get('IS_RENDER', False)
