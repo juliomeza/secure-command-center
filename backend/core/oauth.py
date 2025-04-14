@@ -1,40 +1,44 @@
 from social_django.strategy import DjangoStrategy
 from django.conf import settings
 import logging
-from social_core.utils import get_strategy
 from django.contrib.sessions.backends.db import SessionStore
 
 logger = logging.getLogger('core')
 
 class PersistentSessionStrategy(DjangoStrategy):
+    """Strategy that ensures session persistence across OAuth flow"""
+    
     def __init__(self, storage, request=None, tpl=None):
-        super().__init__(storage, request, tpl)
         self._session = None
-        if request:
-            # Ensure we have a session
+        super().__init__(storage, request, tpl)
+        
+        if request and request.session:
+            # Ensure we have a session key
             if not request.session.session_key:
                 request.session.create()
                 request.session.save()
             logger.info(f"Strategy initialized with session key: {request.session.session_key}")
             logger.info(f"Initial session data: {dict(request.session)}")
 
-    @property
-    def session(self):
-        """Ensure we always have a valid session"""
-        if not self._session:
-            if self.request:
-                self._session = self.request.session
-                if not self._session.session_key:
-                    self._session.create()
-                    self._session.save()
+    def ensure_session(self):
+        """Ensure we have a valid session"""
+        if not self.session or not getattr(self.session, 'session_key', None):
+            if self.request and hasattr(self.request, 'session'):
+                if not self.request.session.session_key:
+                    self.request.session.create()
+                self.request.session.save()
+                self.session = self.request.session
+                logger.info(f"Created new session with key: {self.session.session_key}")
             else:
-                self._session = SessionStore()
-        return self._session
+                self.session = SessionStore()
+                self.session.create()
+                logger.info("Created new SessionStore instance")
 
     def session_get(self, name, default=None):
         """Get value from session with persistence checks"""
+        self.ensure_session()
         logger.info(f"Getting session value for {name}")
-        logger.info(f"Current session key: {self.session.session_key}")
+        logger.info(f"Current session key: {getattr(self.session, 'session_key', None)}")
         logger.info(f"Current session keys: {list(self.session.keys())}")
         
         # First try getting from session
@@ -54,24 +58,30 @@ class PersistentSessionStrategy(DjangoStrategy):
 
     def session_set(self, name, value):
         """Set value in session with immediate persistence"""
+        self.ensure_session()
         logger.info(f"Setting session value {name} = {value}")
         logger.info(f"Session before set: {dict(self.session)}")
         
         self.session[name] = value
-        self.session.modified = True
-        self.session.save()
+        if hasattr(self.session, 'modified'):
+            self.session.modified = True
+        if hasattr(self.session, 'save'):
+            self.session.save()
         
         logger.info(f"Session after set: {dict(self.session)}")
         return value
 
     def session_pop(self, name, default=None):
         """Remove value from session safely"""
+        self.ensure_session()
         logger.info(f"Popping session value {name}")
         logger.info(f"Session before pop: {dict(self.session)}")
         
         value = self.session.pop(name, default)
-        self.session.modified = True
-        self.session.save()
+        if hasattr(self.session, 'modified'):
+            self.session.modified = True
+        if hasattr(self.session, 'save'):
+            self.session.save()
         
         logger.info(f"Session after pop: {dict(self.session)}")
         return value
@@ -99,8 +109,3 @@ class PersistentSessionStrategy(DjangoStrategy):
             uri = uri.replace('http:', 'https:')
         logger.info(f"Built URI: {uri}")
         return uri
-
-    def get_pipeline_session_data(self, backend, key, default=None):
-        """Get pipeline data with state restoration"""
-        logger.info(f"Getting pipeline data for {key}")
-        return self.session_get(key, default)
