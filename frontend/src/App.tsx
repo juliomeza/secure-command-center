@@ -32,8 +32,8 @@ const LoginLayout: React.FC = () => {
 // Main App component setting up routes
 const App: React.FC = () => {
     return (
-        <AuthProvider> {/* Wrap the entire app in AuthProvider */}
-            <Router>
+        <Router>
+            <AuthProvider> {/* AuthProvider ahora dentro del Router */}
                 <Routes>
                     {/* Login route with special layout */}
                     <Route path="/login" element={<LoginLayout />}>
@@ -56,8 +56,8 @@ const App: React.FC = () => {
                         <Route path="*" element={<div><h2>404 Not Found</h2><Link to="/">Go Home</Link></div>} />
                     </Route>
                 </Routes>
-            </Router>
-        </AuthProvider>
+            </AuthProvider>
+        </Router>
     );
 };
 
