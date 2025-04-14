@@ -183,13 +183,13 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = (
 )
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
-# Prevent session from being modified by concurrent requests
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+# Session Configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth
+SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth redirects
 SESSION_COOKIE_DOMAIN = '.onrender.com' if os.environ.get('IS_RENDER', False) else None
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
@@ -286,6 +286,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'https://dashboard-control-front.onrender.com',
     'https://accounts.google.com',
+    'https://login.microsoftonline.com',
 ]
 CORS_EXPOSE_HEADERS = ['Set-Cookie']
 CORS_ALLOW_METHODS = [
@@ -320,9 +321,10 @@ CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_USE_SESSIONS = True  # Store CSRF token in the session
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_DOMAIN = '.onrender.com' if os.environ.get('IS_RENDER', False) else None
 
 # --- Session and Cookie Settings ---
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_COOKIE_DOMAIN = '.onrender.com' if os.environ.get('IS_RENDER', False) else None
