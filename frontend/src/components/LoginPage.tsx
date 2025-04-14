@@ -12,7 +12,7 @@ const LoginPage: React.FC = () => {
     // Determine if we're in production based on hostname
     const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
     
-    // Get base URL for API calls - Corregido para apuntar al backend en producción
+    // Get base URL for API calls
     const baseURL = isProduction 
         ? 'https://dashboard-control-back.onrender.com'
         : '';
@@ -20,22 +20,24 @@ const LoginPage: React.FC = () => {
     useEffect(() => {
         // Check for authentication on mount and URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const hasAuthParams = urlParams.has('code') || urlParams.has('token');
+        const hasAuthParams = urlParams.has('code') || urlParams.has('token') || urlParams.has('state');
         
         if (hasAuthParams) {
-            console.log('Auth parameters detected in URL, checking auth status');
+            console.log('[LoginPage] Auth parameters detected in URL, checking auth status');
             checkAuth();
         }
     }, [checkAuth]);
 
     const handleMicrosoftLogin = () => {
-        console.log('Redirecting to Microsoft login');
-        window.location.href = `${baseURL}/auth/login/azuread-oauth2/?prompt=select_account`;
+        const redirectURL = `${baseURL}/auth/login/azuread-oauth2/`;
+        console.log('[LoginPage] Redirecting to Microsoft login:', redirectURL);
+        window.location.href = redirectURL;
     };
     
     const handleGoogleLogin = () => {
-        console.log('Redirecting to Google login');
-        window.location.href = `${baseURL}/auth/login/google-oauth2/`;
+        const redirectURL = `${baseURL}/auth/login/google-oauth2/`;
+        console.log('[LoginPage] Redirecting to Google login:', redirectURL);
+        window.location.href = redirectURL;
     };
 
     if (isLoading) {

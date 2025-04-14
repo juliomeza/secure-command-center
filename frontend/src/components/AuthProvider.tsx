@@ -31,13 +31,18 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Determine if we're in production
+const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
+
+// Configure base URL for API calls
+const BASE_URL = isProduction ? 'https://dashboard-control-back.onrender.com' : '';
+
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: '/api', // Always use /api prefix for backend calls
+    baseURL: BASE_URL, // Use BASE_URL instead of just '/api'
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
-        // CSRF token will be added dynamically if needed for POST/PUT/DELETE
     },
 });
 

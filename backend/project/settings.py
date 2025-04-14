@@ -18,23 +18,30 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-fallback-key-f
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # --- IMPORTANT SECURITY SETTINGS ---
-# For production behind a reverse proxy (like Nginx in Docker setup)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False') == 'True'
-SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False') == 'True'
-CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False') == 'True'
-# Set to True in production if behind HTTPS
+IS_RENDER = os.environ.get('IS_RENDER', False)
 
-# HttpOnly flags are True by default for Session and CSRF cookies which is good.
+# Secure settings for production
+if IS_RENDER:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+# Cookie settings
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True # Keep False if frontend needs to read it, True otherwise. Usually True.
-
-# SameSite Cookie attribute
-SESSION_COOKIE_SAMESITE = 'Lax' # Recommended default. Can be 'Strict' if needed.
+CSRF_COOKIE_HTTPONLY = False  # Necesario para que el frontend pueda leer el token
+SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 # --- Allowed Hosts ---
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']  # .onrender.com permitirá todos los subdominios en Render
 
 # Application definition
 INSTALLED_APPS = [
@@ -165,7 +172,11 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL
 # Forzar el uso de URLs absolutas para las redirecciones
 USE_X_FORWARDED_HOST = True
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
-SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:5173', '127.0.0.1:5173', 'localhost:8000', '127.0.0.1:8000', 'dashboard-control-front.onrender.com']
+SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
+    'localhost:5173',
+    '127.0.0.1:5173',
+    'dashboard-control-front.onrender.com',
+]
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
 # Configuraciones adicionales para asegurar redirecciones adecuadas
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
@@ -237,11 +248,20 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 ]
 
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
-CORS_ALLOW_CREDENTIALS = True # IMPORTANT: Allows cookies to be sent cross-origin
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://dashboard-control-front.onrender.com',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # CSRF Trusted Origins (Necessary when frontend is on a different port/domain)
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://dashboard-control-front.onrender.com',
+]
 
 # --- Logging Configuration (Optional but Recommended) ---
 # Add basic logging configuration here if needed
