@@ -173,18 +173,32 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL
 USE_X_FORWARDED_HOST = True
 
 # --- OAuth and Session Configuration ---
-SOCIAL_AUTH_STRATEGY = 'core.oauth.CustomDjangoStrategy'
+SOCIAL_AUTH_STRATEGY = 'core.oauth.PersistentSessionStrategy'
 SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
+SOCIAL_AUTH_DISCONNECT_PIPELINE = (
+    'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'social_core.pipeline.disconnect.get_entries',
+    'social_core.pipeline.disconnect.revoke_tokens',
+    'social_core.pipeline.disconnect.disconnect'
+)
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 # Prevent session from being modified by concurrent requests
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth redirects
+SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth
+SESSION_COOKIE_DOMAIN = None  # Let Django handle this automatically
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Redis cache for better session handling
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # Azure AD specific settings
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
@@ -265,9 +279,9 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    'https://login.microsoftonline.com',  # Permitir el origen de Azure AD
     'https://dashboard-control-front.onrender.com',
-    'http://localhost:5173',
+    'https://accounts.google.com',
+    'https://login.microsoftonline.com',
 ]
 CORS_EXPOSE_HEADERS = ['Set-Cookie', 'Cookie']
 CORS_ALLOW_METHODS = [
@@ -295,7 +309,8 @@ CORS_ALLOW_HEADERS = [
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     'https://dashboard-control-front.onrender.com',
-    'https://dashboard-control-back.onrender.com',
+    'https://accounts.google.com',
+    'https://login.microsoftonline.com',
 ]
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_USE_SESSIONS = True  # Store CSRF token in the session
