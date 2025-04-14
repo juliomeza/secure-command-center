@@ -8,41 +8,67 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import redirect
-from core.views import UserProfileView
+from django.views.decorators.http import require_http_methods
 import logging
 
 logger = logging.getLogger('django.request')
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def complete_auth_redirect(request):
+    """Custom completion handler for OAuth that supports both GET and POST"""
+    logger.info("=== OAuth Completion Handler ===")
+    logger.info(f"Request Method: {request.method}")
+    logger.info(f"Session ID: {request.session.session_key}")
+    logger.info(f"Session Keys: {list(request.session.keys())}")
+    logger.info(f"Headers: {dict(request.headers)}")
+    logger.info(f"GET Params: {dict(request.GET)}")
+    logger.info(f"POST Params: {dict(request.POST)}")
+    logger.info(f"Cookies: {request.COOKIES}")
+
+    # Get state from either POST or GET
+    state = request.POST.get('state') or request.GET.get('state')
+    code = request.POST.get('code') or request.GET.get('code')
+
+    logger.info(f"State received: {state}")
+    logger.info(f"Code received: {code}")
+
+    if state:
+        request.session['state'] = state
+        request.session.modified = True
+        logger.info(f"Stored state in session: {state}")
+
+    # Save session before redirect
+    request.session.save()
+
+    # Handle the OAuth completion
+    from social_django.utils import load_strategy, load_backend
+    from social_core.actions import do_complete
+
+    strategy = load_strategy(request)
+    backend = load_backend(strategy, 'azuread-oauth2', None)
+
+    try:
+        return do_complete(
+            backend,
+            login=lambda backend, user, social_user: user,
+            user=None,
+            redirect_name='next',
+            request=request
+        )
+    except Exception as e:
+        logger.error(f"Error in OAuth completion: {str(e)}", exc_info=True)
+        return redirect(f"{settings.FRONTEND_BASE_URL}/login?error=auth_failed")
 
 def api_logout(request):
     """Simple API logout handler"""
     auth_logout(request)
     return HttpResponse('Logged out', status=200)
 
-def complete_auth_redirect(request):
-    """Custom completion handler for OAuth"""
-    logger.info("=== OAuth Completion Handler ===")
-    logger.info(f"Session ID: {request.session.session_key}")
-    logger.info(f"Session Keys: {list(request.session.keys())}")
-    logger.info(f"Headers: {dict(request.headers)}")
-    logger.info(f"GET Params: {dict(request.GET)}")
-    logger.info(f"POST Params: {dict(request.POST)}")
-    
-    # Ensure the state is properly handled
-    state = request.GET.get('state') or request.POST.get('state')
-    if state:
-        request.session['state'] = state
-        request.session.modified = True
-        logger.info(f"Stored state in session: {state}")
-    
-    # Save session before redirect
-    request.session.save()
-    
-    return redirect(f"{settings.FRONTEND_BASE_URL}/dashboard")
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('social_django.urls', namespace='social')),
-    path('auth/complete/', complete_auth_redirect, name='auth_complete'),
+    path('auth/complete/azuread-oauth2/', complete_auth_redirect, name='azure_complete'),
     path('api/', include('core.urls')),
     path('profile/', UserProfileView.as_view(), name='user-profile-root'),
     path('api/logout/', csrf_exempt(api_logout), name='api_logout'),

@@ -186,7 +186,7 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth redirects
 
-# Azure AD settings
+# Azure AD specific settings
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = os.environ.get('AZURE_AD_CLIENT_SECRET')
 SOCIAL_AUTH_AZUREAD_OAUTH2_TENANT_ID = os.environ.get('AZURE_AD_TENANT_ID')
@@ -210,16 +210,15 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
 )
 
+SOCIAL_AUTH_LOGIN_ERROR_URL = f'{FRONTEND_BASE_URL}/login'
+SOCIAL_AUTH_RAISE_EXCEPTIONS = True
+SOCIAL_AUTH_SANITIZE_REDIRECTS = True
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
 SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
     'localhost:5173',
     '127.0.0.1:5173',
     'dashboard-control-front.onrender.com',
 ]
-
-# Force HTTPS in production
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True if IS_RENDER else False
 
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
 # Configuraciones adicionales para asegurar redirecciones adecuadas
@@ -266,6 +265,7 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
+    'https://login.microsoftonline.com',  # Permitir el origen de Azure AD
     'https://dashboard-control-front.onrender.com',
     'http://localhost:5173',
 ]
