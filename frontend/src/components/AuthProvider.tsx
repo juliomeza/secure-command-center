@@ -60,9 +60,19 @@ const clearTokens = () => {
     localStorage.removeItem('refreshToken');
 };
 
+// Determine if we're in production (Render) or development
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+// Set the base URL for API requests based on environment
+const API_BASE_URL = isProduction 
+  ? `${window.location.protocol}//${window.location.host}/api` // Production
+  : '/api'; // Development proxy
+
+console.log(`[AuthProvider] Using API base URL: ${API_BASE_URL}`);
+
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: '/api', // Always use /api prefix for backend calls
+    baseURL: API_BASE_URL,
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
@@ -108,7 +118,7 @@ apiClient.interceptors.response.use(
                 
                 // Create a separate axios instance for token refresh to avoid interceptor loop
                 const tokenRefreshClient = axios.create({
-                    baseURL: '/api',
+                    baseURL: API_BASE_URL, // Use the correct API_BASE_URL based on environment
                     withCredentials: true
                 });
                 
@@ -130,9 +140,15 @@ apiClient.interceptors.response.use(
                 }
             } catch (refreshError) {
                 console.error("[AuthProvider] Token refresh failed:", refreshError);
-                // If refresh fails, clear tokens and force login
+                // If refresh fails, clear tokens and attempt to redirect to OAuth login in production
                 clearTokens();
-                // Don't reject here, let it continue to the original error
+                
+                if (isProduction) {
+                    console.log("[AuthProvider] Token refresh failed in production, redirecting to login");
+                    setTimeout(() => {
+                        window.location.href = `${API_BASE_URL.replace('/api', '')}/auth/login/azuread-oauth2/`;
+                    }, 100);
+                }
             }
         }
         
@@ -164,8 +180,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log("[AuthProvider] Checking authentication status...");
         setIsLoading(true);
         setError(null);
+        
+        // Check if we already have valid tokens in storage
+        const storedToken = getStoredAccessToken();
+        if (storedToken) {
+            console.log("[AuthProvider] Found existing token, attempting to use it");
+            try {
+                // Try to use existing JWT token to get user profile
+                const response = await apiClient.get<User>('/profile/');
+                setUser(response.data);
+                setIsAuthenticated(true);
+                console.log("[AuthProvider] Successfully authenticated with stored token");
+                setIsLoading(false);
+                return;
+            } catch (err) {
+                console.log("[AuthProvider] Stored token didn't work, continuing with OAuth flow");
+                // Token didn't work, continue with normal flow
+                clearTokens();
+            }
+        }
+        
         try {
-            // Attempt to fetch user profile. Success means authenticated.
+            // Attempt to fetch user profile via session auth (OAuth2)
             const response = await apiClient.get<User>('/profile/');
             
             // Log the raw response for debugging
@@ -177,10 +213,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                                   (responseData as string).trim().startsWith('<!doctype html>');
             
             if (isHtmlResponse) {
-                console.error("[AuthProvider] Received HTML response instead of user data. API endpoint might be redirecting.");
+                console.error("[AuthProvider] Received HTML response instead of user data. Trying to recover...");
+                
+                // Check if we're in production and might need a direct redirect to login
+                if (isProduction) {
+                    console.log("[AuthProvider] In production environment, redirecting to Azure login");
+                    // In production, we'll attempt to redirect directly to OAuth login
+                    window.location.href = `${API_BASE_URL.replace('/api', '')}/auth/login/azuread-oauth2/`;
+                    return;
+                }
+                
                 setUser(null);
                 setIsAuthenticated(false);
                 setError('Invalid API response format. Please try again.');
+                setIsLoading(false);
                 return;
             }
             
@@ -215,6 +261,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     statusText: err.response?.statusText,
                     data: err.response?.data
                 });
+                
+                // For 401/403 in production, redirect to OAuth login
+                if (isProduction && (err.response?.status === 401 || err.response?.status === 403)) {
+                    console.log("[AuthProvider] Unauthorized in production, redirecting to login");
+                    window.location.href = `${API_BASE_URL.replace('/api', '')}/auth/login/azuread-oauth2/`;
+                    return;
+                }
                 
                 if (err.response?.status !== 401 && err.response?.status !== 403) {
                     // Only set error for unexpected issues, not for unauthenticated status
