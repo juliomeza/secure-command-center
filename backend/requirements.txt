@@ -28,3 +28,5 @@ tzdata==2025.2
 urllib3==2.3.0
 whitenoise==6.9.0
 dj-database-url==2.1.0
+django-redis==5.4.0
+redis==5.0.1
