@@ -64,9 +64,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # For serving static files efficiently
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # CORS Middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -180,7 +180,7 @@ SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
 ]
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
 # Configuraciones adicionales para asegurar redirecciones adecuadas
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
 SOCIAL_AUTH_AUTHENTICATION_BACKENDS_TIMEOUT = 300
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
@@ -190,6 +190,7 @@ SOCIAL_AUTH_SESSION_EXPIRATION = False  # Don't expire sessions
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = os.environ.get('AZURE_AD_CLIENT_SECRET')
 SOCIAL_AUTH_AZUREAD_OAUTH2_TENANT_ID = os.environ.get('AZURE_AD_TENANT_ID')
+SOCIAL_AUTH_AZUREAD_OAUTH2_RESOURCE = 'https://graph.microsoft.com/'
 
 # Scopes requested from Microsoft
 SOCIAL_AUTH_AZUREAD_OAUTH2_SCOPE = ['openid', 'email', 'profile', 'User.Read']
@@ -253,9 +254,8 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
     'https://dashboard-control-front.onrender.com',
+    'http://localhost:5173',
 ]
 CORS_EXPOSE_HEADERS = ['Set-Cookie', 'Cookie']
 CORS_ALLOW_METHODS = [
@@ -282,23 +282,22 @@ CORS_ALLOW_HEADERS = [
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
     'https://dashboard-control-front.onrender.com',
+    'https://dashboard-control-back.onrender.com',
 ]
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_USE_SESSIONS = True  # Store CSRF token in the session
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None'
 
 # --- Session and Cookie Settings ---
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_COOKIE_DOMAIN = '.onrender.com' if os.environ.get('IS_RENDER', False) else None
-SESSION_COOKIE_SECURE = os.environ.get('IS_RENDER', False)
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'None' if os.environ.get('IS_RENDER', False) else 'Lax'  # Important for OAuth redirects
+SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth redirects
 SESSION_SAVE_EVERY_REQUEST = True  # Important for OAuth state
 
 # Security and Cookie settings based on environment

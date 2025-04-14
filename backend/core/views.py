@@ -11,17 +11,19 @@ import logging
 logger = logging.getLogger('core')
 
 class UserProfileView(APIView):
-    """
-    API endpoint to get the authenticated user's profile information.
-    """
+    """API endpoint to get the authenticated user's profile information."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        logger.debug(f"UserProfileView accessed by user: {request.user}")
-        logger.debug(f"Is user authenticated? {request.user.is_authenticated}")
-        logger.debug(f"Session keys: {request.session.keys()}")
-        logger.debug(f"Headers: {request.headers}")
-        
+        """Get user profile with detailed logging."""
+        logger.info("=== UserProfileView Accessed ===")
+        logger.info(f"User: {request.user}")
+        logger.info(f"Authenticated: {request.user.is_authenticated}")
+        logger.info(f"Session ID: {request.session.session_key}")
+        logger.info(f"Session Keys: {list(request.session.keys())}")
+        logger.info(f"Headers: {dict(request.headers)}")
+        logger.info(f"Cookies: {request.COOKIES}")
+
         if not request.user.is_authenticated:
             logger.warning("User not authenticated in UserProfileView")
             return Response(
@@ -31,12 +33,13 @@ class UserProfileView(APIView):
 
         try:
             serializer = UserSerializer(request.user)
-            logger.debug(f"User data serialized: {serializer.data}")
+            logger.info("User data serialized successfully")
+            logger.debug(f"Serialized data: {serializer.data}")
             return Response(serializer.data)
         except Exception as e:
-            logger.error(f"Error in UserProfileView: {str(e)}")
+            logger.error(f"Error in UserProfileView: {str(e)}", exc_info=True)
             return Response(
-                {"detail": "Error retrieving user profile"}, 
+                {"detail": "Error retrieving user profile", "error": str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -51,16 +54,11 @@ class UserProfileView(APIView):
 # 3. Middleware: For more global checks, middleware can inspect the request path
 #    or parameters and verify against the user's company.
 
-# --- CSRF Token Endpoint ---
-# Needed if your frontend makes POST/PUT/DELETE requests and needs the token.
-# GET requests usually don't need CSRF protection. Session auth handles CSRF.
-# If using HttpOnly session cookies, CSRF protection is vital.
 def get_csrf_token(request):
-    """
-    Endpoint to provide the CSRF token to the frontend.
-    """
+    """Endpoint to provide the CSRF token to the frontend."""
     token = get_token(request)
-    logger.debug(f"CSRF token generated for user: {request.user}")
+    logger.info(f"CSRF token generated for user: {request.user}")
+    logger.debug(f"Session ID: {request.session.session_key}")
     return JsonResponse({'csrfToken': token})
 
 # Note: If you rely purely on social login and GET requests for data,
