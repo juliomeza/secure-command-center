@@ -39,7 +39,7 @@ const BASE_URL = isProduction ? 'https://dashboard-control-back.onrender.com' : 
 
 // Axios instance configured to send cookies
 const apiClient = axios.create({
-    baseURL: BASE_URL, // Use BASE_URL instead of just '/api'
+    baseURL: `${BASE_URL}/api`, // Add /api prefix to all requests
     withCredentials: true, // Crucial for sending/receiving session cookies
     headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(true);
         setError(null);
         try {
-            // Attempt to fetch user profile. Success means authenticated.
+            // Log the URL being called
+            console.log("[AuthProvider] Calling profile endpoint:", `${BASE_URL}/api/profile/`);
+            
+            // Attempt to fetch user profile
             const response = await apiClient.get<User>('/profile/');
             
             // Log the raw response for debugging
