@@ -9,6 +9,9 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 
+# Determinar si estamos en entorno Render (producción)
+IS_RENDER = os.environ.get('IS_RENDER', False)
+
 # print(f"POSTGRES_USER: {os.environ.get('POSTGRES_USER')}")
 # print(f"POSTGRES_PASSWORD: {os.environ.get('POSTGRES_PASSWORD')}")
 
@@ -30,9 +33,12 @@ CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False') == 'Tr
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True # Keep False if frontend needs to read it, True otherwise. Usually True.
 
-# SameSite Cookie attribute
-SESSION_COOKIE_SAMESITE = 'Lax' # Recommended default. Can be 'Strict' if needed.
-CSRF_COOKIE_SAMESITE = 'Lax'
+# SameSite Cookie attribute - Cambiamos a 'None' para permitir uso entre dominios en producción
+SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
+CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
+
+# Configurar el dominio de las cookies para que funcionen entre subdominios si es necesario
+SESSION_COOKIE_DOMAIN = None  # Automáticamente detecta el dominio actual
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
@@ -93,7 +99,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project.wsgi.application'
 
 # --- Database Configuration ---
-IS_RENDER = os.environ.get('IS_RENDER', False)
 
 # Luego, en la sección de DATABASES, reemplaza con esto:
 if IS_RENDER:
@@ -168,7 +173,15 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL
 USE_X_FORWARDED_HOST = True
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
 SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:5173', '127.0.0.1:5173', 'localhost:8000', '127.0.0.1:8000', 'dashboard-control-front.onrender.com']
+
+# Configuración de redirección custom para incluir tokens JWT
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
+
+# Redirigir a nuestro endpoint personalizado que genera tokens JWT después del login OAuth
+SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/api/oauth-success/'
+SOCIAL_AUTH_LOGIN_DONE_URL = '/api/oauth-success/'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/api/oauth-success/'
+
 # Configuraciones adicionales para asegurar redirecciones adecuadas
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
@@ -259,6 +272,11 @@ SIMPLE_JWT = {
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
 CORS_ALLOW_CREDENTIALS = True # IMPORTANT: Allows cookies to be sent cross-origin
+
+# Configuraciones adicionales para CORS en entornos de producción
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+CORS_ALLOW_HEADERS = ['accept', 'accept-encoding', 'authorization', 'content-type', 'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with']
+CORS_EXPOSE_HEADERS = ['content-type', 'content-length']
 
 # CSRF Trusted Origins (Necessary when frontend is on a different port/domain)
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')

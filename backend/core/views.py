@@ -5,8 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializers import UserSerializer
 from django.middleware.csrf import get_token
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
 
 class UserProfileView(APIView):
     """
@@ -33,7 +34,30 @@ class TokenObtainView(APIView):
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
+            'user': UserSerializer(request.user).data  # Include user data for convenience
         })
+
+# Nueva vista para generar tokens JWT y redirigir después del login OAuth2
+def oauth_success_redirect(request):
+    """
+    Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
+    Esta vista combina la generación de tokens con la redirección al frontend.
+    """
+    if request.user.is_authenticated:
+        # URL a la que redirigiremos después de generar los tokens
+        redirect_url = settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL
+        
+        # Generar tokens JWT
+        refresh = RefreshToken.for_user(request.user)
+        
+        # Añadir los tokens como parámetros de consulta en la URL de redirección
+        redirect_url_with_params = f"{redirect_url}?jwt_access={str(refresh.access_token)}&jwt_refresh={str(refresh)}"
+        
+        # Redirigir al frontend con los tokens
+        return HttpResponseRedirect(redirect_url_with_params)
+    
+    # Si el usuario no está autenticado, redirigirlo a la página de login
+    return HttpResponseRedirect(settings.LOGIN_URL)
 
 # --- Company Access Restriction Logic ---
 # This needs to be implemented based on your specific requirements.

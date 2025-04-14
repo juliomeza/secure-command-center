@@ -334,7 +334,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Check authentication status when the provider mounts
     useEffect(() => {
-        checkAuth();
+        // Primero, verificar si hay tokens JWT en la URL (después de redirección OAuth)
+        const urlParams = new URLSearchParams(window.location.search);
+        const jwtAccess = urlParams.get('jwt_access');
+        const jwtRefresh = urlParams.get('jwt_refresh');
+        
+        if (jwtAccess && jwtRefresh) {
+            console.log("[AuthProvider] Tokens JWT encontrados en la URL después de OAuth login");
+            // Almacenar los tokens
+            storeTokens({
+                access: jwtAccess,
+                refresh: jwtRefresh
+            });
+            
+            // Limpiar la URL para no mantener los tokens visibles
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            
+            // Verificar la autenticación con los nuevos tokens
+            checkAuth();
+        } else {
+            // Si no hay tokens en la URL, verificar autenticación normalmente
+            checkAuth();
+        }
         
         // Add event listener for storage changes (for multi-tab logout)
         const handleStorageChange = (e: StorageEvent) => {
