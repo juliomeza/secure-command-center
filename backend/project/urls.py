@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import redirect
 from django.views.decorators.http import require_http_methods
+from core.views import UserProfileView  # Agregando el import necesario
 import logging
 
 logger = logging.getLogger('django.request')
