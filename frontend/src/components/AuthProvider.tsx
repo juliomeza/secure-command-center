@@ -1,6 +1,7 @@
 // frontend/src/components/AuthProvider.tsx
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // Define the structure of the user data
 interface User {
@@ -67,6 +68,10 @@ const isProduction = window.location.hostname !== 'localhost' && window.location
 const API_BASE_URL = isProduction 
   ? `${window.location.protocol}//${window.location.host}/api` // Production
   : '/api'; // Development proxy
+
+// Track redirect attempts to prevent infinite loops
+let redirectAttempts = 0;
+const MAX_REDIRECT_ATTEMPTS = 2;
 
 console.log(`[AuthProvider] Using API base URL: ${API_BASE_URL}`);
 
@@ -140,15 +145,11 @@ apiClient.interceptors.response.use(
                 }
             } catch (refreshError) {
                 console.error("[AuthProvider] Token refresh failed:", refreshError);
-                // If refresh fails, clear tokens and attempt to redirect to OAuth login in production
+                // If refresh fails, clear tokens - but DON'T redirect automatically
                 clearTokens();
                 
-                if (isProduction) {
-                    console.log("[AuthProvider] Token refresh failed in production, redirecting to login");
-                    setTimeout(() => {
-                        window.location.href = `${API_BASE_URL.replace('/api', '')}/auth/login/azuread-oauth2/`;
-                    }, 100);
-                }
+                // Let the error propagate to be handled by the regular error handlers
+                // which will use navigate() instead of window.location for better SPA handling
             }
         }
         
@@ -162,6 +163,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading on mount
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     // Function to fetch JWT tokens
     const fetchTokens = async (): Promise<JWTTokens | null> => {
@@ -192,6 +194,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setIsAuthenticated(true);
                 console.log("[AuthProvider] Successfully authenticated with stored token");
                 setIsLoading(false);
+                redirectAttempts = 0; // Reset redirect counter on success
                 return;
             } catch (err) {
                 console.log("[AuthProvider] Stored token didn't work, continuing with OAuth flow");
@@ -216,10 +219,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 console.error("[AuthProvider] Received HTML response instead of user data. Trying to recover...");
                 
                 // Check if we're in production and might need a direct redirect to login
-                if (isProduction) {
-                    console.log("[AuthProvider] In production environment, redirecting to Azure login");
-                    // In production, we'll attempt to redirect directly to OAuth login
-                    window.location.href = `${API_BASE_URL.replace('/api', '')}/auth/login/azuread-oauth2/`;
+                if (isProduction && redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
+                    redirectAttempts++;
+                    console.log(`[AuthProvider] In production environment, redirecting to login page (attempt ${redirectAttempts})`);
+                    // Use React Router instead of window.location for better SPA handling
+                    navigate('/login');
+                    setIsLoading(false);
                     return;
                 }
                 
@@ -242,6 +247,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             setUser(response.data);
             setIsAuthenticated(true);
+            redirectAttempts = 0; // Reset redirect counter on success
             
             // Now that the user is authenticated via OAuth2, fetch and store JWT tokens
             const tokens = await fetchTokens();
@@ -262,10 +268,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     data: err.response?.data
                 });
                 
-                // For 401/403 in production, redirect to OAuth login
-                if (isProduction && (err.response?.status === 401 || err.response?.status === 403)) {
-                    console.log("[AuthProvider] Unauthorized in production, redirecting to login");
-                    window.location.href = `${API_BASE_URL.replace('/api', '')}/auth/login/azuread-oauth2/`;
+                // For 401/403 in production, redirect to login page via React Router
+                if (isProduction && (err.response?.status === 401 || err.response?.status === 403) && 
+                    redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
+                    redirectAttempts++;
+                    console.log(`[AuthProvider] Unauthorized in production, redirecting to login (attempt ${redirectAttempts})`);
+                    navigate('/login');
+                    setIsLoading(false);
                     return;
                 }
                 
@@ -279,7 +288,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [navigate]);
 
     // Updated logout function
     const logout = async (): Promise<boolean> => {

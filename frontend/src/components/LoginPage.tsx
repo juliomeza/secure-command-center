@@ -12,9 +12,9 @@ const LoginPage: React.FC = () => {
     // Determine if we're in production based on hostname
     const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
     
-    // Get base URL for API calls - Corregido para apuntar al backend en producción
+    // Get base URL for API calls - Usar correctamente la URL actual
     const baseURL = isProduction 
-        ? 'https://dashboard-control-back.onrender.com'
+        ? `${window.location.protocol}//${window.location.host}`
         : '';
     
     useEffect(() => {
@@ -28,15 +28,53 @@ const LoginPage: React.FC = () => {
         }
     }, [checkAuth]);
 
+    // Agregar un contador de intentos de redirección
+    const attemptKey = 'loginRedirectAttempts';
+    
     const handleMicrosoftLogin = () => {
+        // Verificar y manejar intentos de redirección para evitar bucles
+        const attempts = parseInt(sessionStorage.getItem(attemptKey) || '0');
+        
+        if (attempts > 3) {
+            console.log('Demasiados intentos de redirección, limpiando contador');
+            sessionStorage.removeItem(attemptKey);
+            alert('Hubo un problema con la autenticación. Por favor, intente nuevamente más tarde.');
+            return;
+        }
+        
+        sessionStorage.setItem(attemptKey, (attempts + 1).toString());
+        
         console.log('Redirecting to Microsoft login');
         window.location.href = `${baseURL}/auth/login/azuread-oauth2/?prompt=select_account`;
     };
     
     const handleGoogleLogin = () => {
+        // Verificar y manejar intentos de redirección para evitar bucles
+        const attempts = parseInt(sessionStorage.getItem(attemptKey) || '0');
+        
+        if (attempts > 3) {
+            console.log('Demasiados intentos de redirección, limpiando contador');
+            sessionStorage.removeItem(attemptKey);
+            alert('Hubo un problema con la autenticación. Por favor, intente nuevamente más tarde.');
+            return;
+        }
+        
+        sessionStorage.setItem(attemptKey, (attempts + 1).toString());
+        
         console.log('Redirecting to Google login');
         window.location.href = `${baseURL}/auth/login/google-oauth2/`;
     };
+
+    // Limpiar contador de intentos cuando carga la página normalmente
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            // Solo resetear si accedemos directamente a la página de login
+            if (!location.state?.from) {
+                console.log('Reset de contador de intentos de redirección');
+                sessionStorage.removeItem(attemptKey);
+            }
+        }
+    }, [isLoading, isAuthenticated, location.state]);
 
     if (isLoading) {
         return (
