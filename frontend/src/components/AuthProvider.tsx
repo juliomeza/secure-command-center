@@ -39,26 +39,26 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Store token in localStorage
+// Store token in sessionStorage (en lugar de localStorage)
 const storeTokens = (tokens: JWTTokens) => {
-    localStorage.setItem('accessToken', tokens.access);
-    localStorage.setItem('refreshToken', tokens.refresh);
+    sessionStorage.setItem('accessToken', tokens.access);
+    sessionStorage.setItem('refreshToken', tokens.refresh);
 };
 
-// Get access token from localStorage
+// Get access token from sessionStorage
 const getStoredAccessToken = (): string | null => {
-    return localStorage.getItem('accessToken');
+    return sessionStorage.getItem('accessToken');
 };
 
-// Get refresh token from localStorage
+// Get refresh token from sessionStorage
 const getStoredRefreshToken = (): string | null => {
-    return localStorage.getItem('refreshToken');
+    return sessionStorage.getItem('refreshToken');
 };
 
-// Clear tokens from localStorage
+// Clear tokens from sessionStorage
 const clearTokens = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
 };
 
 // Determine if we're in production (Render) or development
@@ -308,8 +308,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser(null);
             setIsAuthenticated(false);
             
-            // Add a marker in localStorage to handle multi-tab logout
-            localStorage.setItem('auth_logout', 'true');
+            // Add a marker in sessionStorage to handle multi-tab logout
+            sessionStorage.setItem('auth_logout', 'true');
             
             // Return true to indicate successful logout
             console.log("[AuthProvider] Logout state updated successfully");
@@ -365,7 +365,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setUser(null);
                 setIsAuthenticated(false);
                 clearTokens(); // Clear JWT tokens in this tab too
-                localStorage.removeItem('auth_logout');
+                sessionStorage.removeItem('auth_logout');
             }
         };
         
