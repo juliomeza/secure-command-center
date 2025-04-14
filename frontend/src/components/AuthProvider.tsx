@@ -18,6 +18,12 @@ interface User {
     // Add other user fields here
 }
 
+// Define the JWT tokens structure
+interface JWTTokens {
+    access: string;
+    refresh: string;
+}
+
 // Define the context shape
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -25,11 +31,34 @@ interface AuthContextType {
     isLoading: boolean;
     error: string | null;
     checkAuth: () => Promise<void>;
-    logout: () => Promise<boolean>; // Changed return type to Promise<boolean>
+    logout: () => Promise<boolean>;
+    getAccessToken: () => string | null; // New method to access JWT token
 }
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Store token in localStorage
+const storeTokens = (tokens: JWTTokens) => {
+    localStorage.setItem('accessToken', tokens.access);
+    localStorage.setItem('refreshToken', tokens.refresh);
+};
+
+// Get access token from localStorage
+const getStoredAccessToken = (): string | null => {
+    return localStorage.getItem('accessToken');
+};
+
+// Get refresh token from localStorage
+const getStoredRefreshToken = (): string | null => {
+    return localStorage.getItem('refreshToken');
+};
+
+// Clear tokens from localStorage
+const clearTokens = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+};
 
 // Axios instance configured to send cookies
 const apiClient = axios.create({
@@ -41,12 +70,95 @@ const apiClient = axios.create({
     },
 });
 
+// Add request interceptor to include JWT token if available
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = getStoredAccessToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Add response interceptor to handle token refresh
+apiClient.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    async (error) => {
+        const originalRequest = error.config;
+        
+        // If the error is due to an expired token (401) and we haven't tried to refresh yet
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            
+            try {
+                console.log("[AuthProvider] Access token expired. Attempting to refresh...");
+                // Try to refresh the token
+                const refreshToken = getStoredRefreshToken();
+                
+                if (!refreshToken) {
+                    console.log("[AuthProvider] No refresh token available");
+                    return Promise.reject(error);
+                }
+                
+                // Create a separate axios instance for token refresh to avoid interceptor loop
+                const tokenRefreshClient = axios.create({
+                    baseURL: '/api',
+                    withCredentials: true
+                });
+                
+                const response = await tokenRefreshClient.post('/token/refresh/', {
+                    refresh: refreshToken
+                });
+                
+                if (response.data.access) {
+                    console.log("[AuthProvider] Token refresh successful");
+                    // Store the new tokens
+                    storeTokens({
+                        access: response.data.access,
+                        refresh: response.data.refresh || refreshToken // Use existing refresh token if not provided
+                    });
+                    
+                    // Retry the original request with new token
+                    originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
+                    return apiClient(originalRequest);
+                }
+            } catch (refreshError) {
+                console.error("[AuthProvider] Token refresh failed:", refreshError);
+                // If refresh fails, clear tokens and force login
+                clearTokens();
+                // Don't reject here, let it continue to the original error
+            }
+        }
+        
+        return Promise.reject(error);
+    }
+);
+
 // AuthProvider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading on mount
     const [error, setError] = useState<string | null>(null);
+
+    // Function to fetch JWT tokens
+    const fetchTokens = async (): Promise<JWTTokens | null> => {
+        try {
+            console.log("[AuthProvider] Fetching JWT tokens...");
+            const response = await apiClient.get<JWTTokens>('/token/');
+            console.log("[AuthProvider] JWT tokens received successfully");
+            return response.data;
+        } catch (err) {
+            console.error("[AuthProvider] Failed to fetch JWT tokens:", err);
+            return null;
+        }
+    };
 
     const checkAuth = useCallback(async () => {
         console.log("[AuthProvider] Checking authentication status...");
@@ -84,10 +196,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             setUser(response.data);
             setIsAuthenticated(true);
+            
+            // Now that the user is authenticated via OAuth2, fetch and store JWT tokens
+            const tokens = await fetchTokens();
+            if (tokens) {
+                storeTokens(tokens);
+                console.log("[AuthProvider] JWT tokens stored successfully");
+            }
         } catch (err) {
             console.error("[AuthProvider] Authentication check failed:", err);
             setUser(null);
             setIsAuthenticated(false);
+            clearTokens(); // Clear any existing tokens
             
             if (axios.isAxiosError(err)) {
                 console.log("[AuthProvider] Error details:", {
@@ -118,6 +238,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             console.log("[AuthProvider] Logout API call successful");
             
+            // Clear JWT tokens
+            clearTokens();
+            console.log("[AuthProvider] JWT tokens cleared");
+            
             // Then update local state
             setUser(null);
             setIsAuthenticated(false);
@@ -141,6 +265,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    // Function to get the current access token
+    const getAccessToken = (): string | null => {
+        return getStoredAccessToken();
+    };
+
     // Check authentication status when the provider mounts
     useEffect(() => {
         checkAuth();
@@ -151,6 +280,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 console.log("[AuthProvider] Detected logout in another tab");
                 setUser(null);
                 setIsAuthenticated(false);
+                clearTokens(); // Clear JWT tokens in this tab too
                 localStorage.removeItem('auth_logout');
             }
         };
@@ -163,7 +293,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [checkAuth]);
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, error, checkAuth, logout }}>
+        <AuthContext.Provider value={{ 
+            isAuthenticated, 
+            user, 
+            isLoading, 
+            error, 
+            checkAuth, 
+            logout,
+            getAccessToken 
+        }}>
             {children}
         </AuthContext.Provider>
     );

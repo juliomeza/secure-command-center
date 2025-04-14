@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+from datetime import timedelta
 
 # Load environment variables from .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'social_django', # OAuth2 authentication
     'sslserver',     # For Development HTTPS only
+    'rest_framework_simplejwt', # JWT authentication
 
     # Your apps
     'core',
@@ -215,6 +217,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # Use Session Authentication as primary for browser-based clients
         'rest_framework.authentication.SessionAuthentication',
+        # Add JWT Authentication
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         # Potentially add TokenAuthentication if you need API keys later
         # 'rest_framework.authentication.TokenAuthentication',
     ),
@@ -235,6 +239,22 @@ REST_FRAMEWORK = {
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
     r for r in REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] if r is not None
 ]
+
+# --- JWT Settings ---
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
 
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')

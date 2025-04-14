@@ -6,6 +6,7 @@ from rest_framework import status
 from .serializers import UserSerializer
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserProfileView(APIView):
     """
@@ -16,6 +17,23 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+# --- JWT Token Generation ---
+class TokenObtainView(APIView):
+    """
+    Endpoint to obtain JWT tokens after OAuth2 authentication.
+    This allows the frontend to get tokens for future API calls.
+    """
+    permission_classes = [IsAuthenticated]  # User must be already authenticated via OAuth2
+
+    def get(self, request):
+        # Generate tokens for the authenticated user
+        refresh = RefreshToken.for_user(request.user)
+        
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        })
 
 # --- Company Access Restriction Logic ---
 # This needs to be implemented based on your specific requirements.
