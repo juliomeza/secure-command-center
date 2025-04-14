@@ -171,45 +171,33 @@ LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL
 
 # Forzar el uso de URLs absolutas para las redirecciones
 USE_X_FORWARDED_HOST = True
-SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
-SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
-SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
-    'localhost:5173',
-    '127.0.0.1:5173',
-    'dashboard-control-front.onrender.com',
-]
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
-# Configuraciones adicionales para asegurar redirecciones adecuadas
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
-SOCIAL_AUTH_SANITIZE_REDIRECTS = True
-SOCIAL_AUTH_AUTHENTICATION_BACKENDS_TIMEOUT = 300
-SOCIAL_AUTH_JSONFIELD_ENABLED = True
-SOCIAL_AUTH_SESSION_EXPIRATION = False  # Don't expire sessions
 
-# Microsoft Azure AD Configuration (Get these from Azure Portal)
+# --- OAuth and Session Configuration ---
+SOCIAL_AUTH_STRATEGY = 'core.oauth.CustomDjangoStrategy'
+SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+# Prevent session from being modified by concurrent requests
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'None'  # Required for OAuth redirects
+
+# Azure AD settings
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = os.environ.get('AZURE_AD_CLIENT_SECRET')
 SOCIAL_AUTH_AZUREAD_OAUTH2_TENANT_ID = os.environ.get('AZURE_AD_TENANT_ID')
 SOCIAL_AUTH_AZUREAD_OAUTH2_RESOURCE = 'https://graph.microsoft.com/'
-
-# Scopes requested from Microsoft
 SOCIAL_AUTH_AZUREAD_OAUTH2_SCOPE = ['openid', 'email', 'profile', 'User.Read']
-
-# Additional parameters for Microsoft login
 SOCIAL_AUTH_AZUREAD_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
-    'prompt': 'select_account',
-    'response_mode': 'form_post'
+    'response_mode': 'form_post',
+    'prompt': 'select_account'
 }
-SOCIAL_AUTH_AZUREAD_OAUTH2_WHITELISTED_DOMAINS = ['*']  # Be more restrictive in production
 
-# Add Google OAuth credentials
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
-
-# Configure Google OAuth scopes
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
-
-# Pipeline to save extra data (like company, if available in claims)
+# OAuth settings
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
@@ -221,6 +209,30 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+
+SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = [
+    'localhost:5173',
+    '127.0.0.1:5173',
+    'dashboard-control-front.onrender.com',
+]
+
+# Force HTTPS in production
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True if IS_RENDER else False
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
+# Configuraciones adicionales para asegurar redirecciones adecuadas
+SOCIAL_AUTH_SANITIZE_REDIRECTS = True
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS_TIMEOUT = 300
+SOCIAL_AUTH_SESSION_EXPIRATION = False  # Don't expire sessions
+
+# Add Google OAuth credentials
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
+
+# Configure Google OAuth scopes
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
 
 # Specify the User model if you customize it later
 # AUTH_USER_MODEL = 'core.CustomUser'
