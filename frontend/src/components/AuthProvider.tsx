@@ -66,7 +66,7 @@ const isProduction = window.location.hostname !== 'localhost' && window.location
 
 // Set the base URL for API requests based on environment
 const API_BASE_URL = isProduction 
-  ? `${window.location.protocol}//${window.location.host}/api` // Production
+  ? 'https://dashboard-control-back.onrender.com/api' // Production - URL absoluta al backend
   : '/api'; // Development proxy
 
 // Track redirect attempts to prevent infinite loops

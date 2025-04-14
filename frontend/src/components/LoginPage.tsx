@@ -12,9 +12,9 @@ const LoginPage: React.FC = () => {
     // Determine if we're in production based on hostname
     const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
     
-    // Get base URL for API calls - Usar correctamente la URL actual
+    // Get base URL for API calls - Usar la URL correcta del backend para OAuth
     const baseURL = isProduction 
-        ? `${window.location.protocol}//${window.location.host}`
+        ? 'https://dashboard-control-back.onrender.com'
         : '';
     
     useEffect(() => {
