@@ -6,16 +6,39 @@ from rest_framework import status
 from .serializers import UserSerializer
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+import logging
+
+logger = logging.getLogger('core')
 
 class UserProfileView(APIView):
     """
     API endpoint to get the authenticated user's profile information.
     """
-    permission_classes = [IsAuthenticated] # Ensure user is logged in
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        logger.debug(f"UserProfileView accessed by user: {request.user}")
+        logger.debug(f"Is user authenticated? {request.user.is_authenticated}")
+        logger.debug(f"Session keys: {request.session.keys()}")
+        logger.debug(f"Headers: {request.headers}")
+        
+        if not request.user.is_authenticated:
+            logger.warning("User not authenticated in UserProfileView")
+            return Response(
+                {"detail": "Authentication credentials were not provided."}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            serializer = UserSerializer(request.user)
+            logger.debug(f"User data serialized: {serializer.data}")
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error in UserProfileView: {str(e)}")
+            return Response(
+                {"detail": "Error retrieving user profile"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 # --- Company Access Restriction Logic ---
 # This needs to be implemented based on your specific requirements.
@@ -35,10 +58,9 @@ class UserProfileView(APIView):
 def get_csrf_token(request):
     """
     Endpoint to provide the CSRF token to the frontend.
-    The frontend should fetch this once and include the token
-    in the 'X-CSRFToken' header for subsequent state-changing requests.
     """
     token = get_token(request)
+    logger.debug(f"CSRF token generated for user: {request.user}")
     return JsonResponse({'csrfToken': token})
 
 # Note: If you rely purely on social login and GET requests for data,

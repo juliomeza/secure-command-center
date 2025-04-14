@@ -248,9 +248,22 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
 ]
 
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://dashboard-control-front.onrender.com',
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -264,19 +277,27 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://dashboard-control-front.onrender.com',
+]
 CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-
-# Session settings
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = False  # False para que el frontend pueda leer el token
-SESSION_COOKIE_SAMESITE = 'Lax'  # 'Lax' es más seguro que 'None'
+CSRF_USE_SESSIONS = True  # Store CSRF token in the session
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 
-# Security settings based on environment
+# --- Session and Cookie Settings ---
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+SESSION_COOKIE_DOMAIN = None  # Allow subdomains to access the cookie
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Security and Cookie settings based on environment
 IS_RENDER = os.environ.get('IS_RENDER', False)
+
 if IS_RENDER:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -285,11 +306,17 @@ if IS_RENDER:
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    
+    # Specific domain settings for production
+    CSRF_COOKIE_DOMAIN = '.onrender.com'
+    SESSION_COOKIE_DOMAIN = '.onrender.com'
+    
     ALLOWED_HOSTS = [
         'localhost',
         '127.0.0.1',
-        '.onrender.com',  # Allows all subdomains on render.com
+        '.onrender.com',
         'dashboard-control-back.onrender.com',
+        'dashboard-control-front.onrender.com',
     ]
 else:
     SECURE_SSL_REDIRECT = False
