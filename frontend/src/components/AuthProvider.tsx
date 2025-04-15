@@ -187,20 +187,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // Primero intentar obtener un nuevo CSRF token
             await apiClient.get('/csrf/');
             
-            // Intentar obtener el perfil del usuario
-            const response = await apiClient.get<User>('/profile/');
+            // Pequeño delay para asegurar que la cookie se estableció
+            await new Promise(resolve => setTimeout(resolve, 100));
             
-            setUser(response.data);
-            setIsAuthenticated(true);
+            let retryCount = 0;
+            const maxRetries = 2;
             
-            // Asegurarnos de tener tokens JWT válidos
-            const tokens = await fetchTokens();
-            if (tokens) {
-                storeTokens(tokens);
-                console.log("[AuthProvider] JWT tokens stored successfully");
+            while (retryCount < maxRetries) {
+                try {
+                    // Intentar obtener el perfil del usuario
+                    const response = await apiClient.get<User>('/profile/');
+                    setUser(response.data);
+                    setIsAuthenticated(true);
+                    
+                    // Asegurarnos de tener tokens JWT válidos
+                    const tokens = await fetchTokens();
+                    if (tokens) {
+                        storeTokens(tokens);
+                        console.log("[AuthProvider] JWT tokens stored successfully");
+                    }
+                    
+                    redirectAttempts = 0; // Reset redirect counter on success
+                    break; // Si llegamos aquí, todo está bien
+                } catch (err) {
+                    if (retryCount === maxRetries - 1) {
+                        throw err; // Si es el último intento, propagar el error
+                    }
+                    retryCount++;
+                    await new Promise(resolve => setTimeout(resolve, 100)); // Esperar antes de reintentar
+                }
             }
-            
-            redirectAttempts = 0; // Reset redirect counter on success
         } catch (err) {
             console.error("[AuthProvider] Authentication check failed:", err);
             setUser(null);
@@ -209,7 +225,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401 || err.response?.status === 403) {
-                    // Solo redirigir si realmente no está autenticado
                     if (isProduction && redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
                         redirectAttempts++;
                         navigate('/login');
