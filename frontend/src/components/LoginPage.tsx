@@ -93,8 +93,8 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <div className="login-page">
-            <h2>Welcome back</h2>
+        <div className="login-container">
+            <h1>Welcome back</h1>
             <p>Please enter your details</p>
             
             {/* Microsoft Login Button */}

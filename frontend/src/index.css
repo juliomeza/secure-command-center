@@ -343,6 +343,7 @@ nav a:hover, nav button:hover, .top-nav a:hover, .top-nav button:hover {
   padding: 0;
   margin: 0;
   position: relative;
+  background-color: var(--gray-50);
 }
 
 .company-name {
@@ -381,6 +382,33 @@ nav a:hover, nav button:hover, .top-nav a:hover, .top-nav button:hover {
 }
 
 .login-page p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+/* Updated Login page styles without card */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 380px;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-container h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.login-container p {
   color: #666;
   margin-bottom: 30px;
   font-size: 14px;
