@@ -44,11 +44,11 @@ def oauth_success_redirect(request):
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
     """
     if request.user.is_authenticated:
-        # Asegurar que el token CSRF está establecido
-        get_token(request)
-        
+        # Primero asegurar que el token CSRF está establecido
+        csrf_token = get_token(request)
+
         # URL a la que redirigiremos después de generar los tokens
-        redirect_url = settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL
+        redirect_url = f"{settings.FRONTEND_BASE_URL}/dashboard"
         
         # Generar tokens JWT
         refresh = RefreshToken.for_user(request.user)
@@ -58,10 +58,13 @@ def oauth_success_redirect(request):
         
         # Redirigir al frontend con los tokens
         response = HttpResponseRedirect(redirect_url_with_params)
+        
+        # Asegurar que las cookies tengan los atributos correctos
+        response['X-CSRFToken'] = csrf_token
         return response
     
     # Si el usuario no está autenticado, redirigirlo a la página de login
-    return HttpResponseRedirect(settings.LOGIN_URL)
+    return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
 # --- Company Access Restriction Logic ---
 # This needs to be implemented based on your specific requirements.

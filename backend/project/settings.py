@@ -161,23 +161,13 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # --- Social Auth (OAuth2/OpenID Connect) Settings ---
-LOGIN_URL = '/auth/login/' # Where to redirect if @login_required fails
+LOGIN_URL = '/auth/login/'
 
 # Determinar las URLs de frontend según el entorno
 FRONTEND_BASE_URL = 'https://dashboard-control-front.onrender.com' if IS_RENDER else 'http://localhost:5173'
 
-LOGIN_REDIRECT_URL = os.environ.get('LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/') # Redirect after successful social login
-LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', f'{FRONTEND_BASE_URL}/login') # Redirect after logout
-
-# Forzar el uso de URLs absolutas para las redirecciones
-USE_X_FORWARDED_HOST = True
-SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
-SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['localhost:5173', '127.0.0.1:5173', 'localhost:8000', '127.0.0.1:8000', 'dashboard-control-front.onrender.com']
-
-# Configuración de redirección custom para incluir tokens JWT
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.environ.get('SOCIAL_AUTH_LOGIN_REDIRECT_URL', f'{FRONTEND_BASE_URL}/dashboard')
-
-# Redirigir a nuestro endpoint personalizado que genera tokens JWT después del login OAuth
+# Todas las redirecciones deben pasar por oauth-success
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/api/oauth-success/'
 SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/api/oauth-success/'
 SOCIAL_AUTH_LOGIN_DONE_URL = '/api/oauth-success/'
 SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/api/oauth-success/'
