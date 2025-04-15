@@ -183,107 +183,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(true);
         setError(null);
         
-        // Check if we already have valid tokens in storage
-        const storedToken = getStoredAccessToken();
-        if (storedToken) {
-            console.log("[AuthProvider] Found existing token, attempting to use it");
-            try {
-                // Try to use existing JWT token to get user profile
-                const response = await apiClient.get<User>('/profile/');
-                setUser(response.data);
-                setIsAuthenticated(true);
-                console.log("[AuthProvider] Successfully authenticated with stored token");
-                setIsLoading(false);
-                redirectAttempts = 0; // Reset redirect counter on success
-                return;
-            } catch (err) {
-                console.log("[AuthProvider] Stored token didn't work, continuing with OAuth flow");
-                // Token didn't work, continue with normal flow
-                clearTokens();
-            }
-        }
-        
         try {
-            // Attempt to fetch user profile via session auth (OAuth2)
+            // Primero intentar obtener un nuevo CSRF token
+            await apiClient.get('/csrf/');
+            
+            // Intentar obtener el perfil del usuario
             const response = await apiClient.get<User>('/profile/');
-            
-            // Log the raw response for debugging
-            console.log("[AuthProvider] Raw API response:", response);
-            
-            // Check if the response contains HTML instead of a user object
-            const responseData = response.data;
-            const isHtmlResponse = typeof responseData === 'string' && 
-                                  (responseData as string).trim().startsWith('<!doctype html>');
-            
-            if (isHtmlResponse) {
-                console.error("[AuthProvider] Received HTML response instead of user data. Trying to recover...");
-                
-                // Check if we're in production and might need a direct redirect to login
-                if (isProduction && redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
-                    redirectAttempts++;
-                    console.log(`[AuthProvider] In production environment, redirecting to login page (attempt ${redirectAttempts})`);
-                    // Use React Router instead of window.location for better SPA handling
-                    navigate('/login');
-                    setIsLoading(false);
-                    return;
-                }
-                
-                setUser(null);
-                setIsAuthenticated(false);
-                setError('Invalid API response format. Please try again.');
-                setIsLoading(false);
-                return;
-            }
-            
-            // Log the user data with specific fields for debugging
-            console.log("[AuthProvider] Authentication successful, user data:", {
-                id: response.data.id,
-                username: response.data.username,
-                email: response.data.email,
-                firstName: response.data.first_name,
-                lastName: response.data.last_name,
-                company: response.data.profile?.company?.name || 'No company'
-            });
             
             setUser(response.data);
             setIsAuthenticated(true);
-            redirectAttempts = 0; // Reset redirect counter on success
             
-            // Now that the user is authenticated via OAuth2, fetch and store JWT tokens
+            // Asegurarnos de tener tokens JWT válidos
             const tokens = await fetchTokens();
             if (tokens) {
                 storeTokens(tokens);
                 console.log("[AuthProvider] JWT tokens stored successfully");
             }
+            
+            redirectAttempts = 0; // Reset redirect counter on success
         } catch (err) {
             console.error("[AuthProvider] Authentication check failed:", err);
             setUser(null);
             setIsAuthenticated(false);
-            clearTokens(); // Clear any existing tokens
+            clearTokens();
             
             if (axios.isAxiosError(err)) {
-                console.log("[AuthProvider] Error details:", {
-                    status: err.response?.status,
-                    statusText: err.response?.statusText,
-                    data: err.response?.data
-                });
-                
-                // For 401/403 in production, redirect to login page via React Router
-                if (isProduction && (err.response?.status === 401 || err.response?.status === 403) && 
-                    redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
-                    redirectAttempts++;
-                    console.log(`[AuthProvider] Unauthorized in production, redirecting to login (attempt ${redirectAttempts})`);
-                    navigate('/login');
-                    setIsLoading(false);
-                    return;
+                if (err.response?.status === 401 || err.response?.status === 403) {
+                    // Solo redirigir si realmente no está autenticado
+                    if (isProduction && redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
+                        redirectAttempts++;
+                        navigate('/login');
+                    }
                 }
-                
-                if (err.response?.status !== 401 && err.response?.status !== 403) {
-                    // Only set error for unexpected issues, not for unauthenticated status
-                    setError(`Authentication check failed: ${err.message}`);
-                }
-            } else {
-                setError('Unknown error checking authentication status.');
             }
         } finally {
             setIsLoading(false);

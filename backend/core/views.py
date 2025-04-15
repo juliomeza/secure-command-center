@@ -8,6 +8,7 @@ from django.middleware.csrf import get_token
 from django.http import JsonResponse, HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 class UserProfileView(APIView):
     """
@@ -41,9 +42,11 @@ class TokenObtainView(APIView):
 def oauth_success_redirect(request):
     """
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
-    Esta vista combina la generación de tokens con la redirección al frontend.
     """
     if request.user.is_authenticated:
+        # Asegurar que el token CSRF está establecido
+        get_token(request)
+        
         # URL a la que redirigiremos después de generar los tokens
         redirect_url = settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL
         
@@ -54,7 +57,8 @@ def oauth_success_redirect(request):
         redirect_url_with_params = f"{redirect_url}?jwt_access={str(refresh.access_token)}&jwt_refresh={str(refresh)}"
         
         # Redirigir al frontend con los tokens
-        return HttpResponseRedirect(redirect_url_with_params)
+        response = HttpResponseRedirect(redirect_url_with_params)
+        return response
     
     # Si el usuario no está autenticado, redirigirlo a la página de login
     return HttpResponseRedirect(settings.LOGIN_URL)
@@ -74,11 +78,10 @@ def oauth_success_redirect(request):
 # Needed if your frontend makes POST/PUT/DELETE requests and needs the token.
 # GET requests usually don't need CSRF protection. Session auth handles CSRF.
 # If using HttpOnly session cookies, CSRF protection is vital.
+@ensure_csrf_cookie
 def get_csrf_token(request):
     """
-    Endpoint to provide the CSRF token to the frontend.
-    The frontend should fetch this once and include the token
-    in the 'X-CSRFToken' header for subsequent state-changing requests.
+    Endpoint to get a new CSRF token and ensure the cookie is set
     """
     token = get_token(request)
     return JsonResponse({'csrfToken': token})
