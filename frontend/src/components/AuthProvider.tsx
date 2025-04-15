@@ -184,44 +184,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setError(null);
         
         try {
-            // Primero intentar obtener un nuevo CSRF token
+            // Primero obtener el CSRF token
             await apiClient.get('/csrf/');
             
-            // Pequeño delay para asegurar que la cookie se estableció
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Intentar obtener el perfil del usuario
+            const response = await apiClient.get<User>('/profile/');
+            setUser(response.data);
+            setIsAuthenticated(true);
             
-            let retryCount = 0;
-            const maxRetries = 2;
-            
-            while (retryCount < maxRetries) {
-                try {
-                    // Intentar obtener el perfil del usuario
-                    const response = await apiClient.get<User>('/profile/');
-                    setUser(response.data);
-                    setIsAuthenticated(true);
-                    
-                    // Asegurarnos de tener tokens JWT válidos
-                    const tokens = await fetchTokens();
-                    if (tokens) {
-                        storeTokens(tokens);
-                        console.log("[AuthProvider] JWT tokens stored successfully");
-                    }
-                    
-                    redirectAttempts = 0; // Reset redirect counter on success
-                    break; // Si llegamos aquí, todo está bien
-                } catch (err) {
-                    if (retryCount === maxRetries - 1) {
-                        throw err; // Si es el último intento, propagar el error
-                    }
-                    retryCount++;
-                    await new Promise(resolve => setTimeout(resolve, 100)); // Esperar antes de reintentar
-                }
+            // Intentar obtener los tokens JWT
+            const tokens = await fetchTokens();
+            if (tokens) {
+                storeTokens(tokens);
+                console.log("[AuthProvider] JWT tokens stored successfully");
             }
+            
+            redirectAttempts = 0;
         } catch (err) {
             console.error("[AuthProvider] Authentication check failed:", err);
+            
+            // Solo limpiar el estado de autenticación, no los tokens
             setUser(null);
             setIsAuthenticated(false);
-            clearTokens();
             
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401 || err.response?.status === 403) {
