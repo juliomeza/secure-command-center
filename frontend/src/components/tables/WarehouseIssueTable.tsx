@@ -1,5 +1,5 @@
 // src/components/tables/WarehouseIssueTable.tsx
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 interface WarehouseIssue {
   id: string;
@@ -169,109 +169,200 @@ const getStatusBadge = (status: WarehouseIssue['status']) => {
 };
 
 const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const [isScrolledRight, setIsScrolledRight] = useState(false);
+  const [isNarrowScreen, setIsNarrowScreen] = useState(false);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const checkScroll = () => {
+      setShowScrollIndicator(container.scrollWidth > container.clientWidth);
+      const isAtRight = 
+        Math.ceil(container.scrollLeft + container.clientWidth) >= container.scrollWidth;
+      setIsScrolledRight(isAtRight);
+      
+      // Check if the screen is narrow (mobile)
+      setIsNarrowScreen(window.innerWidth <= 768);
+    };
+
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    container.addEventListener('scroll', checkScroll);
+
+    return () => {
+      window.removeEventListener('resize', checkScroll);
+      container?.removeEventListener('scroll', checkScroll);
+    };
+  }, [issues]);
+
+  // Create a style element for custom scrollbar
+  useEffect(() => {
+    // Add custom CSS to hide scrollbar
+    const style = document.createElement('style');
+    style.textContent = `
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   return (
-    <div style={{
-      width: '100%',
-      borderCollapse: 'collapse',
-      fontSize: '0.875rem'
-    }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-            <th style={{ 
-              padding: '0.75rem 1.5rem', 
-              textAlign: 'left', 
-              fontSize: '0.75rem', 
-              fontWeight: '500',
-              color: '#6b7280', 
-              textTransform: 'uppercase'
-            }}>
-              Issue
-            </th>
-            <th style={{ 
-              padding: '0.75rem 1.5rem', 
-              textAlign: 'left', 
-              fontSize: '0.75rem', 
-              fontWeight: '500',
-              color: '#6b7280', 
-              textTransform: 'uppercase'
-            }}>
-              Priority
-            </th>
-            <th style={{ 
-              padding: '0.75rem 1.5rem', 
-              textAlign: 'left', 
-              fontSize: '0.75rem', 
-              fontWeight: '500',
-              color: '#6b7280', 
-              textTransform: 'uppercase'
-            }}>
-              Status
-            </th>
-            <th style={{ 
-              padding: '0.75rem 1.5rem', 
-              textAlign: 'left', 
-              fontSize: '0.75rem', 
-              fontWeight: '500',
-              color: '#6b7280', 
-              textTransform: 'uppercase'
-            }}>
-              Assigned To
-            </th>
-            <th style={{ 
-              padding: '0.75rem 1.5rem', 
-              textAlign: 'left', 
-              fontSize: '0.75rem', 
-              fontWeight: '500',
-              color: '#6b7280', 
-              textTransform: 'uppercase'
-            }}>
-              Due Date
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {issues.map((issue) => (
-            <tr 
-              key={issue.id} 
-              style={{ 
-                borderBottom: '1px solid #e5e7eb',
-                height: '60px'
-              }}
-            >
-              <td style={{ 
-                padding: '1rem 1.5rem',
+    <div style={{ position: 'relative' }}>
+      <div 
+        ref={scrollContainerRef}
+        className="hide-scrollbar"
+        style={{
+          width: '100%',
+          overflowX: 'auto',
+          position: 'relative',
+        }}
+      >
+        {/* Arrow indicator - only visible on narrow screens */}
+        {isNarrowScreen && showScrollIndicator && !isScrolledRight && (
+          <div 
+            style={{ 
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.2)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+              boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+              pointerEvents: 'none'
+            }}
+          >
+            →
+          </div>
+        )}
+        
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
                 fontWeight: '500',
-                color: '#111827'
+                color: '#6b7280', 
+                textTransform: 'uppercase',
+                position: 'sticky',
+                left: 0,
+                backgroundColor: 'white',
+                zIndex: 1,
+                minWidth: '180px',
+                boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
               }}>
-                {issue.issue}
-              </td>
-              <td style={{ 
-                padding: '1rem 1.5rem'
+                Issue
+              </th>
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500',
+                color: '#6b7280', 
+                textTransform: 'uppercase'
               }}>
-                {getPriorityBadge(issue.priority)}
-              </td>
-              <td style={{ 
-                padding: '1rem 1.5rem'
+                Priority
+              </th>
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500',
+                color: '#6b7280', 
+                textTransform: 'uppercase'
               }}>
-                {getStatusBadge(issue.status)}
-              </td>
-              <td style={{ 
-                padding: '1rem 1.5rem',
-                color: '#6b7280'
+                Status
+              </th>
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500',
+                color: '#6b7280', 
+                textTransform: 'uppercase'
               }}>
-                {issue.assignedTo}
-              </td>
-              <td style={{ 
-                padding: '1rem 1.5rem',
-                color: '#6b7280'
+                Assigned To
+              </th>
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500',
+                color: '#6b7280', 
+                textTransform: 'uppercase'
               }}>
-                {issue.dueDate}
-              </td>
+                Due Date
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {issues.map((issue) => (
+              <tr 
+                key={issue.id} 
+                style={{ 
+                  borderBottom: '1px solid #e5e7eb',
+                  height: '60px'
+                }}
+              >
+                <td style={{ 
+                  padding: '1rem 1.5rem',
+                  fontWeight: '500',
+                  color: '#111827',
+                  position: 'sticky',
+                  left: 0,
+                  backgroundColor: 'white',
+                  zIndex: 1,
+                  boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
+                }}>
+                  {issue.issue}
+                </td>
+                <td style={{ 
+                  padding: '1rem 1.5rem'
+                }}>
+                  {getPriorityBadge(issue.priority)}
+                </td>
+                <td style={{ 
+                  padding: '1rem 1.5rem'
+                }}>
+                  {getStatusBadge(issue.status)}
+                </td>
+                <td style={{ 
+                  padding: '1rem 1.5rem',
+                  color: '#6b7280'
+                }}>
+                  {issue.assignedTo}
+                </td>
+                <td style={{ 
+                  padding: '1rem 1.5rem',
+                  color: '#6b7280'
+                }}>
+                  {issue.dueDate}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
