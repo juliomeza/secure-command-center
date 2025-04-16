@@ -29,7 +29,8 @@ const SubCard: React.FC<SubCardProps> = ({
       padding: padding,
       backgroundColor: '#eff6ff',
       borderRadius: '0.5rem',
-      textAlign: isSmallScreen ? 'center' : 'left'
+      textAlign: isSmallScreen ? 'center' : 'left',
+      boxSizing: 'border-box'
     }}>
       <h4 style={{ 
         fontSize: '0.875rem', 
