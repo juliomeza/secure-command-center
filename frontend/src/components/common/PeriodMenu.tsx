@@ -96,15 +96,15 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
         }}
       >
         <Calendar 
-          size={20} 
+          size={24} 
           strokeWidth={1.5} 
           className="opacity-80"
         />
         <span style={{
           position: 'absolute',
-          fontSize: '9px',
+          fontSize: '8px',
           fontWeight: 'bold',
-          top: '48%',
+          top: '52%',
           left: '50%',
           transform: 'translate(-50%, 0)',
           lineHeight: 1
