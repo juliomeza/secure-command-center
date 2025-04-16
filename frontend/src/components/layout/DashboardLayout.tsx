@@ -15,6 +15,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  
+  // Update window width when it changes
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
   
   // Get user initials from first and last name
   const getUserInitials = (): string => {
@@ -132,7 +145,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="flex justify-between items-center mb-8 pt-2">
           <div className="flex items-center">
             <HamburgerMenu menuItems={companyMenuItems} position="left" />
-            <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-blue-900 pl-4">
+            <h1 
+              className="font-semibold text-blue-900 pl-4"
+              style={{ 
+                fontSize: windowWidth < 640 ? '1rem' : windowWidth < 768 ? '1.125rem' : '1.5rem',
+                transition: 'font-size 0.2s ease-in-out'
+              }}
+            >
               {showWelcome ? `${getTimeBasedGreeting()}, ${getFirstName()}` : selectedCompany}
             </h1>
           </div>
