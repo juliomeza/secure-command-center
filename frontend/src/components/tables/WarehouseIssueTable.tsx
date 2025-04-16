@@ -267,8 +267,9 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
                 left: 0,
                 backgroundColor: 'white',
                 zIndex: 1,
-                width: '100px', // Changed from minWidth to width
-                maxWidth: '100px',
+                // Responsive width based on screen size
+                width: isNarrowScreen ? '100px' : '250px',
+                maxWidth: isNarrowScreen ? '100px' : '250px',
                 boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
               }}>
                 Issue
@@ -321,7 +322,7 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
                 key={issue.id} 
                 style={{ 
                   borderBottom: '1px solid #e5e7eb',
-                  height: 'auto' // Changed from fixed height to auto
+                  height: 'auto'
                 }}
               >
                 <td style={{ 
@@ -332,11 +333,15 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
                   left: 0,
                   backgroundColor: 'white',
                   zIndex: 1,
-                  width: '100px', // Changed from minWidth to width
-                  maxWidth: '100px',
-                  wordWrap: 'break-word', // Added to enable word wrapping
-                  overflowWrap: 'break-word', // Added for better compatibility
-                  whiteSpace: 'normal', // Changed from nowrap to normal to allow wrapping
+                  // Responsive width based on screen size
+                  width: isNarrowScreen ? '100px' : '250px',
+                  maxWidth: isNarrowScreen ? '100px' : '250px',
+                  // Always keep word wrap for text overflow handling
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  whiteSpace: 'normal',
+                  // Different line height based on screen size
+                  lineHeight: isNarrowScreen ? '1.25' : '1.5',
                   boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
                 }}>
                   {issue.issue}
