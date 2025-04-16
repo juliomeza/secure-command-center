@@ -66,10 +66,10 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
           width: '40px',
           height: '40px',
           borderRadius: '50%',
-          backgroundColor: selectedPeriod === 'yearly' ? 'var(--blue-dark, #1e3a8a)' : 
-                           selectedPeriod === 'quarterly' ? '#7c3aed' : // Purple for quarterly
-                           selectedPeriod === 'monthly' ? '#0d9488' :   // Teal for monthly
-                           '#f59e0b',                                   // Amber for weekly (updated)
+          backgroundColor:  selectedPeriod === 'yearly' ? '#0d9488' :
+                            selectedPeriod === 'quarterly' ? '#7c3aed' :
+                            selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
+                            '#f59e0b',
           color: 'white',
           fontWeight: 600,
           fontSize: '0.875rem',
@@ -80,17 +80,17 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
         }}
         onMouseOver={(e) => {
           // Maintain the current period color but in a slightly lighter shade
-          const hoverColor = selectedPeriod === 'yearly' ? 'var(--blue-primary, #3b82f6)' : 
-                             selectedPeriod === 'quarterly' ? '#8b5cf6' : 
-                             selectedPeriod === 'monthly' ? '#14b8a6' : 
-                             '#fbbf24';
+          const hoverColor =  selectedPeriod === 'yearly' ? '#14b8a6' :
+                              selectedPeriod === 'quarterly' ? '#8b5cf6' :
+                              selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
+                              '#fbbf24';  // Amber hover stays the same
           e.currentTarget.style.backgroundColor = hoverColor;
         }}
         onMouseOut={(e) => {
           // Return to the original color
-          const originalColor = selectedPeriod === 'yearly' ? 'var(--blue-dark, #1e3a8a)' : 
-                                selectedPeriod === 'quarterly' ? '#7c3aed' : 
-                                selectedPeriod === 'monthly' ? '#0d9488' : 
+          const originalColor = selectedPeriod === 'yearly' ? '#0d9488' :
+                                selectedPeriod === 'quarterly' ? '#7c3aed' :
+                                selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
                                 '#f59e0b';
           e.currentTarget.style.backgroundColor = originalColor;
         }}
