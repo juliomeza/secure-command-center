@@ -220,6 +220,30 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
 
   return (
     <div style={{ position: 'relative' }}>
+      {/* Arrow indicator - moved outside scrollable area but still only visible on narrow screens */}
+      {isNarrowScreen && showScrollIndicator && !isScrolledRight && (
+        <div 
+          style={{ 
+            position: 'absolute',
+            right: 8,
+            bottom: 8, // Positioned at bottom corner
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            background: 'rgba(0,0,0,0.2)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            pointerEvents: 'none'
+          }}
+        >
+          →
+        </div>
+      )}
+      
       <div 
         ref={scrollContainerRef}
         className="hide-scrollbar"
@@ -229,31 +253,6 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
           position: 'relative',
         }}
       >
-        {/* Arrow indicator - only visible on narrow screens */}
-        {isNarrowScreen && showScrollIndicator && !isScrolledRight && (
-          <div 
-            style={{ 
-              position: 'absolute',
-              right: 8,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              background: 'rgba(0,0,0,0.2)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10,
-              boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-              pointerEvents: 'none'
-            }}
-          >
-            →
-          </div>
-        )}
-        
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
