@@ -39,7 +39,7 @@ interface AuthContextType {
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Store token in sessionStorage (en lugar de localStorage)
+// Store token in sessionStorage (instead of localStorage)
 const storeTokens = (tokens: JWTTokens) => {
     sessionStorage.setItem('accessToken', tokens.access);
     sessionStorage.setItem('refreshToken', tokens.refresh);
@@ -66,7 +66,7 @@ const isProduction = window.location.hostname !== 'localhost' && window.location
 
 // Set the base URL for API requests based on environment
 const API_BASE_URL = isProduction 
-  ? 'https://dashboard-control-back.onrender.com/api' // Production - URL absoluta al backend
+  ? 'https://dashboard-control-back.onrender.com/api' // Production - Absolute URL to backend
   : '/api'; // Development proxy
 
 // Track redirect attempts to prevent infinite loops
@@ -184,15 +184,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setError(null);
         
         try {
-            // Primero obtener el CSRF token
+            // First, obtain the CSRF token
             await apiClient.get('/csrf/');
             
-            // Intentar obtener el perfil del usuario
+            // Attempt to fetch the user's profile
             const response = await apiClient.get<User>('/profile/');
             setUser(response.data);
             setIsAuthenticated(true);
             
-            // Intentar obtener los tokens JWT
+            // Attempt to fetch JWT tokens
             const tokens = await fetchTokens();
             if (tokens) {
                 storeTokens(tokens);
@@ -203,7 +203,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (err) {
             console.error("[AuthProvider] Authentication check failed:", err);
             
-            // Solo limpiar el estado de autenticación, no los tokens
+            // Only clean the authentication state, not the tokens
             setUser(null);
             setIsAuthenticated(false);
             
@@ -264,27 +264,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Check authentication status when the provider mounts
     useEffect(() => {
-        // Primero, verificar si hay tokens JWT en la URL (después de redirección OAuth)
+        // First, check if there are JWT tokens in the URL (after OAuth redirection)
         const urlParams = new URLSearchParams(window.location.search);
         const jwtAccess = urlParams.get('jwt_access');
         const jwtRefresh = urlParams.get('jwt_refresh');
         
         if (jwtAccess && jwtRefresh) {
-            console.log("[AuthProvider] Tokens JWT encontrados en la URL después de OAuth login");
-            // Almacenar los tokens
+            console.log("[AuthProvider] JWT tokens found in URL after OAuth login");
+            // Store the tokens
             storeTokens({
                 access: jwtAccess,
                 refresh: jwtRefresh
             });
             
-            // Limpiar la URL para no mantener los tokens visibles
+            // Clean the URL to avoid keeping the tokens visible
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
             
-            // Verificar la autenticación con los nuevos tokens
+            // Verify authentication with the new tokens
             checkAuth();
         } else {
-            // Si no hay tokens en la URL, verificar autenticación normalmente
+            // If there are no tokens in the URL, verify authentication normally
             checkAuth();
         }
         

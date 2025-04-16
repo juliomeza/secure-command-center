@@ -12,7 +12,7 @@ const LoginPage: React.FC = () => {
     // Determine if we're in production based on hostname
     const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
     
-    // Get base URL for API calls - Usar la URL correcta del backend para OAuth
+    // Get base URL for API calls - Use the correct backend URL for OAuth
     const baseURL = isProduction 
         ? 'https://dashboard-control-back.onrender.com'
         : '';
@@ -28,17 +28,17 @@ const LoginPage: React.FC = () => {
         }
     }, [checkAuth]);
 
-    // Agregar un contador de intentos de redirección
+    // Add a redirect attempts counter
     const attemptKey = 'loginRedirectAttempts';
     
     const handleMicrosoftLogin = () => {
-        // Verificar y manejar intentos de redirección para evitar bucles
+        // Check and handle redirect attempts to avoid loops
         const attempts = parseInt(sessionStorage.getItem(attemptKey) || '0');
         
         if (attempts > 3) {
-            console.log('Demasiados intentos de redirección, limpiando contador');
+            console.log('Too many redirect attempts, clearing counter');
             sessionStorage.removeItem(attemptKey);
-            alert('Hubo un problema con la autenticación. Por favor, intente nuevamente más tarde.');
+            alert('There was a problem with authentication. Please try again later.');
             return;
         }
         
@@ -49,13 +49,13 @@ const LoginPage: React.FC = () => {
     };
     
     const handleGoogleLogin = () => {
-        // Verificar y manejar intentos de redirección para evitar bucles
+        // Check and handle redirect attempts to avoid loops
         const attempts = parseInt(sessionStorage.getItem(attemptKey) || '0');
         
         if (attempts > 3) {
-            console.log('Demasiados intentos de redirección, limpiando contador');
+            console.log('Too many redirect attempts, clearing counter');
             sessionStorage.removeItem(attemptKey);
-            alert('Hubo un problema con la autenticación. Por favor, intente nuevamente más tarde.');
+            alert('There was a problem with authentication. Please try again later.');
             return;
         }
         
@@ -65,12 +65,12 @@ const LoginPage: React.FC = () => {
         window.location.href = `${baseURL}/auth/login/google-oauth2/`;
     };
 
-    // Limpiar contador de intentos cuando carga la página normalmente
+    // Clear redirect attempts counter when the page loads normally
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            // Solo resetear si accedemos directamente a la página de login
+            // Only reset if we access the login page directly
             if (!location.state?.from) {
-                console.log('Reset de contador de intentos de redirección');
+                console.log('Reset of redirect attempts counter');
                 sessionStorage.removeItem(attemptKey);
             }
         }
@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
             <div className="flex justify-center items-center h-screen">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Cargando...</p>
+                    <p className="mt-4 text-gray-600">Loading...</p>
                 </div>
             </div>
         );

@@ -30,7 +30,7 @@ const CIOView: React.FC = () => {
     };
   }, []);
   
-  // Determinar la dirección del flex y el ancho de los items según el tamaño de pantalla
+  // Determine flex direction and item width based on screen size
   const isSmallScreen = windowWidth < 900;
 
   return (

@@ -1,12 +1,12 @@
 // src/components/common/AvatarMenu.tsx
 import React, { useState, useRef, useEffect } from 'react';
-// Importamos los iconos específicos que necesitamos de Lucide
+// Import the specific icons we need from Lucide
 import { User, Settings, LogOut } from 'lucide-react';
 
 interface AvatarMenuOption {
   id: string;
   label: string;
-  onClick: () => Promise<boolean> | void;  // Actualizado para permitir tanto Promise<boolean> como void
+  onClick: () => Promise<boolean> | void;  // Updated to allow both Promise<boolean> and void
   icon?: React.ReactNode;
   color?: string;
 }
@@ -45,12 +45,12 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
     };
   }, []);
 
-  // Función para obtener los iconos de Lucide basados en el ID
+  // Function to get Lucide icons based on ID
   const getIcon = (id: string) => {
     const iconProps = { 
-      size: 18, // Tamaño más pequeño para ajustarse mejor al menú
-      strokeWidth: 1.5, // Grosor de línea, similar a los iconos de referencia
-      className: "opacity-80" // Aplica opacidad para que no sean tan intensos
+      size: 18, // Smaller size to better fit the menu
+      strokeWidth: 1.5, // Line thickness, similar to reference icons
+      className: "opacity-80" // Apply opacity so they are not too intense
     };
     
     switch (id) {
@@ -101,7 +101,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
         {initials}
       </button>
 
-      {/* Dropdown Menu - Más compacto y con mejor diseño */}
+      {/* Dropdown Menu - More compact with better design */}
       {isOpen && (
         <div 
           style={{
@@ -117,7 +117,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
             overflow: 'hidden'
           }}
         >
-          {/* User Info Section - Más compacto */}
+          {/* User Info Section - More compact */}
           <div
             style={{
               padding: '0.75rem 1rem',
@@ -146,7 +146,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
             </span>
           </div>
 
-          {/* Menu Options - Con iconos y más compactas */}
+          {/* Menu Options - With icons and more compact */}
           <div 
             style={{
               padding: '0.25rem 0',
@@ -165,7 +165,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
                     const success = await option.onClick();
                     if (success) {
                       console.log("[AvatarMenu] Logout successful, redirecting to login page");
-                      // Redirigir explícitamente a la página de login después de logout
+                      // Explicitly redirect to login page after logout
                       window.location.href = '/login';
                     }
                   } else {
@@ -195,7 +195,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
                 }}
                 role="menuitem"
               >
-                {/* Icono para cada opción */}
+                {/* Icon for each option */}
                 <span style={{ marginRight: '0.75rem', display: 'flex', alignItems: 'center' }}>
                   {option.icon || getIcon(option.id)}
                 </span>

@@ -46,15 +46,15 @@ const BarChart: React.FC<CustomBarChartProps> = ({
   height = 200,
   margin
 }) => {
-  // Define márgenes predeterminados basados en la orientación del gráfico
+  // Define default margins based on chart orientation
   const defaultMargin = layout === 'vertical' 
-    ? { top: 5, right: 30, bottom: 5, left: 10 } // Margen predeterminado para gráficos verticales
-    : { top: 5, right: 20, bottom: 5, left: 10 }; // Margen predeterminado para gráficos horizontales
+    ? { top: 5, right: 30, bottom: 5, left: 10 } // Default margin for vertical charts
+    : { top: 5, right: 20, bottom: 5, left: 10 }; // Default margin for horizontal charts
 
-  // Combina los márgenes personalizados con los predeterminados
+  // Combine custom margins with defaults
   const finalMargin = { ...defaultMargin, ...(margin || {}) };
 
-  // Configuraciones predeterminadas para ejes basadas en la orientación
+  // Default configurations for axes based on orientation
   const defaultXAxisProps: Partial<XAxisProps> = layout === 'vertical'
     ? { type: 'number', axisLine: false, tickLine: false }
     : { type: 'category', axisLine: false, tickLine: false };
@@ -63,7 +63,7 @@ const BarChart: React.FC<CustomBarChartProps> = ({
     ? { type: 'category', width: 100, tick: { textAnchor: 'end' }, axisLine: false, tickLine: false }
     : { type: 'number', width: 40, axisLine: false, tickLine: false };
 
-  // Combina configuraciones predeterminadas con las personalizadas
+  // Combine default configurations with custom ones
   const finalXAxisProps = { ...defaultXAxisProps, ...(xAxisProps || {}) };
   const finalYAxisProps = { ...defaultYAxisProps, ...(yAxisProps || {}) };
 

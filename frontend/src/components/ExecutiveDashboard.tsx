@@ -19,13 +19,13 @@ import {
 // Define Tab type
 type TabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS';
 
-// Configuración de iconos
+// Icon configuration
 const iconProps = {
   size: 18,
   strokeWidth: 1.5
 };
 
-// Definición de tabs con iconos
+// Tab definition with icons
 const tabs: Array<{ id: TabId; label: string; icon: React.ReactNode }> = [
   { id: 'CEO', label: 'CEO', icon: <BarChart2 {...iconProps} /> },
   { id: 'CFO', label: 'CFO', icon: <DollarSign {...iconProps} /> },
@@ -55,7 +55,7 @@ const ExecutiveDashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
-      {/* Navegación principal con tabs minimalistas e iconos */}
+      {/* Main navigation with minimalist tabs and icons */}
       <TabsNavigation<TabId> 
         tabs={tabs} 
         activeTab={activeTab} 
