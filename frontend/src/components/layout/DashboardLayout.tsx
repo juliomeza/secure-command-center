@@ -38,6 +38,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return user.first_name || user.username;
   };
   
+  // Get time-based greeting based on current hour
+  const getTimeBasedGreeting = (): string => {
+    const currentHour = new Date().getHours();
+    
+    if (currentHour < 12) {
+      return 'Good morning';
+    } else if (currentHour < 18) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  };
+  
   // Set the company name based on user profile
   useEffect(() => {
     if (user?.profile?.company?.name) {
@@ -120,7 +133,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className="flex items-center">
             <HamburgerMenu menuItems={companyMenuItems} position="left" />
             <h1 className="text-2xl font-semibold text-blue-900 pl-4">
-              {showWelcome ? `Welcome back, ${getFirstName()}` : selectedCompany}
+              {showWelcome ? `${getTimeBasedGreeting()}, ${getFirstName()}` : selectedCompany}
             </h1>
           </div>
           
