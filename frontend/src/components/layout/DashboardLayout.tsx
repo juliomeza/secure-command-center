@@ -132,7 +132,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="flex justify-between items-center mb-8 pt-2">
           <div className="flex items-center">
             <HamburgerMenu menuItems={companyMenuItems} position="left" />
-            <h1 className="text-2xl font-semibold text-blue-900 pl-4">
+            <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-blue-900 pl-4">
               {showWelcome ? `${getTimeBasedGreeting()}, ${getFirstName()}` : selectedCompany}
             </h1>
           </div>
