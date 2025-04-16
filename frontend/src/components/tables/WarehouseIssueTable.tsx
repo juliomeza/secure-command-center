@@ -258,7 +258,7 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
           <thead>
             <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
               <th style={{ 
-                padding: '0.75rem 1.5rem', 
+                padding: '0.75rem 1rem', 
                 textAlign: 'left', 
                 fontSize: '0.75rem', 
                 fontWeight: '500',
@@ -268,7 +268,8 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
                 left: 0,
                 backgroundColor: 'white',
                 zIndex: 1,
-                minWidth: '180px',
+                width: '100px', // Changed from minWidth to width
+                maxWidth: '100px',
                 boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
               }}>
                 Issue
@@ -321,17 +322,22 @@ const WarehouseIssueTable: React.FC<WarehouseIssueTableProps> = ({ issues }) => 
                 key={issue.id} 
                 style={{ 
                   borderBottom: '1px solid #e5e7eb',
-                  height: '60px'
+                  height: 'auto' // Changed from fixed height to auto
                 }}
               >
                 <td style={{ 
-                  padding: '1rem 1.5rem',
+                  padding: '1rem 1rem',
                   fontWeight: '500',
                   color: '#111827',
                   position: 'sticky',
                   left: 0,
                   backgroundColor: 'white',
                   zIndex: 1,
+                  width: '100px', // Changed from minWidth to width
+                  maxWidth: '100px',
+                  wordWrap: 'break-word', // Added to enable word wrapping
+                  overflowWrap: 'break-word', // Added for better compatibility
+                  whiteSpace: 'normal', // Changed from nowrap to normal to allow wrapping
                   boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
                 }}>
                   {issue.issue}
