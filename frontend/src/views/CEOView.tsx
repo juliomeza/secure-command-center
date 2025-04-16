@@ -116,11 +116,10 @@ const CEOView: React.FC = () => {
           <BarChart
             data={salesByRegionData}
             bars={[{ dataKey: 'value', fill: '#3b82f6', radius: [4, 4, 0, 0] }]}
-            xAxisProps={{ dataKey: 'name', axisLine: false, tickLine: false }}
-            yAxisProps={{ tickFormatter: formatM, axisLine: false, tickLine: false, width: 40 }}
+            xAxisProps={{ dataKey: 'name' }}
+            yAxisProps={{ tickFormatter: formatM }}
             tooltipProps={{ formatter: salesTooltipFormatter }}
             height={300}
-            margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
           />
         </Card>
       </DashboardGrid>

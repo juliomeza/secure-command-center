@@ -95,11 +95,10 @@ const CIOView: React.FC = () => {
             data={systemUptimeData}
             layout="vertical"
             bars={[{ dataKey: 'value', fill: '#3b82f6', radius: [0, 4, 4, 0] }]}
-            xAxisProps={{ type: 'number', domain: [99.8, 100], tickFormatter: formatPercent, axisLine: false, tickLine: false }}
-            yAxisProps={{ dataKey: 'name', type: 'category', width: 80, axisLine: false, tickLine: false }}
+            xAxisProps={{ domain: [99.8, 100], tickFormatter: formatPercent }}
+            yAxisProps={{ dataKey: 'name' }}
             tooltipProps={{ formatter: percentTooltipFormatter }}
             height={200}
-            margin={{ top: 5, right: 30, bottom: 5, left: 80 }} // Keep original margin
           />
         </Card>        
         <Card title="IT Budget Status">

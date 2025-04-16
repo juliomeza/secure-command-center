@@ -82,7 +82,8 @@ const LeadersView: React.FC = () => {
 
       {/* Main Dashboard Content using DashboardGrid */}
       <DashboardGrid>
-        {/* Inventory Metrics Card */}        <Card title="Inventory Metrics">
+        {/* Inventory Metrics Card */}
+        <Card title="Inventory Metrics">
           <div className="relative">
             <LineChart 
               data={warehouseInventoryData} 
@@ -122,7 +123,9 @@ const LeadersView: React.FC = () => {
               </div>
             </div>
           </div>
-        </Card>{/* Space Utilization Card */}        <Card title="Space Utilization">
+        </Card>
+        {/* Space Utilization Card */}
+        <Card title="Space Utilization">
           <PieChart
             data={warehouseSpaceUtilizationData}
             pieProps={{
@@ -141,7 +144,8 @@ const LeadersView: React.FC = () => {
         </Card>
 
         {/* Weekly Shipments Card */}
-        <Card title="Weekly Shipments">          <BarChart 
+        <Card title="Weekly Shipments">
+          <BarChart 
             data={warehouseShipmentData} 
             bars={[
               { dataKey: "value", fill: "#3b82f6", radius: [4, 4, 0, 0] }
@@ -156,7 +160,10 @@ const LeadersView: React.FC = () => {
               <p className="text-sm text-gray-600">Average Daily: 409</p>
             </div>
           </div>
-        </Card>        {/* Inventory by Category Card */}        <Card title="Inventory by Category">
+        </Card>
+
+        {/* Inventory by Category Card */}
+        <Card title="Inventory by Category">
           <PieChart
             data={warehouseCategoryData}
             pieProps={{
@@ -169,27 +176,29 @@ const LeadersView: React.FC = () => {
             }}
             showLegend={true}
             height={200}
-          />        </Card><Card title="Performance by Operation">
+          />
+        </Card>
+
+        <Card title="Performance by Operation">
           <BarChart 
             data={warehousePerformanceData}
             bars={[{ dataKey: "value", fill: "#3b82f6", radius: [0, 4, 4, 0] }]}
             layout="vertical"
             xAxisProps={{
-              type: "number",
               domain: [90, 100],
               tickFormatter: (value) => `${value}%`,
               tickCount: 5
             }}
             yAxisProps={{
               dataKey: "name",
-              type: "category",
               width: 100
             }}
             tooltipProps={{ formatter: (value) => [`${value}%`, ""] }}
             height={250}
-            margin={{ top: 5, right: 30, bottom: 5, left: 100 }}
           />
-        </Card><Card title="Return Rate Trend">
+        </Card>
+
+        <Card title="Return Rate Trend">
           <LineChart 
             data={warehouseReturnRateData}
             lines={[
@@ -216,7 +225,9 @@ const LeadersView: React.FC = () => {
               <span>Target: &lt; 2.0%</span>
             </div>
           </div>
-        </Card>        {/* Key Metrics Card */}
+        </Card>
+
+        {/* Key Metrics Card */}
         <Card title="Key Warehouse Metrics" className="md:col-span-2">
           <div style={{ 
             display: 'flex', 
@@ -304,7 +315,9 @@ const LeadersView: React.FC = () => {
               }
             />
           </div>
-        </Card>        {/* Active Warehouse Issues Table */}
+        </Card>
+
+        {/* Active Warehouse Issues Table */}
         <Card title="Active Warehouse Issues" className="md:col-span-2">
           <div className="w-full -mx-6 -mb-6 overflow-hidden rounded-b-lg">
             <WarehouseIssueTable issues={warehouseIssuesData} />

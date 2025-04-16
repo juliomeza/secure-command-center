@@ -108,18 +108,19 @@ const COOView: React.FC = () => {
             tooltipProps={{ formatter: percentTooltipFormatter }}
             height={180}
           />
-        </Card>        <Card title="Team Performance" className="md:col-span-2">
+        </Card>        
+        <Card title="Team Performance" className="md:col-span-2">
           <BarChart
             data={teamPerformanceData}
             layout="vertical"
             bars={[{ dataKey: 'value', fill: '#3b82f6', radius: [0, 4, 4, 0] }]}
-            xAxisProps={{ type: 'number', domain: [0, 100], tickFormatter: formatPercent, tickCount: 5, axisLine: false, tickLine: false }}
-            yAxisProps={{ dataKey: 'name', type: 'category', width: 100, tick: { textAnchor: 'end' }, axisLine: false, tickLine: false }}
+            xAxisProps={{ domain: [0, 100], tickFormatter: formatPercent, tickCount: 5 }}
+            yAxisProps={{ dataKey: 'name' }}
             tooltipProps={{ formatter: percentTooltipFormatter }}
-            height={250} // Keep original height
-            margin={{ top: 5, right: 30, bottom: 5, left: 100 }} // Keep original margin
+            height={250}
           />
-        </Card>        <Card title="Key Operational Metrics" className="md:col-span-2">
+        </Card>        
+        <Card title="Key Operational Metrics" className="md:col-span-2">
           <div style={{ 
             display: 'flex', 
             flexDirection: isSmallScreen ? 'column' : 'row',
