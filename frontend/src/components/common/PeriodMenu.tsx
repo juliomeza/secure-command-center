@@ -81,17 +81,17 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
             size={32} 
             strokeWidth={1.5}
             color={isHovered 
-              ? (selectedPeriod === 'yearly' ? '#ad1457' :
-                 selectedPeriod === 'quarterly' ? '#00897b' :
+              ? (selectedPeriod === 'yearly' ? '#d81b60' :
+                 selectedPeriod === 'quarterly' ? '#00acc1' :
                  selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
-                 '#039be5')
+                 '#29b6f6')
               : (selectedPeriod === 'yearly' ? '#880e4f' :
                  selectedPeriod === 'quarterly' ? '#00796b' :
                  selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
                  '#0288d1')
             }
             style={{
-              transition: 'color 0.2s ease-in-out'
+              transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           />
         </div>
@@ -100,17 +100,17 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
           fontWeight: '500',
           marginTop: '2px',
           color: isHovered 
-            ? (selectedPeriod === 'yearly' ? '#ad1457' :
-               selectedPeriod === 'quarterly' ? '#00897b' :
+            ? (selectedPeriod === 'yearly' ? '#d81b60' :
+               selectedPeriod === 'quarterly' ? '#00acc1' :
                selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
-               '#039be5')
+               '#29b6f6')
             : (selectedPeriod === 'yearly' ? '#880e4f' :
                selectedPeriod === 'quarterly' ? '#00796b' :
                selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
                '#0288d1'),
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          transition: 'color 0.2s ease-in-out'
+          transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
           {selectedPeriod === 'monthly' ? 'Monthly' : 
           selectedPeriod === 'quarterly' ? 'Quarterly' : 
