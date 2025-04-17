@@ -13,6 +13,8 @@ load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 IS_RENDER = os.environ.get('IS_RENDER', False)
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY is not set in the environment variables.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Cambiar a 'True' temporalmente para diagnosticar problemas de OAuth
@@ -265,16 +267,23 @@ SIMPLE_JWT = {
 }
 
 # --- CORS Settings (Cross-Origin Resource Sharing) ---
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
-CORS_ALLOW_CREDENTIALS = True # IMPORTANT: Allows cookies to be sent cross-origin
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS')
+if not CORS_ALLOWED_ORIGINS:
+    raise ValueError("CORS_ALLOWED_ORIGINS is not set in the environment variables.")
+CORS_ALLOWED_ORIGINS = CORS_ALLOWED_ORIGINS.split(',')
 
-# Configuraciones adicionales para CORS en entornos de producción
+CORS_ALLOW_CREDENTIALS = True  # Allows cookies to be sent cross-origin
+
+# Configuraciones adicionales para CORS
 CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 CORS_ALLOW_HEADERS = ['accept', 'accept-encoding', 'authorization', 'content-type', 'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with']
 CORS_EXPOSE_HEADERS = ['content-type', 'content-length']
 
 # CSRF Trusted Origins (Necessary when frontend is on a different port/domain)
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,https://dashboard-control-front.onrender.com').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS')
+if not CSRF_TRUSTED_ORIGINS:
+    raise ValueError("CSRF_TRUSTED_ORIGINS is not set in the environment variables.")
+CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS.split(',')
 
 # --- Logging Configuration (Optional but Recommended) ---
 # Add basic logging configuration here if needed

@@ -15,10 +15,6 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 
 ### Media Prioridad
 
-- [ ] **Mejorar validación CORS**
-  - **Estado**: Pendiente
-  - **Problema**: `CORS_ALLOWED_ORIGINS` usa valores por defecto inseguros
-
 - [ ] **Implementar rate limiting para la API**
   - **Estado**: Pendiente
   - **Problema**: No hay protección contra ataques de fuerza bruta
