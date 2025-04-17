@@ -12,10 +12,7 @@ load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 # Determinar si estamos en entorno Render (producción)
 IS_RENDER = os.environ.get('IS_RENDER', False)
 
-# print(f"POSTGRES_USER: {os.environ.get('POSTGRES_USER')}")
-# print(f"POSTGRES_PASSWORD: {os.environ.get('POSTGRES_PASSWORD')}")
-
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-fallback-key-for-dev') # CHANGE IN PRODUCTION!
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Cambiar a 'True' temporalmente para diagnosticar problemas de OAuth
@@ -28,6 +25,14 @@ SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False') == '
 SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False') == 'True'
 CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False') == 'True'
 # Set to True in production if behind HTTPS
+
+# HSTS settings (HTTP Strict Transport Security)
+# NOTE: Only add these settings when everything (e.g., CORS, login, etc.) is fully functional.
+# Enabling HSTS prematurely can complicate initial setup and debugging.
+if IS_RENDER:  # Apply only in production
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # HttpOnly flags are True by default for Session and CSRF cookies which is good.
 SESSION_COOKIE_HTTPONLY = True

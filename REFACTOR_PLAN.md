@@ -13,23 +13,6 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 
 ## Problemas de Seguridad
 
-### Alta Prioridad
-
-- [ ] **Eliminar clave secreta hardcodeada en settings.py**
-  - **Estado**: Pendiente
-  - **Problema**: Existe una clave de fallback en `backend/project/settings.py` (línea 18)
-  - **Implementación planificada**: Obligar variable de entorno y lanzar excepción si no está definida
-
-- [x] **Eliminar impresión de credenciales en logs**
-  - **Estado**: Completada
-  - **Problema**: Print statements con información sensible en `backend/project/settings.py`
-  - **Detalle**: Las líneas con `print` fueron comentadas
-
-- [ ] **Forzar HTTPS en producción**
-  - **Estado**: Pendiente
-  - **Problema**: Configuración de Nginx no redirige a HTTPS en producción
-  - **Implementación planificada**: Modificar `frontend/nginx.conf` para redirigir a HTTPS
-
 ### Media Prioridad
 
 - [ ] **Mejorar validación CORS**
