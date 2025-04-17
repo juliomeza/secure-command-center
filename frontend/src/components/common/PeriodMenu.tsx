@@ -1,6 +1,6 @@
 // src/components/common/PeriodMenu.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, CalendarDays  } from 'lucide-react';
 import { Period } from '../../data/types';
 
 interface PeriodMenuProps {
@@ -63,55 +63,59 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          flexDirection: 'column',
           width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          backgroundColor:  selectedPeriod === 'yearly' ? '#0d9488' :
-                            selectedPeriod === 'quarterly' ? '#7c3aed' :
-                            selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
-                            '#f59e0b',
-          color: 'white',
-          fontWeight: 600,
-          fontSize: '0.875rem',
+          height: '50px',
           cursor: 'pointer',
           border: 'none',
-          transition: 'background-color 0.2s ease-in-out',
-          position: 'relative'
-        }}
-        onMouseOver={(e) => {
-          // Maintain the current period color but in a slightly lighter shade
-          const hoverColor =  selectedPeriod === 'yearly' ? '#14b8a6' :
-                              selectedPeriod === 'quarterly' ? '#8b5cf6' :
-                              selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
-                              '#fbbf24';  // Amber hover stays the same
-          e.currentTarget.style.backgroundColor = hoverColor;
-        }}
-        onMouseOut={(e) => {
-          // Return to the original color
-          const originalColor = selectedPeriod === 'yearly' ? '#0d9488' :
-                                selectedPeriod === 'quarterly' ? '#7c3aed' :
-                                selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
-                                '#f59e0b';
-          e.currentTarget.style.backgroundColor = originalColor;
+          backgroundColor: 'transparent',
+          position: 'relative',
+          padding: 0
         }}
       >
-        <Calendar 
-          size={24} 
-          strokeWidth={1.5} 
-          className="opacity-80"
-        />
+        <div style={{ position: 'relative' }}>
+          <CalendarDays 
+            size={32} 
+            strokeWidth={1.5}
+            color={selectedPeriod === 'yearly' ? '#880e4f' :
+                  selectedPeriod === 'quarterly' ? '#00796b' :
+                  selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
+                  '#0288d1'}
+            style={{
+              transition: 'color 0.2s ease-in-out'
+            }}
+            onMouseOver={(e) => {
+              // Maintain the current period color but in a slightly lighter shade
+              const hoverColor = selectedPeriod === 'yearly' ? '#ad1457' :
+                                selectedPeriod === 'quarterly' ? '#00897b' :
+                                selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
+                                '#039be5';
+              e.currentTarget.style.color = hoverColor;
+            }}
+            onMouseOut={(e) => {
+              // Return to the original color
+              const originalColor = selectedPeriod === 'yearly' ? '#880e4f' :
+                                  selectedPeriod === 'quarterly' ? '#00796b' :
+                                  selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
+                                  '#0288d1';
+              e.currentTarget.style.color = originalColor;
+            }}
+          />
+        </div>
         <span style={{
-          position: 'absolute',
-          fontSize: '8px',
-          fontWeight: 'bold',
-          top: '52%',
-          left: '50%',
-          transform: 'translate(-50%, 0)',
-          lineHeight: 1
+          fontSize: '7px',
+          fontWeight: '500',
+          marginTop: '2px',
+          color: selectedPeriod === 'yearly' ? '#880e4f' :
+                selectedPeriod === 'quarterly' ? '#00796b' :
+                selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
+                '#0288d1',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
         }}>
-          {selectedPeriod === 'monthly' ? 'M' : 
-           selectedPeriod === 'quarterly' ? 'Q' : 
-           selectedPeriod === 'weekly' ? 'W' : 'Y'}
+          {selectedPeriod === 'monthly' ? 'Monthly' : 
+          selectedPeriod === 'quarterly' ? 'Quarterly' : 
+          selectedPeriod === 'weekly' ? 'Weekly' : 'Yearly'}
         </span>
       </button>
 
