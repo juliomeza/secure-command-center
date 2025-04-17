@@ -68,8 +68,8 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 
 ### Fase 1: Seguridad Crítica (Semana 1-2)
 - [x] Eliminar impresión de credenciales en logs
-- [ ] Eliminar clave secreta hardcodeada
-- [ ] Forzar HTTPS en producción
+- [x] Eliminar clave secreta hardcodeada
+- [x] Forzar HTTPS en producción
 - [ ] Implementar rate limiting básico
 
 ### Fase 2: Estructura y Mantenibilidad (Semana 3-4)
