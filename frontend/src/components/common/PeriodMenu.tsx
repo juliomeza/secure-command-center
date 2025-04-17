@@ -1,6 +1,6 @@
 // src/components/common/PeriodMenu.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, CalendarDays  } from 'lucide-react';
+import { Calendar, CalendarDays } from 'lucide-react';
 import { Period } from '../../data/types';
 
 interface PeriodMenuProps {
@@ -17,6 +17,7 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
   position = 'right'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => {
@@ -72,33 +73,25 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
           position: 'relative',
           padding: 0
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div style={{ position: 'relative' }}>
           <CalendarDays 
             size={32} 
             strokeWidth={1.5}
-            color={selectedPeriod === 'yearly' ? '#880e4f' :
-                  selectedPeriod === 'quarterly' ? '#00796b' :
-                  selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
-                  '#0288d1'}
+            color={isHovered 
+              ? (selectedPeriod === 'yearly' ? '#ad1457' :
+                 selectedPeriod === 'quarterly' ? '#00897b' :
+                 selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
+                 '#039be5')
+              : (selectedPeriod === 'yearly' ? '#880e4f' :
+                 selectedPeriod === 'quarterly' ? '#00796b' :
+                 selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
+                 '#0288d1')
+            }
             style={{
               transition: 'color 0.2s ease-in-out'
-            }}
-            onMouseOver={(e) => {
-              // Maintain the current period color but in a slightly lighter shade
-              const hoverColor = selectedPeriod === 'yearly' ? '#ad1457' :
-                                selectedPeriod === 'quarterly' ? '#00897b' :
-                                selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
-                                '#039be5';
-              e.currentTarget.style.color = hoverColor;
-            }}
-            onMouseOut={(e) => {
-              // Return to the original color
-              const originalColor = selectedPeriod === 'yearly' ? '#880e4f' :
-                                  selectedPeriod === 'quarterly' ? '#00796b' :
-                                  selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
-                                  '#0288d1';
-              e.currentTarget.style.color = originalColor;
             }}
           />
         </div>
@@ -106,12 +99,18 @@ const PeriodMenu: React.FC<PeriodMenuProps> = ({
           fontSize: '7px',
           fontWeight: '500',
           marginTop: '2px',
-          color: selectedPeriod === 'yearly' ? '#880e4f' :
-                selectedPeriod === 'quarterly' ? '#00796b' :
-                selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
-                '#0288d1',
+          color: isHovered 
+            ? (selectedPeriod === 'yearly' ? '#ad1457' :
+               selectedPeriod === 'quarterly' ? '#00897b' :
+               selectedPeriod === 'monthly' ? 'var(--blue-primary, #3b82f6)' :
+               '#039be5')
+            : (selectedPeriod === 'yearly' ? '#880e4f' :
+               selectedPeriod === 'quarterly' ? '#00796b' :
+               selectedPeriod === 'monthly' ? 'var(--blue-dark, #1e3a8a)' :
+               '#0288d1'),
           textTransform: 'uppercase',
-          letterSpacing: '0.5px'
+          letterSpacing: '0.5px',
+          transition: 'color 0.2s ease-in-out'
         }}>
           {selectedPeriod === 'monthly' ? 'Monthly' : 
           selectedPeriod === 'quarterly' ? 'Quarterly' : 
