@@ -9,6 +9,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
+from .throttling import LoginRateThrottle
 
 class UserProfileView(APIView):
     """
@@ -26,6 +27,7 @@ class TokenObtainView(APIView):
     Endpoint to obtain JWT tokens after OAuth2 authentication.
     This allows the frontend to get tokens for future API calls.
     """
+    throttle_classes = [LoginRateThrottle]
     permission_classes = [IsAuthenticated]  # User must be already authenticated via OAuth2
 
     def get(self, request):

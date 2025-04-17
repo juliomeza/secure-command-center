@@ -11,14 +11,6 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 6. [Pruebas y Calidad](#pruebas-y-calidad)
 7. [Plan de Acción por Fases](#plan-de-acción-por-fases)
 
-## Problemas de Seguridad
-
-### Media Prioridad
-
-- [ ] **Implementar rate limiting para la API**
-  - **Estado**: Pendiente
-  - **Problema**: No hay protección contra ataques de fuerza bruta
-
 ## Mejoras de Rendimiento
 
 ### Media Prioridad
@@ -67,9 +59,6 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 ## Plan de Acción por Fases
 
 ### Fase 1: Seguridad Crítica (Semana 1-2)
-- [x] Eliminar impresión de credenciales en logs
-- [x] Eliminar clave secreta hardcodeada
-- [x] Forzar HTTPS en producción
 - [ ] Implementar rate limiting básico
 
 ### Fase 2: Estructura y Mantenibilidad (Semana 3-4)

@@ -105,6 +105,13 @@ apiClient.interceptors.response.use(
         return response;
     },
     async (error) => {
+        // Handle rate limit exceeded errors
+        if (error.response?.status === 429) {
+            console.warn("[AuthProvider] Rate limit exceeded");
+            alert("Too many requests. Please try again later.");
+            return Promise.reject(error);
+        }
+
         const originalRequest = error.config;
         
         // If the error is due to an expired token (401) and we haven't tried to refresh yet
