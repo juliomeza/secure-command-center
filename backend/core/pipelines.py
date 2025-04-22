@@ -4,40 +4,44 @@ from django.contrib.auth.models import User
 from social_core.exceptions import AuthAlreadyAssociated
 from social_django.models import UserSocialAuth
 from django.contrib.auth import logout, login
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
 
 def clean_session(strategy, *args, **kwargs):
     """
     Pipeline function to ensure clean session state before authentication.
+    Only cleans the session if there's no authenticated user.
     """
     try:
         request = strategy.request
-        if request:
-            # Limpiar completamente la sesión anterior
-            request.session.flush()
-            # Crear una nueva sesión
-            request.session.create()
-            print(f"Session cleaned and recreated. New session key: {request.session.session_key}")
+        if request and not request.user.is_authenticated:
+            if not request.session.exists(request.session.session_key):
+                request.session.create()
+            request.session.modified = True
+            print(f"Session initialized/modified with key: {request.session.session_key}")
     except Exception as e:
         print(f"Error in clean_session pipeline: {str(e)}")
     return {}
 
 def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):
     """
-    Maneja cuentas ya asociadas y asegura una sesión limpia.
+    Maneja cuentas ya asociadas y asegura una sesión persistente.
     """
     try:
         social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
         if social:
-            if user and social.user != user:
-                request = kwargs.get('request')
-                if request:
-                    # Limpiar sesión anterior
-                    request.session.flush()
-                    # Crear nueva sesión
+            request = kwargs.get('request')
+            if request:
+                # Mantener la sesión existente si ya hay una
+                if not request.session.exists(request.session.session_key):
                     request.session.create()
-                    # Realizar login
+                
+                # Realizar login y asegurar que la sesión se mantenga
+                if not request.user.is_authenticated or request.user != social.user:
                     login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
-                    print(f"User {social.user.username} logged in with new session: {request.session.session_key}")
+                    request.session.modified = True
+                    print(f"User {social.user.username} logged in with session: {request.session.session_key}")
+                
                 return {'user': social.user, 'is_new': False}
     except Exception as e:
         print(f"Error in handle_already_associated_auth: {str(e)}")

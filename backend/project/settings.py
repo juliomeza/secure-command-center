@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'social_django', # OAuth2 authentication
     'sslserver',     # For Development HTTPS only
     'rest_framework_simplejwt', # JWT authentication
+    'rest_framework_simplejwt.token_blacklist',  # JWT token blacklist
 
     # Your apps
     'core',
@@ -287,6 +288,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,

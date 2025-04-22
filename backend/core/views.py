@@ -50,6 +50,11 @@ def oauth_success_redirect(request):
             print("User not authenticated in oauth_success_redirect")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
+        # Asegurar que la sesión existe y está activa
+        if not request.session.exists(request.session.session_key):
+            request.session.create()
+        request.session.modified = True
+        
         # Generar CSRF token y tokens JWT
         csrf_token = get_token(request)
         refresh = RefreshToken.for_user(request.user)
@@ -64,17 +69,30 @@ def oauth_success_redirect(request):
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
 
-        # Asegurar que la cookie de sesión esté configurada correctamente
-        if request.session.session_key:
-            response.set_cookie(
-                'sessionid',
-                request.session.session_key,
-                domain=settings.SESSION_COOKIE_DOMAIN,
-                secure=settings.SESSION_COOKIE_SECURE,
-                httponly=True,
-                samesite=settings.SESSION_COOKIE_SAMESITE,
-                max_age=settings.SESSION_COOKIE_AGE
-            )
+        # Configurar la cookie de sesión con los parámetros correctos
+        max_age = getattr(settings, 'SESSION_COOKIE_AGE', 1209600)  # 2 weeks default
+        response.set_cookie(
+            settings.SESSION_COOKIE_NAME,
+            request.session.session_key,
+            max_age=max_age,
+            domain=getattr(settings, 'SESSION_COOKIE_DOMAIN', None),
+            path=getattr(settings, 'SESSION_COOKIE_PATH', '/'),
+            secure=getattr(settings, 'SESSION_COOKIE_SECURE', True),
+            httponly=getattr(settings, 'SESSION_COOKIE_HTTPONLY', True),
+            samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+        )
+
+        # También establecer las cookies de JWT
+        response.set_cookie(
+            'refresh_token',
+            str(refresh),
+            max_age=max_age,
+            domain=getattr(settings, 'SESSION_COOKIE_DOMAIN', None),
+            path=getattr(settings, 'SESSION_COOKIE_PATH', '/'),
+            secure=getattr(settings, 'SESSION_COOKIE_SECURE', True),
+            httponly=True,
+            samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+        )
 
         print(f"Redirecting authenticated user {request.user.username} to dashboard with session {request.session.session_key}")
         return response
