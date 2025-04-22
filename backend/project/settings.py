@@ -47,6 +47,28 @@ CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 # Configurar el dominio de las cookies para que funcionen entre subdominios si es necesario
 SESSION_COOKIE_DOMAIN = None  # Automáticamente detecta el dominio actual
 
+# --- Session and Cookie Settings ---
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 3600  # 1 hora
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Cookie settings
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_SECURE = True if IS_RENDER else False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
+
+# CSRF settings
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_SECURE = True if IS_RENDER else False
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
+
+# Configuración del dominio de cookies
+SESSION_COOKIE_DOMAIN = None  # Se configurará automáticamente basado en el request
+CSRF_COOKIE_DOMAIN = None    # Se configurará automáticamente basado en el request
+
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 

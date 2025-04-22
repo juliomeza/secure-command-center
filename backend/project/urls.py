@@ -13,28 +13,50 @@ from django.shortcuts import redirect
 class SecureLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            # Limpiar la autenticación del usuario
             auth_logout(request)
         
-        # Clear session completely
+        # Clear session
         request.session.flush()
         request.session.cycle_key()
         
-        # Generar respuesta según el tipo de petición
+        # Prepare response
         if request.path.startswith('/api/'):
             response = HttpResponse(status=200)
         else:
             response = super().dispatch(request, *args, **kwargs)
         
-        # Delete all authentication-related cookies
-        response.delete_cookie('sessionid', path='/', domain=None)
-        response.delete_cookie('csrftoken', path='/', domain=None)
-        response.delete_cookie('messages', path='/', domain=None)
+        # Get the domain from settings or request
+        domain = settings.SESSION_COOKIE_DOMAIN
+        if not domain and settings.IS_RENDER:
+            # If we're on Render and no domain is set, try to get it from the request
+            domain = request.get_host().split(':')[0]
+            if domain == 'localhost':
+                domain = None
+
+        # Delete ALL authentication related cookies with proper domain
+        cookies_to_delete = [
+            'sessionid',
+            'csrftoken',
+            'messages',
+            'social_auth_last_login_backend',  # Social auth cookie
+            'oauth_state',                     # OAuth state cookie
+            'g_state',                         # Google OAuth cookie
+            'social_auth_google-oauth2_state', # Google specific state
+        ]
+
+        for cookie in cookies_to_delete:
+            response.delete_cookie(
+                cookie,
+                path='/',
+                domain=domain,
+                samesite=settings.SESSION_COOKIE_SAMESITE
+            )
         
-        # Set additional headers to prevent caching
+        # Set security headers
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
+        response['SameSite'] = settings.SESSION_COOKIE_SAMESITE
         
         return response
 
