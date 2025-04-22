@@ -12,22 +12,27 @@ from django.shortcuts import redirect
 # Define SecureLogoutView
 class SecureLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
+        if request.user.is_authenticated:
+            # Limpiar la autenticación del usuario
+            auth_logout(request)
         
         # Clear session completely
         request.session.flush()
+        request.session.cycle_key()
         
-        # Check if this is an API request or browser request
+        # Generar respuesta según el tipo de petición
         if request.path.startswith('/api/'):
-            # For API requests, return a simple 200 response instead of redirect
             response = HttpResponse(status=200)
+        else:
+            response = super().dispatch(request, *args, **kwargs)
         
-        # Delete session cookies with explicit settings
+        # Delete all authentication-related cookies
         response.delete_cookie('sessionid', path='/', domain=None)
         response.delete_cookie('csrftoken', path='/', domain=None)
+        response.delete_cookie('messages', path='/', domain=None)
         
         # Set additional headers to prevent caching
-        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
         
