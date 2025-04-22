@@ -9,12 +9,21 @@ def clean_session(strategy, *args, **kwargs):
     """
     Pipeline function to ensure clean session state before authentication.
     """
-    request = strategy.request
-    if request:
-        # Limpiar la sesión actual
-        request.session.flush()
-        # Generar nueva sesión
-        request.session.cycle_key()
+    try:
+        request = strategy.request
+        if request:
+            # Solo limpiar la sesión si no hay un usuario autenticado
+            if not request.user.is_authenticated:
+                request.session.flush()
+
+            # Crear una nueva sesión si no existe
+            if not request.session.exists(request.session.session_key):
+                request.session.create()
+            
+            # Forzar una nueva clave de sesión
+            request.session.cycle_key()
+    except Exception as e:
+        print(f"Error in clean_session pipeline: {str(e)}")
     return {}
 
 def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):

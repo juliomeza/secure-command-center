@@ -12,6 +12,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from .throttling import LoginRateThrottle
 from django.contrib.auth import login
 from django.contrib.auth.signals import user_logged_in
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import AuthAlreadyAssociated
 
 # --- Views ---
 class UserProfileView(APIView):
@@ -43,50 +45,46 @@ def oauth_success_redirect(request):
     """
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
     """
-    if request.user.is_authenticated:
-        # Forzar una nueva sesión limpia
-        request.session.flush()
-        request.session.cycle_key()
+    try:
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
+
+        # Regenerar la sesión de forma segura
+        if not request.session.exists(request.session.session_key):
+            request.session.create()
         
-        # Forzar un nuevo login para el usuario
-        login(request, request.user)
-        
-        # Enviar señal de login
-        user_logged_in.send(sender=request.user.__class__, request=request, user=request.user)
-        
-        # Establecer datos de sesión
+        # Almacenar el ID del usuario en la sesión
         request.session['user_id'] = request.user.id
-        request.session['authenticated'] = True
         request.session.modified = True
-        
-        # Asegurar CSRF token
+
+        # Generar CSRF token y tokens JWT
         csrf_token = get_token(request)
-        
-        # Generar tokens JWT
         refresh = RefreshToken.for_user(request.user)
-        
-        # URL con tokens
+
+        # Preparar URL de redirección con tokens
         redirect_url = f"{settings.FRONTEND_BASE_URL}/dashboard"
         redirect_url_with_params = f"{redirect_url}?jwt_access={str(refresh.access_token)}&jwt_refresh={str(refresh)}"
-        
+
         # Preparar respuesta
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
-        
-        # Configurar cookie de sesión
-        response.set_cookie(
-            'sessionid',
-            request.session.session_key,
-            secure=settings.SESSION_COOKIE_SECURE,
-            httponly=True,
-            samesite=settings.SESSION_COOKIE_SAMESITE,
-            domain=settings.SESSION_COOKIE_DOMAIN,
-            max_age=settings.SESSION_COOKIE_AGE
-        )
-        
+
+        # Asegurar que la cookie de sesión esté configurada correctamente
+        if request.session.session_key:
+            response.set_cookie(
+                'sessionid',
+                request.session.session_key,
+                secure=settings.SESSION_COOKIE_SECURE,
+                httponly=True,
+                samesite=settings.SESSION_COOKIE_SAMESITE,
+                domain=settings.SESSION_COOKIE_DOMAIN,
+                max_age=settings.SESSION_COOKIE_AGE
+            )
+
         return response
-    
-    return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
+    except Exception as e:
+        print(f"Error en oauth_success_redirect: {str(e)}")
+        return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
