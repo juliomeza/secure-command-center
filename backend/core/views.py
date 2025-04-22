@@ -46,13 +46,20 @@ def oauth_success_redirect(request):
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
     """
     try:
+        print(f"OAuth success check - Session key: {request.session.session_key}, User authenticated: {request.user.is_authenticated}")
+        
         if not request.user.is_authenticated:
             print("User not authenticated in oauth_success_redirect")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
         # Asegurar que la sesión existe y está activa
-        if not request.session.exists(request.session.session_key):
+        if not request.session.session_key:
             request.session.create()
+        
+        # Forzar que la sesión se guarde inmediatamente
+        request.session.save()
+        
+        # Re-obtener la sesión para asegurar que está activa
         request.session.modified = True
         
         # Generar CSRF token y tokens JWT
@@ -69,8 +76,8 @@ def oauth_success_redirect(request):
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
 
-        # Configurar la cookie de sesión con los parámetros correctos
-        max_age = getattr(settings, 'SESSION_COOKIE_AGE', 1209600)  # 2 weeks default
+        # Configurar cookies con los valores correctos de la sesión
+        max_age = getattr(settings, 'SESSION_COOKIE_AGE', 1209600)
         response.set_cookie(
             settings.SESSION_COOKIE_NAME,
             request.session.session_key,
@@ -82,7 +89,7 @@ def oauth_success_redirect(request):
             samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
         )
 
-        # También establecer las cookies de JWT
+        # Configurar cookie del refresh token
         response.set_cookie(
             'refresh_token',
             str(refresh),
@@ -93,6 +100,10 @@ def oauth_success_redirect(request):
             httponly=True,
             samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
         )
+
+        # Guardar el backend en la sesión
+        request.session['backend'] = request.user.social_auth.first().provider
+        request.session.save()
 
         print(f"Redirecting authenticated user {request.user.username} to dashboard with session {request.session.session_key}")
         return response
