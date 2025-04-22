@@ -8,23 +8,25 @@ from django.contrib.auth import logout, login
 def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):
     """
     Mejorar el manejo de cuentas ya asociadas.
-    En lugar de usar silenciosamente otro usuario, crea una nueva sesión explícitamente.
+    En lugar de generar error, maneja el conflicto adecuadamente.
     """
     social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
     if social:
         if user and social.user != user:
             # Si el usuario que está intentando acceder existe pero no coincide con el asociado:
-            # 1. Hacemos logout para limpiar la sesión actual
-            # 2. Creamos una nueva sesión para el usuario correcto
             request = kwargs.get('request')
             if request:
-                # Limpiar la sesión actual
-                logout(request)
-                # Crear nueva sesión para el usuario correcto
-                login(request, social.user)
-                # Forzar regeneración del ID de sesión
+                # Limpiar completamente la sesión actual
+                request.session.flush()
+                
+                # Usar el usuario asociado a la cuenta social
+                from django.contrib.auth import login
+                login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
+                
+                # Forzar regeneración del ID de sesión para evitar conflictos
                 request.session.cycle_key()
                 
+            # Indicar que estamos usando un usuario existente
             return {'user': social.user, 'is_new': False}
     return {}
 
