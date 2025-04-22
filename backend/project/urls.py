@@ -12,55 +12,64 @@ from django.shortcuts import redirect
 # Define SecureLogoutView
 class SecureLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            # Primero hacer logout del usuario
-            auth_logout(request)
-            
-        # Asegurarnos de limpiar completamente la sesión
-        if hasattr(request, 'session'):
-            # Flush elimina toda la data de la sesión
-            request.session.flush()
-            # Ciclar la clave de sesión por seguridad
-            request.session.cycle_key()
-        
-        # Prepare response
-        if request.path.startswith('/api/'):
+        try:
+            # Realizar el logout de manera segura
+            if request.user.is_authenticated:
+                auth_logout(request)
+
+            # Limpiar la sesión de manera segura
+            try:
+                if hasattr(request, 'session'):
+                    request.session.flush()
+                    request.session.cycle_key()
+            except Exception as session_error:
+                print(f"Session cleanup error: {str(session_error)}")
+                # Continuar con el proceso incluso si hay error en la sesión
+
+            # Preparar la respuesta
             response = HttpResponse(status=200)
-        else:
-            response = super().dispatch(request, *args, **kwargs)
             
-        # Get domain settings
-        domain = settings.SESSION_COOKIE_DOMAIN or None
-        secure = settings.SESSION_COOKIE_SECURE
-        samesite = settings.SESSION_COOKIE_SAMESITE
-        
-        # Lista de todas las cookies que necesitamos eliminar
-        cookies_to_delete = [
-            'sessionid',
-            'csrftoken',
-            'social_auth_last_login_backend',
-            'oauth_state',
-            'g_state',
-            'social_auth_google-oauth2_state',
-        ]
+            # Obtener configuraciones
+            domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
+            secure = getattr(settings, 'SESSION_COOKIE_SECURE', True)
+            samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
 
-        # Eliminar todas las cookies relacionadas con la autenticación
-        for cookie in cookies_to_delete:
-            response.delete_cookie(
-                cookie,
-                domain=domain,
-                path='/',
-                samesite=samesite,
-                secure=secure
-            )
+            # Lista de cookies a eliminar
+            cookies_to_delete = [
+                'sessionid',
+                'csrftoken',
+                'social_auth_last_login_backend',
+                'oauth_state',
+                'g_state',
+                'social_auth_google-oauth2_state',
+            ]
 
-        # Añadir headers de seguridad
-        response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
-        response['Pragma'] = 'no-cache'
-        response['Expires'] = '0'
-        response['SameSite'] = samesite
-        
-        return response
+            # Eliminar cookies de manera segura
+            for cookie in cookies_to_delete:
+                try:
+                    response.delete_cookie(
+                        cookie,
+                        domain=domain,
+                        path='/',
+                        samesite=samesite,
+                        secure=secure
+                    )
+                except Exception as cookie_error:
+                    print(f"Error deleting cookie {cookie}: {str(cookie_error)}")
+                    continue
+
+            # Headers de seguridad
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+
+            return response
+
+        except Exception as e:
+            print(f"Logout error: {str(e)}")
+            # Devolver una respuesta exitosa incluso si hay errores
+            # para evitar que el frontend se quede en un estado inconsistente
+            return HttpResponse(status=200)
 
 # Custom completion handler for OAuth login
 def complete_auth_redirect(request):
