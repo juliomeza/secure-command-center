@@ -128,14 +128,22 @@ class LogoutView(APIView):
                 'social_auth_google-oauth2_state',
             ]
             
+            # Obtener el dominio de las settings
+            domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
+            samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+            
             for cookie in cookies_to_delete:
                 response.delete_cookie(
                     cookie,
-                    domain=settings.SESSION_COOKIE_DOMAIN,
+                    domain=domain,
                     path='/',
-                    samesite=settings.SESSION_COOKIE_SAMESITE,
-                    secure=settings.SESSION_COOKIE_SECURE
+                    samesite=samesite
                 )
+            
+            # Headers de seguridad
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
             
             return response
             
