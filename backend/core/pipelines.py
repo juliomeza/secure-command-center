@@ -5,6 +5,18 @@ from social_core.exceptions import AuthAlreadyAssociated
 from social_django.models import UserSocialAuth
 from django.contrib.auth import logout, login
 
+def clean_session(strategy, *args, **kwargs):
+    """
+    Pipeline function to ensure clean session state before authentication.
+    """
+    request = strategy.request
+    if request:
+        # Limpiar la sesión actual
+        request.session.flush()
+        # Generar nueva sesión
+        request.session.cycle_key()
+    return {}
+
 def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):
     """
     Mejorar el manejo de cuentas ya asociadas.
@@ -13,20 +25,17 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
     social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
     if social:
         if user and social.user != user:
-            # Si el usuario que está intentando acceder existe pero no coincide con el asociado:
             request = kwargs.get('request')
             if request:
                 # Limpiar completamente la sesión actual
                 request.session.flush()
                 
                 # Usar el usuario asociado a la cuenta social
-                from django.contrib.auth import login
                 login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
                 
-                # Forzar regeneración del ID de sesión para evitar conflictos
+                # Forzar regeneración del ID de sesión
                 request.session.cycle_key()
                 
-            # Indicar que estamos usando un usuario existente
             return {'user': social.user, 'is_new': False}
     return {}
 
