@@ -13,50 +13,52 @@ from django.shortcuts import redirect
 class SecureLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
+            # Primero hacer logout del usuario
             auth_logout(request)
-        
-        # Clear session
-        request.session.flush()
-        request.session.cycle_key()
+            
+        # Asegurarnos de limpiar completamente la sesión
+        if hasattr(request, 'session'):
+            # Flush elimina toda la data de la sesión
+            request.session.flush()
+            # Ciclar la clave de sesión por seguridad
+            request.session.cycle_key()
         
         # Prepare response
         if request.path.startswith('/api/'):
             response = HttpResponse(status=200)
         else:
             response = super().dispatch(request, *args, **kwargs)
+            
+        # Get domain settings
+        domain = settings.SESSION_COOKIE_DOMAIN or None
+        secure = settings.SESSION_COOKIE_SECURE
+        samesite = settings.SESSION_COOKIE_SAMESITE
         
-        # Get the domain from settings or request
-        domain = settings.SESSION_COOKIE_DOMAIN
-        if not domain and settings.IS_RENDER:
-            # If we're on Render and no domain is set, try to get it from the request
-            domain = request.get_host().split(':')[0]
-            if domain == 'localhost':
-                domain = None
-
-        # Delete ALL authentication related cookies with proper domain
+        # Lista de todas las cookies que necesitamos eliminar
         cookies_to_delete = [
             'sessionid',
             'csrftoken',
-            'messages',
-            'social_auth_last_login_backend',  # Social auth cookie
-            'oauth_state',                     # OAuth state cookie
-            'g_state',                         # Google OAuth cookie
-            'social_auth_google-oauth2_state', # Google specific state
+            'social_auth_last_login_backend',
+            'oauth_state',
+            'g_state',
+            'social_auth_google-oauth2_state',
         ]
 
+        # Eliminar todas las cookies relacionadas con la autenticación
         for cookie in cookies_to_delete:
             response.delete_cookie(
                 cookie,
-                path='/',
                 domain=domain,
-                samesite=settings.SESSION_COOKIE_SAMESITE
+                path='/',
+                samesite=samesite,
+                secure=secure
             )
-        
-        # Set security headers
+
+        # Añadir headers de seguridad
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
-        response['SameSite'] = settings.SESSION_COOKIE_SAMESITE
+        response['SameSite'] = samesite
         
         return response
 
