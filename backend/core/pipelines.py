@@ -128,9 +128,3 @@ def save_profile_details(backend, user: User, response, *args, **kwargs):
         print(f"Created profile for user: {user.username}")
     else:
         print(f"Updated profile for user: {user.username}")
-    
-    # You could update User model fields here if needed
-    # user.first_name = response.get('given_name') or response.get('first_name', '')
-    # user.last_name = response.get('family_name') or response.get('last_name', '')
-    # user.email = email
-    # user.save()
