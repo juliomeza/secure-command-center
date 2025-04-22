@@ -46,6 +46,13 @@ def oauth_success_redirect(request):
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
     """
     if request.user.is_authenticated:
+        # Forzar regeneración de la sesión para evitar conflictos
+        request.session.cycle_key()
+        
+        # Establecer una cookie de sesión explícitamente
+        request.session['user_id'] = request.user.id
+        request.session['authenticated'] = True
+        
         # Primero asegurar que el token CSRF está establecido
         csrf_token = get_token(request)
 
@@ -63,8 +70,19 @@ def oauth_success_redirect(request):
         
         # Asegurar que las cookies tengan los atributos correctos
         response['X-CSRFToken'] = csrf_token
+
+        # Forzar que la cookie de sesión se establezca correctamente
+        response.set_cookie(
+            'sessionid',
+            request.session.session_key,
+            secure=settings.SESSION_COOKIE_SECURE,
+            httponly=True,
+            samesite=settings.SESSION_COOKIE_SAMESITE,
+            domain=settings.SESSION_COOKIE_DOMAIN
+        )
+        
         return response
-    
+        
     # Si el usuario no está autenticado, redirigirlo a la página de login
     return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
