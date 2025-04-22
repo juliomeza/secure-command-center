@@ -51,24 +51,38 @@ def oauth_success_redirect(request):
     RETRY_DELAY = 0.5  # 500ms
 
     def check_auth():
-        # Forzar refresh desde la base de datos
-        if hasattr(request, 'user'):
+        """
+        Verifica el estado de autenticación del usuario de manera segura
+        """
+        # Si el usuario es anónimo, no intentar refresh_from_db
+        if not hasattr(request.user, 'is_authenticated') or not request.user.is_authenticated:
+            return False
+        
+        try:
+            # Solo intentar refresh_from_db si el usuario está autenticado
             request.user.refresh_from_db()
-        return request.user.is_authenticated
+            return request.user.is_authenticated
+        except Exception as e:
+            print(f"Error refreshing user: {str(e)}")
+            return False
 
     for attempt in range(MAX_RETRIES):
         try:
-            print(f"OAuth success check attempt {attempt + 1} - Session key: {request.session.session_key}")
+            print(f"OAuth success check attempt {attempt + 1} - Session key: {request.session.session_key}, User: {request.user}")
             
             if not check_auth():
                 if attempt < MAX_RETRIES - 1:
-                    print(f"User not authenticated yet, waiting {RETRY_DELAY}s before retry...")
+                    print(f"User not authenticated yet (attempt {attempt + 1}), waiting {RETRY_DELAY}s before retry...")
                     time.sleep(RETRY_DELAY)
+                    # Forzar una recarga de la sesión
+                    request.session.modified = True
+                    request.session.save()
                     continue
                 print("User not authenticated after all retries")
                 return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
             # El usuario está autenticado, procedemos con el proceso normal
+            print(f"User authenticated successfully after {attempt + 1} attempts")
             request.session.save()
             request.session.modified = True
 

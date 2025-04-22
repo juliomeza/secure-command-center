@@ -14,18 +14,13 @@ def clean_session(strategy, *args, **kwargs):
     try:
         request = strategy.request
         if request:
-            # Si no hay sesión, crear una nueva
-            if not request.session.session_key:
-                request.session.create()
-                print(f"New session created with key: {request.session.session_key}")
+            # Limpiar completamente la sesión anterior si existe
+            if request.session.session_key:
+                request.session.flush()
             
-            # Marcar la sesión como modificada
+            # Crear una nueva sesión limpia
+            request.session.create()
             request.session.modified = True
-            
-            # Obtener el nombre del backend de manera segura
-            backend_name = kwargs.get('backend').name if kwargs.get('backend') else None
-            if backend_name:
-                request.session['social_auth_last_login_backend'] = backend_name
             
             print(f"Session state after clean_session: {request.session.session_key}")
     except Exception as e:
@@ -41,19 +36,19 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
         if social:
             request = kwargs.get('request')
             if request:
-                # Asegurar que tenemos una sesión válida
+                # Realizar login explícito
+                login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
+                
+                # Asegurar que la sesión está activa y persistente
                 if not request.session.session_key:
                     request.session.create()
                 
-                # Realizar login explícito y guardar el backend usado
-                if not request.user.is_authenticated or request.user != social.user:
-                    login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
-                    
                 # Guardar información importante en la sesión
                 request.session['user_id'] = social.user.id
                 request.session['backend'] = backend.name
                 request.session['social_auth_last_login_backend'] = backend.name
                 request.session.modified = True
+                request.session.save()
                 
                 print(f"User {social.user.username} logged in with session: {request.session.session_key}")
                 return {'user': social.user, 'is_new': False}
