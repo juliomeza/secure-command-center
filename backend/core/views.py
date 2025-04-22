@@ -54,16 +54,24 @@ def oauth_success_redirect(request):
         """
         Verifica el estado de autenticación del usuario de manera segura
         """
-        # Si el usuario es anónimo, no intentar refresh_from_db
-        if not hasattr(request.user, 'is_authenticated') or not request.user.is_authenticated:
-            return False
-        
         try:
-            # Solo intentar refresh_from_db si el usuario está autenticado
-            request.user.refresh_from_db()
+            # Forzar reload de la sesión desde la base de datos
+            request.session.load()
+            
+            # Si el usuario es anónimo pero hay user_id en la sesión, intentar restaurar
+            if not request.user.is_authenticated and 'user_id' in request.session:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                try:
+                    user = User.objects.get(id=request.session['user_id'])
+                    if 'backend' in request.session:
+                        login(request, user, backend=request.session['backend'])
+                except User.DoesNotExist:
+                    pass
+
             return request.user.is_authenticated
         except Exception as e:
-            print(f"Error refreshing user: {str(e)}")
+            print(f"Error checking auth: {str(e)}")
             return False
 
     for attempt in range(MAX_RETRIES):
@@ -74,17 +82,12 @@ def oauth_success_redirect(request):
                 if attempt < MAX_RETRIES - 1:
                     print(f"User not authenticated yet (attempt {attempt + 1}), waiting {RETRY_DELAY}s before retry...")
                     time.sleep(RETRY_DELAY)
-                    # Forzar una recarga de la sesión
-                    request.session.modified = True
-                    request.session.save()
                     continue
                 print("User not authenticated after all retries")
                 return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
             # El usuario está autenticado, procedemos con el proceso normal
             print(f"User authenticated successfully after {attempt + 1} attempts")
-            request.session.save()
-            request.session.modified = True
 
             # Generar CSRF token y tokens JWT
             csrf_token = get_token(request)
@@ -133,7 +136,7 @@ def oauth_success_redirect(request):
                     samesite=cookie_samesite
                 )
 
-                # Asegurar que el backend se guarda en la sesión
+                # Asegurar que el backend se guarda en la sesión y la sesión se guarda
                 if hasattr(request.user, 'social_auth') and request.user.social_auth.exists():
                     request.session['social_auth_last_login_backend'] = request.user.social_auth.first().provider
                     request.session.save()

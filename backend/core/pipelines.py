@@ -39,7 +39,11 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
                 # Realizar login explícito
                 login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
                 
-                # Asegurar que la sesión está activa y persistente
+                # Forzar la sincronización de la sesión
+                request.session.save()
+                request.session.modified = True
+                
+                # Asegurarnos de que la sesión está correctamente configurada
                 if not request.session.session_key:
                     request.session.create()
                 
@@ -47,10 +51,20 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
                 request.session['user_id'] = social.user.id
                 request.session['backend'] = backend.name
                 request.session['social_auth_last_login_backend'] = backend.name
-                request.session.modified = True
+                
+                # Forzar commit de la sesión
                 request.session.save()
                 
+                # Verificar que el usuario está realmente autenticado
+                if not request.user.is_authenticated:
+                    # Si no está autenticado, intentar recargar la sesión
+                    request.session.cycle_key()
+                    login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
+                    request.session.save()
+                
                 print(f"User {social.user.username} logged in with session: {request.session.session_key}")
+                print(f"Authentication status: {request.user.is_authenticated}")
+                
                 return {'user': social.user, 'is_new': False}
     except Exception as e:
         print(f"Error in handle_already_associated_auth: {str(e)}")
