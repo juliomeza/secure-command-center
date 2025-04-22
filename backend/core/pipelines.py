@@ -12,34 +12,35 @@ def clean_session(strategy, *args, **kwargs):
     try:
         request = strategy.request
         if request:
-            # IMPORTANT: Do not flush the session as it destroys authentication state
-            # Only cycle the key to improve security while maintaining the session
-            if not request.session.exists(request.session.session_key):
-                request.session.create()
-            else:
-                # We only cycle the key when starting a new login process
-                # without an existing user
-                if not request.user.is_authenticated:
-                    request.session.cycle_key()
+            # Limpiar completamente la sesión anterior
+            request.session.flush()
+            # Crear una nueva sesión
+            request.session.create()
+            print(f"Session cleaned and recreated. New session key: {request.session.session_key}")
     except Exception as e:
         print(f"Error in clean_session pipeline: {str(e)}")
     return {}
 
 def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):
     """
-    Mejorar el manejo de cuentas ya asociadas.
-    En lugar de generar error, maneja el conflicto adecuadamente.
+    Maneja cuentas ya asociadas y asegura una sesión limpia.
     """
-    social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
-    if social:
-        if user and social.user != user:
-            request = kwargs.get('request')
-            if request:
-                # Don't flush the session as it destroys authentication state
-                # Use backend's login function which properly sets up session
-                login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
-                
-            return {'user': social.user, 'is_new': False}
+    try:
+        social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
+        if social:
+            if user and social.user != user:
+                request = kwargs.get('request')
+                if request:
+                    # Limpiar sesión anterior
+                    request.session.flush()
+                    # Crear nueva sesión
+                    request.session.create()
+                    # Realizar login
+                    login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
+                    print(f"User {social.user.username} logged in with new session: {request.session.session_key}")
+                return {'user': social.user, 'is_new': False}
+    except Exception as e:
+        print(f"Error in handle_already_associated_auth: {str(e)}")
     return {}
 
 def save_profile_details(backend, user: User, response, *args, **kwargs):

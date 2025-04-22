@@ -50,18 +50,11 @@ def oauth_success_redirect(request):
             print("User not authenticated in oauth_success_redirect")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
-        # NO regenerar la sesión - esto destruye el estado de autenticación
-        # Solo crear si no existe
-        if not request.session.exists(request.session.session_key):
-            request.session.create()
-        
-        # Almacenar el ID del usuario en la sesión
-        request.session['user_id'] = request.user.id
-        request.session.modified = True
-
         # Generar CSRF token y tokens JWT
         csrf_token = get_token(request)
         refresh = RefreshToken.for_user(request.user)
+
+        print(f"OAuth success for user {request.user.username} with session {request.session.session_key}")
 
         # Preparar URL de redirección con tokens
         redirect_url = f"{settings.FRONTEND_BASE_URL}/dashboard"
@@ -70,23 +63,22 @@ def oauth_success_redirect(request):
         # Preparar respuesta
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
-        
-        # Log estado de autenticación
-        print(f"Redirecting authenticated user {request.user.username} to dashboard")
 
         # Asegurar que la cookie de sesión esté configurada correctamente
         if request.session.session_key:
             response.set_cookie(
                 'sessionid',
                 request.session.session_key,
+                domain=settings.SESSION_COOKIE_DOMAIN,
                 secure=settings.SESSION_COOKIE_SECURE,
                 httponly=True,
                 samesite=settings.SESSION_COOKIE_SAMESITE,
-                domain=settings.SESSION_COOKIE_DOMAIN,
                 max_age=settings.SESSION_COOKIE_AGE
             )
 
+        print(f"Redirecting authenticated user {request.user.username} to dashboard with session {request.session.session_key}")
         return response
+
     except Exception as e:
         print(f"Error en oauth_success_redirect: {str(e)}")
         return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")

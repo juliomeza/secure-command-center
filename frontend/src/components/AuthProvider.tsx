@@ -227,16 +227,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, [navigate]);
 
-    // Updated logout function
     const logout = async (): Promise<boolean> => {
         console.log("[AuthProvider] Attempting to logout");
         try {
-            // First call the logout endpoint using apiClient for consistency
-            console.log("[AuthProvider] Calling logout endpoint: /api/logout/");
-            await apiClient.get('/logout/'); // Use apiClient to call /api/logout/
+            console.log('[AuthProvider] Calling logout endpoint:', `${API_BASE_URL}/logout/`);
+            await apiClient.get('/logout/'); // Use apiClient to call /logout/
             
-            console.log("[AuthProvider] Logout API call successful");
-            
+            // Limpiar cookies manualmente
+            document.cookie.split(';').forEach(cookie => {
+                const [name] = cookie.split('=').map(c => c.trim());
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            });
+
             // Clear JWT tokens
             clearTokens();
             console.log("[AuthProvider] JWT tokens cleared");
@@ -247,6 +250,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             // Add a marker in sessionStorage to handle multi-tab logout
             sessionStorage.setItem('auth_logout', 'true');
+            
+            // Redirect to login
+            navigate('/login');
             
             // Return true to indicate successful logout
             console.log("[AuthProvider] Logout state updated successfully");
