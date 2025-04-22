@@ -3,17 +3,28 @@ from .models import Company, UserProfile
 from django.contrib.auth.models import User
 from social_core.exceptions import AuthAlreadyAssociated
 from social_django.models import UserSocialAuth
+from django.contrib.auth import logout, login
 
 def handle_already_associated_auth(backend, details, uid, user=None, *args, **kwargs):
     """
-    Custom pipeline function to handle cases where a social account is already associated 
-    with a different user. Automatically logs in the existing user instead of raising an error.
+    Mejorar el manejo de cuentas ya asociadas.
+    En lugar de usar silenciosamente otro usuario, crea una nueva sesión explícitamente.
     """
     social = UserSocialAuth.objects.filter(provider=backend.name, uid=uid).first()
     if social:
         if user and social.user != user:
-            # Si el usuario está tratando de vincular una cuenta que ya está asociada a otro usuario,
-            # autenticamos con el usuario vinculado en lugar de lanzar un error
+            # Si el usuario que está intentando acceder existe pero no coincide con el asociado:
+            # 1. Hacemos logout para limpiar la sesión actual
+            # 2. Creamos una nueva sesión para el usuario correcto
+            request = kwargs.get('request')
+            if request:
+                # Limpiar la sesión actual
+                logout(request)
+                # Crear nueva sesión para el usuario correcto
+                login(request, social.user)
+                # Forzar regeneración del ID de sesión
+                request.session.cycle_key()
+                
             return {'user': social.user, 'is_new': False}
     return {}
 
