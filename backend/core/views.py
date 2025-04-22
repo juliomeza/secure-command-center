@@ -6,11 +6,11 @@ from rest_framework import status
 from .serializers import UserSerializer
 from django.middleware.csrf import get_token
 from django.http import JsonResponse, HttpResponseRedirect
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .throttling import LoginRateThrottle
-from django.contrib.auth import login
+from django.contrib.auth import login, logout as auth_logout
 from django.contrib.auth.signals import user_logged_in
 from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import AuthAlreadyAssociated
@@ -90,3 +90,58 @@ def get_csrf_token(request):
     """
     token = get_token(request)
     return JsonResponse({'csrfToken': token})
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Obtener el token de refresco del usuario
+            refresh_token = request.COOKIES.get('refresh_token')
+            
+            if refresh_token:
+                try:
+                    # Blacklist the refresh token
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except TokenError:
+                    pass  # Token ya expirado o inválido
+            
+            # Realizar logout de la sesión de Django
+            if hasattr(request, 'session'):
+                request.session.flush()
+                request.session.cycle_key()
+            
+            auth_logout(request)
+            
+            response = Response({"detail": "Successfully logged out."})
+            
+            # Eliminar todas las cookies relevantes
+            cookies_to_delete = [
+                'sessionid',
+                'csrftoken',
+                'refresh_token',
+                'access_token',
+                'social_auth_last_login_backend',
+                'oauth_state',
+                'g_state',
+                'social_auth_google-oauth2_state',
+            ]
+            
+            for cookie in cookies_to_delete:
+                response.delete_cookie(
+                    cookie,
+                    domain=settings.SESSION_COOKIE_DOMAIN,
+                    path='/',
+                    samesite=settings.SESSION_COOKIE_SAMESITE,
+                    secure=settings.SESSION_COOKIE_SECURE
+                )
+            
+            return response
+            
+        except Exception as e:
+            print(f"Error during logout: {str(e)}")
+            return Response(
+                {"detail": "Error during logout process."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

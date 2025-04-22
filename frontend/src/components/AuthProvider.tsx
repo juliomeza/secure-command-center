@@ -228,44 +228,63 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [navigate]);
 
     const logout = async (): Promise<boolean> => {
-        console.log("[AuthProvider] Attempting to logout");
         try {
-            console.log('[AuthProvider] Calling logout endpoint:', `${API_BASE_URL}/logout/`);
-            await apiClient.get('/logout/'); // Use apiClient to call /logout/
+            console.log("[AuthProvider] Attempting to logout");
             
-            // Limpiar cookies manualmente
-            document.cookie.split(';').forEach(cookie => {
-                const [name] = cookie.split('=').map(c => c.trim());
-                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            // Llamar al endpoint de logout
+            await apiClient.get('/logout/', {
+                withCredentials: true // Importante para enviar/recibir cookies
+            });
+            
+            // Limpiar tokens de sessionStorage
+            clearTokens();
+            
+            // Limpiar cookies del dominio principal y posibles subdominios
+            const domains = [
+                window.location.hostname,
+                `.${window.location.hostname}` // Para cookies de subdominios
+            ];
+            
+            const paths = ['/', '/api'];
+            
+            // Lista de cookies a limpiar
+            const cookiesToDelete = [
+                'sessionid',
+                'csrftoken',
+                'refresh_token',
+                'access_token',
+                'social_auth_last_login_backend',
+                'oauth_state',
+                'g_state',
+                'social_auth_google-oauth2_state'
+            ];
+
+            // Limpiar cookies en todos los dominios y paths
+            domains.forEach(domain => {
+                paths.forEach(path => {
+                    cookiesToDelete.forEach(cookieName => {
+                        document.cookie = `${cookieName}=;domain=${domain};path=${path};expires=Thu, 01 Jan 1970 00:00:00 GMT;secure;samesite=none`;
+                    });
+                });
             });
 
-            // Clear JWT tokens
-            clearTokens();
-            console.log("[AuthProvider] JWT tokens cleared");
-            
-            // Then update local state
+            // Limpiar estado local
             setUser(null);
             setIsAuthenticated(false);
             
-            // Add a marker in sessionStorage to handle multi-tab logout
+            // Limpiar cualquier dato en sessionStorage
+            sessionStorage.clear();
+            
+            // Agregar un marcador para logout en múltiples tabs
             sessionStorage.setItem('auth_logout', 'true');
             
-            // Redirect to login
-            navigate('/login');
+            console.log("[AuthProvider] Logout successful");
             
-            // Return true to indicate successful logout
-            console.log("[AuthProvider] Logout state updated successfully");
+            // Redirigir al login
+            navigate('/login');
             return true;
         } catch (error) {
             console.error("[AuthProvider] Logout failed:", error);
-            // Log specific error details if available
-            if (axios.isAxiosError(error)) {
-                console.error("[AuthProvider] Logout error details:", {
-                    status: error.response?.status,
-                    data: error.response?.data
-                });
-            }
             return false;
         }
     };
