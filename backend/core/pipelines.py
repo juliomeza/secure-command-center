@@ -12,16 +12,15 @@ def clean_session(strategy, *args, **kwargs):
     try:
         request = strategy.request
         if request:
-            # Solo limpiar la sesión si no hay un usuario autenticado
-            if not request.user.is_authenticated:
-                request.session.flush()
-
-            # Crear una nueva sesión si no existe
+            # IMPORTANT: Do not flush the session as it destroys authentication state
+            # Only cycle the key to improve security while maintaining the session
             if not request.session.exists(request.session.session_key):
                 request.session.create()
-            
-            # Forzar una nueva clave de sesión
-            request.session.cycle_key()
+            else:
+                # We only cycle the key when starting a new login process
+                # without an existing user
+                if not request.user.is_authenticated:
+                    request.session.cycle_key()
     except Exception as e:
         print(f"Error in clean_session pipeline: {str(e)}")
     return {}
@@ -36,14 +35,9 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
         if user and social.user != user:
             request = kwargs.get('request')
             if request:
-                # Limpiar completamente la sesión actual
-                request.session.flush()
-                
-                # Usar el usuario asociado a la cuenta social
+                # Don't flush the session as it destroys authentication state
+                # Use backend's login function which properly sets up session
                 login(request, social.user, backend=f'social_core.backends.{backend.name}.{backend.__class__.__name__}')
-                
-                # Forzar regeneración del ID de sesión
-                request.session.cycle_key()
                 
             return {'user': social.user, 'is_new': False}
     return {}

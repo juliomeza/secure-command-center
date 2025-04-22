@@ -47,9 +47,11 @@ def oauth_success_redirect(request):
     """
     try:
         if not request.user.is_authenticated:
+            print("User not authenticated in oauth_success_redirect")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
 
-        # Regenerar la sesión de forma segura
+        # NO regenerar la sesión - esto destruye el estado de autenticación
+        # Solo crear si no existe
         if not request.session.exists(request.session.session_key):
             request.session.create()
         
@@ -68,6 +70,9 @@ def oauth_success_redirect(request):
         # Preparar respuesta
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
+        
+        # Log estado de autenticación
+        print(f"Redirecting authenticated user {request.user.username} to dashboard")
 
         # Asegurar que la cookie de sesión esté configurada correctamente
         if request.session.session_key:
