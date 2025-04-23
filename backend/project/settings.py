@@ -91,6 +91,8 @@ INSTALLED_APPS = [
 
     # Your apps
     'core',
+    'authentication',
+    'access',
 ]
 
 MIDDLEWARE = [
