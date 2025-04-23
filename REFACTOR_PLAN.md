@@ -142,13 +142,13 @@ El sistema de autenticación mezcla varios enfoques (sesiones Django, JWT, cooki
 - [ ] Configurar herramientas de calidad de código
 
 ### Fase 2: Refactorización del Sistema de Autenticación (4-5 semanas)
-- [ ] Crear app `authentication` en Django
+- [x] Crear app `authentication` en Django
 - [ ] Implementar servicios de tokens en frontend
 - [ ] Reducir y simplificar componentes principales
 - [ ] Migrar a arquitectura basada en JWT consistente
 
 ### Fase 3: Implementación de Control de Acceso (3-4 semanas)
-- [ ] Crear app `access` en Django
+- [x] Crear app `access` en Django
 - [ ] Desarrollar sistema de permisos granular
 - [ ] Implementar componentes basados en permisos en frontend
 - [ ] Validar cobertura de tests para nuevos componentes
