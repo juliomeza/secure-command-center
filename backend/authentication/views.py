@@ -180,12 +180,32 @@ class LogoutAPIView(APIView):
                     token.blacklist()
                     
                     # Verificar que el blacklist fue exitoso (esto sólo es posible si la transacción ya se completó)
-                    from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
-                    if BlacklistedToken.objects.filter(token__jti=token['jti']).exists():
-                        print(f"Token JTI {token['jti']} blacklisteado exitosamente")
-                        blacklisted = True
-                    else:
-                        print(f"⚠️ No se pudo verificar blacklisting para JTI {token['jti']}")
+                    try:
+                        # Usar el nombre correcto de la app según Django (token_blacklist, no rest_framework_simplejwt.token_blacklist)
+                        from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+                        # Verificar primero si el token está en OutstandingToken
+                        outstanding = OutstandingToken.objects.filter(jti=token['jti']).first()
+                        if outstanding:
+                            print(f"Token encontrado en OutstandingToken: {outstanding.jti}")
+                            # Luego verificar si está blacklisteado
+                            if BlacklistedToken.objects.filter(token=outstanding).exists():
+                                print(f"Token JTI {token['jti']} blacklisteado exitosamente")
+                                blacklisted = True
+                            else:
+                                print(f"⚠️ Token en OutstandingToken pero no está en BlacklistedToken")
+                                # Intentar blacklistearlo manualmente
+                                try:
+                                    BlacklistedToken.objects.create(token=outstanding)
+                                    print(f"✅ Se creó manualmente entrada en BlacklistedToken para {outstanding.jti}")
+                                    blacklisted = True
+                                except Exception as be:
+                                    print(f"❌ Error al crear manualmente entrada en BlacklistedToken: {str(be)}")
+                        else:
+                            print(f"⚠️ No se encontró el token en OutstandingToken")
+                    except ImportError as ie:
+                        print(f"Error al importar modelos de token_blacklist: {str(ie)}")
+                    except Exception as e:
+                        print(f"Error al verificar blacklisting: {str(e)}")
                 except TokenError as te:
                     print(f"Error TokenError al procesar el refresh token: {str(te)}")
                 except Exception as e:
@@ -219,7 +239,6 @@ class LogoutAPIView(APIView):
             
             # Obtener configuración de cookies
             base_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
-            secure = getattr(settings, 'SESSION_COOKIE_SECURE', True)
             samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
             
             # Determinar posibles dominios para cookies
@@ -240,12 +259,12 @@ class LogoutAPIView(APIView):
                 for cookie in cookies_to_delete:
                     # Eliminar en path / y /api para cubrir todas las bases
                     for path in ['/', '/api']:
+                        # CORRECCIÓN: Django no acepta el parámetro 'secure' en delete_cookie
                         response.delete_cookie(
                             cookie,
                             domain=domain,
                             path=path,
-                            samesite=samesite,
-                            secure=secure
+                            samesite=samesite
                         )
                         print(f"Eliminando cookie {cookie} para dominio={domain}, path={path}")
             
