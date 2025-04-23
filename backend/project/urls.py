@@ -83,7 +83,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('social_django.urls', namespace='social')), # OAuth URLs
     path('auth/complete/', complete_auth_redirect, name='auth_complete'), # Override default completion
-    path('api/', include('core.urls')), # Your app's API endpoints
+    
+    # Mantener rutas originales para compatibilidad
+    path('api/', include('core.urls')), # Rutas originales de core
+    
+    # Nueva ruta para la app de autenticación refactorizada
+    path('api/auth/', include('authentication.urls')), # Nueva app de autenticación
     
     # API logout endpoint using SecureLogoutView
     path('api/logout/', csrf_exempt(SecureLogoutView.as_view()), name='api_logout'),
