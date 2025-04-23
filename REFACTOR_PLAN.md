@@ -135,6 +135,33 @@ El sistema de autenticación mezcla varios enfoques (sesiones Django, JWT, cooki
 
 ## Plan de Acción por Fases
 
+### Estrategia de Migración Segura
+
+Para garantizar una migración sin interrupciones y minimizar riesgos, se seguirá una estrategia de "parallel implementation":
+
+1. **Mantener código existente como referencia**
+   - El código actual en `core` y `project` permanecerá intacto durante el desarrollo
+   - Servirá como documentación viva y referencia de la implementación funcional
+   - Nos permitirá comparar comportamientos y resultados
+
+2. **Desarrollo paralelo y gradual**
+   - Implementar nueva funcionalidad en `authentication` sin modificar el código existente
+   - Mantener ambas implementaciones funcionando en paralelo
+   - Usar el código existente como guía para replicar comportamientos críticos
+   - Facilita rollback en caso de problemas
+
+3. **Validación y switch**
+   - Validar exhaustivamente la nueva implementación
+   - Realizar pruebas A/B si es necesario
+   - Solo eliminar código antiguo cuando el nuevo esté 100% probado y funcional
+
+Esta estrategia nos permite:
+- Mantener el sistema actual funcionando sin interrupciones
+- Usar el código existente como documentación y referencia
+- Reducir riesgos y frustración en el desarrollo
+- Tener siempre un fallback funcional
+- Hacer la migración de manera controlada y segura
+
 ### Fase 1: Estructura y Tests Previos (3-4 semanas)
 - [ ] Preparar estructura para módulo de autenticación
 - [ ] Completar tests unitarios para servicios y hooks principales
@@ -143,9 +170,11 @@ El sistema de autenticación mezcla varios enfoques (sesiones Django, JWT, cooki
 
 ### Fase 2: Refactorización del Sistema de Autenticación (4-5 semanas)
 - [x] Crear app `authentication` en Django
-- [ ] Implementar servicios de tokens en frontend
-- [ ] Reducir y simplificar componentes principales
-- [ ] Migrar a arquitectura basada en JWT consistente
+- [ ] Implementar servicios de tokens en frontend manteniendo sistema actual
+- [ ] Desarrollar nueva implementación en paralelo sin modificar código existente
+- [ ] Crear tests que validen paridad de comportamiento con sistema actual
+- [ ] Migrar gradualmente a arquitectura JWT manteniendo compatibilidad
+- [ ] Validar exhaustivamente antes de eliminar código antiguo
 
 ### Fase 3: Implementación de Control de Acceso (3-4 semanas)
 - [x] Crear app `access` en Django
@@ -157,7 +186,8 @@ El sistema de autenticación mezcla varios enfoques (sesiones Django, JWT, cooki
 - [ ] Mejorar rendimiento de componentes críticos
 - [ ] Implementar mejoras de accesibilidad
 - [ ] Refinar documentación técnica
-- [ ] Revisar y actualizar dependencias
+- [ ] Eliminar código legacy una vez validado el nuevo sistema
+- [ ] Realizar limpieza final de imports y dependencias no usadas
 
 ### Resultado Final Esperado
 - **Backend**: 
