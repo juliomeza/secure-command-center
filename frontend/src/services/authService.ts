@@ -1,5 +1,5 @@
 // frontend/src/services/authService.ts
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 // Interfaces (compatibles con las usadas en AuthProvider)
 export interface User {

@@ -198,11 +198,11 @@ LOGIN_URL = '/auth/login/'
 # Determinar las URLs de frontend según el entorno
 FRONTEND_BASE_URL = 'https://dashboard-control-front.onrender.com' if IS_RENDER else 'http://localhost:5173'
 
-# Todas las redirecciones deben pasar por oauth-success
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/api/oauth-success/'
-SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/api/oauth-success/'
-SOCIAL_AUTH_LOGIN_DONE_URL = '/api/oauth-success/'
-SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/api/oauth-success/'
+# Todas las redirecciones deben pasar por oauth-success en la nueva app
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/api/auth/oauth-success/'
+SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/api/auth/oauth-success/'
+SOCIAL_AUTH_LOGIN_DONE_URL = '/api/auth/oauth-success/'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/api/auth/oauth-success/'
 
 # Configuraciones adicionales para asegurar redirecciones adecuadas
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
@@ -230,15 +230,15 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
 
 # Pipeline to save extra data (like company, if available in claims)
 SOCIAL_AUTH_PIPELINE = (
-    'core.pipelines.clean_session',  # Nuestra nueva función para limpiar la sesión
+    'authentication.pipelines.clean_session',  # Función simplificada sin dependencia de sesiones
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
-    'core.pipelines.handle_already_associated_auth',  # Nuestra función personalizada para manejar cuentas ya asociadas
+    'authentication.pipelines.handle_already_associated_auth',  # Función mejorada usando JWT
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
-    'core.pipelines.save_profile_details', # Custom step para guardar detalles del perfil
+    'authentication.pipelines.save_profile_details', # Función actualizada
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
@@ -250,12 +250,10 @@ SOCIAL_AUTH_PIPELINE = (
 # --- Django REST Framework Settings ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # Use Session Authentication as primary for browser-based clients
-        'rest_framework.authentication.SessionAuthentication',
-        # Add JWT Authentication
+        # Primero JWT Authentication (prioridad)
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # Potentially add TokenAuthentication if you need API keys later
-        # 'rest_framework.authentication.TokenAuthentication',
+        # Mantener SessionAuthentication para compatibilidad con el sistema actual
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         # Default to requiring authentication for all API endpoints

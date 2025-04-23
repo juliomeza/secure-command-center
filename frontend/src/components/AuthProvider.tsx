@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AuthService, User, JWTTokens } from '../services/authService';
+import { AuthService, User } from '../services/authService';
 
 // Define the context shape
 interface AuthContextType {
