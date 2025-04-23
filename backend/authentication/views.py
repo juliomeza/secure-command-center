@@ -20,12 +20,24 @@ from social_core.exceptions import AuthAlreadyAssociated
 class UserProfileAPIView(APIView):
     """
     API endpoint para obtener información del perfil del usuario autenticado.
+    Mejorado para trabajar de manera óptima en un sistema híbrido JWT + sesiones.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Verificamos la autenticación y el método utilizado (para mejor logging)
+        auth_method = "JWT" if 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer ') else "Session"
+        print(f"User {request.user.username} accessing profile via {auth_method} authentication")
+
+        # Serializamos el usuario con más información de autenticación
         serializer = AuthUserSerializer(request.user)
-        return Response(serializer.data)
+        response_data = serializer.data
+        
+        # Para debugging, añadimos información sobre el método de autenticación usado
+        if settings.DEBUG:
+            response_data['_auth_method'] = auth_method
+
+        return Response(response_data)
 
 
 class TokenObtainAPIView(APIView):
@@ -57,13 +69,13 @@ def get_csrf_token(request):
 def oauth_success_redirect(request):
     """
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
-    Versión simplificada que elimina la dependencia de sesiones Django.
+    Versión mejorada para operar en un sistema híbrido JWT + sesiones Django.
     """
     try:
-        # Si el usuario no está autenticado, redirigir al login
+        # Verificar autenticación - primero chequear usuario en sesión (sistema híbrido)
         if not request.user.is_authenticated:
             print("User not authenticated after OAuth, redirecting to login")
-            return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
+            return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=auth_failed")
 
         # El usuario está autenticado, procedemos a generar tokens JWT
         print(f"OAuth success for user {request.user.username}")
@@ -72,15 +84,25 @@ def oauth_success_redirect(request):
         csrf_token = get_token(request)
         refresh = RefreshToken.for_user(request.user)
 
+        # Obtener información del proveedor OAuth si está disponible
+        provider = None
+        if hasattr(request.user, 'social_auth') and request.user.social_auth.exists():
+            provider = request.user.social_auth.first().provider
+            print(f"User authenticated via OAuth provider: {provider}")
+
         # Preparar URL de redirección con tokens
         redirect_url = f"{settings.FRONTEND_BASE_URL}/dashboard"
         redirect_url_with_params = f"{redirect_url}?jwt_access={str(refresh.access_token)}&jwt_refresh={str(refresh)}"
+        
+        # Añadir información del proveedor si está disponible
+        if provider:
+            redirect_url_with_params += f"&provider={provider}"
 
         # Preparar respuesta
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
 
-        # Configurar la cookie del refresh token (único token esencial)
+        # Configurar la cookie del refresh token
         cookie_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
         cookie_secure = getattr(settings, 'SESSION_COOKIE_SECURE', True)
         cookie_samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
@@ -104,13 +126,13 @@ def oauth_success_redirect(request):
 
     except Exception as e:
         print(f"Error en oauth_success_redirect: {str(e)}")
-        return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login")
+        return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=server_error")
 
 
 class LogoutAPIView(APIView):
     """
     Endpoint para cerrar sesión y revocar tokens JWT.
-    Versión simplificada que se centra en la revocación de tokens.
+    Versión mejorada para el sistema híbrido que maneja tanto JWT como sesiones.
     """
     permission_classes = [IsAuthenticated]
 
@@ -127,16 +149,20 @@ class LogoutAPIView(APIView):
                 except TokenError:
                     pass  # Token ya expirado o inválido
             
-            # Realizar logout (solo para compatibilidad con OAuth)
+            # Realizar logout (necesario para sistema híbrido)
             auth_logout(request)
             
             response = Response({"detail": "Successfully logged out."})
             
-            # Eliminar solo las cookies esenciales
+            # Lista completa de cookies para un sistema híbrido
             cookies_to_delete = [
                 'csrftoken',
                 'refresh_token',
-                'access_token'
+                'access_token',
+                'sessionid',  # Incluir sessionid para sistema híbrido
+                'social_auth_last_login_backend',  # Relacionada con OAuth
+                'oauth_state',  # Relacionada con OAuth
+                'g_state',  # Estado de Google OAuth 
             ]
             
             # Obtener el dominio de las settings
