@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
         sessionStorage.setItem(attemptKey, (attempts + 1).toString());
         
         console.log('Redirecting to Microsoft login');
-        window.location.href = `${baseURL}/auth/login/azuread-oauth2/?prompt=select_account`;
+        window.location.assign(`${baseURL}/auth/login/azuread-oauth2/?prompt=select_account`);
     };
     
     const handleGoogleLogin = () => {
@@ -62,7 +62,7 @@ const LoginPage: React.FC = () => {
         sessionStorage.setItem(attemptKey, (attempts + 1).toString());
         
         console.log('Redirecting to Google login');
-        window.location.href = `${baseURL}/auth/login/google-oauth2/`;
+        window.location.assign(`${baseURL}/auth/login/google-oauth2/`);
     };
 
     // Clear redirect attempts counter when the page loads normally
@@ -80,7 +80,10 @@ const LoginPage: React.FC = () => {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+                    <div 
+                        data-testid="loading-spinner"
+                        className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"
+                    ></div>
                     <p className="mt-4 text-gray-600">Loading...</p>
                 </div>
             </div>
