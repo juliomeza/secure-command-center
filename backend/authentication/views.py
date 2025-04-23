@@ -132,61 +132,136 @@ def oauth_success_redirect(request):
 class LogoutAPIView(APIView):
     """
     Endpoint para cerrar sesión y revocar tokens JWT.
-    Versión mejorada para el sistema híbrido que maneja tanto JWT como sesiones.
+    Versión mejorada y robusta para resolver problemas de blacklisting y cookies persistentes.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            # Obtener el token de refresco del usuario
-            refresh_token = request.COOKIES.get('refresh_token')
+            user_id = None
+            if request.user.is_authenticated:
+                user_id = request.user.id
+                print(f"Iniciando logout para usuario {request.user.username} (ID: {user_id})")
+            else:
+                print("Iniciando logout para usuario no autenticado")
+
+            # Imprimir todas las cookies para diagnosticar
+            print(f"Cookies disponibles en la solicitud: {request.COOKIES.keys()}")
+
+            # 1. Intentar obtener el refresh token de múltiples fuentes
+            refresh_token = None
             
+            # Primero de la cookie
+            if 'refresh_token' in request.COOKIES:
+                refresh_token = request.COOKIES.get('refresh_token')
+                print("Refresh token encontrado en cookie 'refresh_token'")
+                
+            # Si no está en las cookies, buscar en el Authorization header
+            elif 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer '):
+                # Nota: esto normalmente contendría el access token, pero es bueno verificar
+                print("Usando token de Authorization header")
+                auth_token = request.headers['Authorization'].split(' ')[1]
+                # Solo intentar usar esto como último recurso
+                if not refresh_token:
+                    refresh_token = auth_token
+            
+            # 2. Manejar el blacklisting con más detalle
+            blacklisted = False
             if refresh_token:
                 try:
-                    # Blacklist the refresh token
+                    # Imprimir información parcial del token para diagnóstico (evitar exponer todo el token)
+                    token_prefix = refresh_token[:10] if len(refresh_token) > 10 else "token_corto"
+                    print(f"Intentando blacklist para token: {token_prefix}...")
+                    
                     token = RefreshToken(refresh_token)
+                    print(f"Token parseado correctamente, JTI: {token['jti']}")
+                    
+                    # Forzar que la operación sea explícita y completa
                     token.blacklist()
-                except TokenError:
-                    pass  # Token ya expirado o inválido
+                    
+                    # Verificar que el blacklist fue exitoso (esto sólo es posible si la transacción ya se completó)
+                    from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+                    if BlacklistedToken.objects.filter(token__jti=token['jti']).exists():
+                        print(f"Token JTI {token['jti']} blacklisteado exitosamente")
+                        blacklisted = True
+                    else:
+                        print(f"⚠️ No se pudo verificar blacklisting para JTI {token['jti']}")
+                except TokenError as te:
+                    print(f"Error TokenError al procesar el refresh token: {str(te)}")
+                except Exception as e:
+                    print(f"Error inesperado al blacklistear token: {str(e)}")
+            else:
+                print("No se encontró refresh token para blacklistear")
             
-            # Realizar logout (necesario para sistema híbrido)
-            auth_logout(request)
+            # 3. Realizar logout de Django (limpia la sesión)
+            if request.user.is_authenticated:
+                print(f"Ejecutando Django logout para usuario {request.user.username}")
+                auth_logout(request)
             
-            response = Response({"detail": "Successfully logged out."})
+            # 4. Preparar respuesta y eliminar cookies
+            response = Response({
+                "detail": "Successfully logged out.",
+                "blacklisted": blacklisted
+            })
             
-            # Lista completa de cookies para un sistema híbrido
+            # Lista completa de todas las posibles cookies
             cookies_to_delete = [
                 'csrftoken',
                 'refresh_token',
                 'access_token',
-                'sessionid',  # Incluir sessionid para sistema híbrido
-                'social_auth_last_login_backend',  # Relacionada con OAuth
-                'oauth_state',  # Relacionada con OAuth
-                'g_state',  # Estado de Google OAuth 
+                'sessionid',
+                'social_auth_last_login_backend',
+                'oauth_state',
+                'g_state',
+                'social_auth_google-oauth2_state',
+                'social_auth_azuread-oauth2_state',
             ]
             
-            # Obtener el dominio de las settings
-            domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
+            # Obtener configuración de cookies
+            base_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
+            secure = getattr(settings, 'SESSION_COOKIE_SECURE', True)
             samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
             
-            for cookie in cookies_to_delete:
-                response.delete_cookie(
-                    cookie,
-                    domain=domain,
-                    path='/',
-                    samesite=samesite
-                )
+            # Determinar posibles dominios para cookies
+            domains = []
+            if base_domain:
+                domains.append(base_domain)
+            
+            # Añadir el dominio actual y posibles variantes
+            current_domain = request.get_host().split(':')[0]  # Quitar el puerto si existe
+            domains.append(current_domain)
+            if not current_domain.startswith('.'):
+                domains.append(f".{current_domain}")  # Para cookies de subdominio
+            
+            print(f"Eliminando cookies en dominios: {domains}")
+            
+            # Eliminar para todos los dominios posibles
+            for domain in domains:
+                for cookie in cookies_to_delete:
+                    # Eliminar en path / y /api para cubrir todas las bases
+                    for path in ['/', '/api']:
+                        response.delete_cookie(
+                            cookie,
+                            domain=domain,
+                            path=path,
+                            samesite=samesite,
+                            secure=secure
+                        )
+                        print(f"Eliminando cookie {cookie} para dominio={domain}, path={path}")
             
             # Headers de seguridad
             response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
             response['Pragma'] = 'no-cache'
             response['Expires'] = '0'
             
+            print(f"Logout completado {'con' if blacklisted else 'sin'} blacklisting de token")
             return response
             
         except Exception as e:
-            print(f"Error during logout: {str(e)}")
+            print(f"Error crítico durante logout: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return Response(
-                {"detail": "Error during logout process."}, 
+                {"detail": "Error during logout process.", "error": str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
