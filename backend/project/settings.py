@@ -97,15 +97,16 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # For serving static files efficiently
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Para servir archivos estáticos
+    # Mantener SessionMiddleware pero comentarlo, explicando que se mantiene para admin y compatibilidad
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Mantenido para compatibilidad y admin site
     'corsheaders.middleware.CorsMiddleware', # CORS Middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware', # Handle OAuth errors
+    'social_django.middleware.SocialAuthExceptionMiddleware', # Para manejo de errores OAuth
 ]
 
 ROOT_URLCONF = 'project.urls'

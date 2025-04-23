@@ -220,15 +220,11 @@ export class AuthService {
         
         const paths = ['/', '/api'];
         
+        // Mantener solo las cookies relacionadas con JWT y CSRF
         const cookiesToDelete = [
-            'sessionid',
             'csrftoken',
             'refresh_token',
-            'access_token',
-            'social_auth_last_login_backend',
-            'oauth_state',
-            'g_state',
-            'social_auth_google-oauth2_state'
+            'access_token'
         ];
 
         domains.forEach(domain => {
