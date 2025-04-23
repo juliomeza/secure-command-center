@@ -16,7 +16,6 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 ### Media Prioridad
 
 - [ ] **Implementar caché para respuestas API**
-- [ ] **Optimizar imágenes Docker**
 - [ ] **Optimizar carga de componentes frontend**
 
 ## Mantenibilidad y Código Limpio
@@ -38,23 +37,11 @@ Este documento recopila las principales áreas de mejora identificadas en el pro
 - [ ] **Implementar paginación**
 - [ ] **Mejorar gestión de estado**
 
-## Accesibilidad
-
-### Media Prioridad
-
-- [ ] **Añadir atributos ARIA**
-- [ ] **Mejorar contraste y temas**
-
 ## Pruebas y Calidad
 
 ### Alta Prioridad
 
 - [ ] **Implementar tests unitarios**
-
-### Media Prioridad
-
-- [ ] **Configurar CI/CD**
-- [ ] **Mejorar configuración linting**
 
 ## Sistema de Autenticación
 
