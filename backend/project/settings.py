@@ -17,60 +17,64 @@ if not SECRET_KEY:
     raise ValueError("DJANGO_SECRET_KEY is not set in the environment variables.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Cambiar a 'True' temporalmente para diagnosticar problemas de OAuth
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # --- IMPORTANT SECURITY SETTINGS ---
 # For production behind a reverse proxy (like Nginx in Docker setup)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False') == 'True'
-SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False') == 'True'
-CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False') == 'True'
-# Set to True in production if behind HTTPS
 
 # HSTS settings (HTTP Strict Transport Security)
-# NOTE: Only add these settings when everything (e.g., CORS, login, etc.) is fully functional.
-# Enabling HSTS prematurely can complicate initial setup and debugging.
 if IS_RENDER:  # Apply only in production
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-# HttpOnly flags are True by default for Session and CSRF cookies which is good.
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True # Keep False if frontend needs to read it, True otherwise. Usually True.
-
-# SameSite Cookie attribute - Cambiamos a 'None' para permitir uso entre dominios en producción
-SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
-CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
-
-# Configuración del dominio de cookies - MEJORADO PARA SEPARAR FRONTEND/BACKEND
-if IS_RENDER:
-    # En producción, establecer explícitamente el dominio de las cookies al backend
-    SESSION_COOKIE_DOMAIN = 'dashboard-control-back.onrender.com'
-    CSRF_COOKIE_DOMAIN = 'dashboard-control-back.onrender.com'
-else:
-    # En desarrollo, usar el dominio actual
-    SESSION_COOKIE_DOMAIN = None
-    CSRF_COOKIE_DOMAIN = None
-
 # --- Session and Cookie Settings ---
+# Configuración centralizada para todas las cookies
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 3600  # 1 hora
 SESSION_SAVE_EVERY_REQUEST = True
 
-# Cookie settings
+# Configuración de cookies de sesión
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_SECURE = True if IS_RENDER else False
 SESSION_COOKIE_HTTPONLY = True
+# SameSite debe ser 'None' en producción para permitir cross-origin con HTTPS
 SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 
-# CSRF settings
+# Configuración de cookies CSRF
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_SECURE = True if IS_RENDER else False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
+
+# Configuración de dominios y paths para cookies
+if IS_RENDER:
+    # En producción, configurar correctamente los dominios
+    FRONTEND_DOMAIN = 'dashboard-control-front.onrender.com'
+    BACKEND_DOMAIN = 'dashboard-control-back.onrender.com'
+    
+    # Dominio de las cookies (usa .onrender.com para compartir entre subdominios si es necesario)
+    # o específico para el backend para evitar compartir con el frontend
+    SESSION_COOKIE_DOMAIN = BACKEND_DOMAIN
+    CSRF_COOKIE_DOMAIN = BACKEND_DOMAIN
+    
+    # Configurar paths diferentes para admin y API
+    # Cookies para el Django Admin
+    ADMIN_COOKIE_PATH = '/admin'
+    # Cookies para la API (usa / por defecto)
+    API_COOKIE_PATH = '/'
+
+    # Para la API y el admin, usar cookies con dominios/paths diferentes
+    # Esta configuración se usa en el middleware o en las vistas según sea necesario
+else:
+    # En desarrollo, no configurar dominio específico
+    SESSION_COOKIE_DOMAIN = None
+    CSRF_COOKIE_DOMAIN = None
+    ADMIN_COOKIE_PATH = '/admin'
+    API_COOKIE_PATH = '/'
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
@@ -101,8 +105,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # Para servir archivos estáticos
-    # Mantener SessionMiddleware pero comentarlo, explicando que se mantiene para admin y compatibilidad
-    'django.contrib.sessions.middleware.SessionMiddleware',  # Mantenido para compatibilidad y admin site
+    # Mantener SessionMiddleware pero comentario para explicar su propósito
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Solo necesario para admin y OAuth
     'corsheaders.middleware.CorsMiddleware', # CORS Middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -135,8 +139,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project.wsgi.application'
 
 # --- Database Configuration ---
-
-# Luego, en la sección de DATABASES, reemplaza con esto:
 if IS_RENDER:
     # Configuración de base de datos para Render (producción)
     DATABASES = {
@@ -164,29 +166,22 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # --- Password validation ---
-# https://docs.djangoproject.com/en/stable/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     # ... default validators ...
 ]
 
 # --- Internationalization ---
-# https://docs.djangoproject.com/en/stable/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
 # --- Static files (CSS, JavaScript, Images) ---
-# https://docs.djangoproject.com/en/stable/howto/static-files/
 STATIC_URL = '/static/'
-# For production deployment with WhiteNoise or Nginx
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# Simplified static file handling for development with WhiteNoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
 # Default primary key field type
-# https://docs.djangoproject.com/en/stable/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- Authentication Configuration ---
@@ -212,7 +207,7 @@ SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/api/auth/oauth-success/'
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if IS_RENDER else False
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
 
-# Microsoft Azure AD Configuration (Get these from Azure Portal)
+# Microsoft Azure AD Configuration
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ.get('AZURE_AD_CLIENT_ID')
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = os.environ.get('AZURE_AD_CLIENT_SECRET')
 SOCIAL_AUTH_AZUREAD_OAUTH2_TENANT_ID = os.environ.get('AZURE_AD_TENANT_ID')
@@ -247,9 +242,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-
-# Specify the User model if you customize it later
-# AUTH_USER_MODEL = 'core.CustomUser'
 
 # --- Django REST Framework Settings ---
 REST_FRAMEWORK = {
@@ -323,4 +315,35 @@ if not CSRF_TRUSTED_ORIGINS:
 CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS.split(',')
 
 # --- Logging Configuration (Optional but Recommended) ---
-# Add basic logging configuration here if needed
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'authentication': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+    },
+}

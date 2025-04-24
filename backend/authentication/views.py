@@ -103,11 +103,11 @@ def oauth_success_redirect(request):
         response = HttpResponseRedirect(redirect_url_with_params)
         response['X-CSRFToken'] = csrf_token
 
-        # Configurar la cookie del refresh token
+        # Configurar la cookie del refresh token usando la configuración centralizada
         cookie_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
         cookie_secure = getattr(settings, 'SESSION_COOKIE_SECURE', True)
         cookie_samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
-        cookie_path = getattr(settings, 'SESSION_COOKIE_PATH', '/')
+        cookie_path = getattr(settings, 'API_COOKIE_PATH', '/')  # Usar API_COOKIE_PATH en lugar del path por defecto
         max_age = getattr(settings, 'SESSION_COOKIE_AGE', 1209600)
 
         # Configurar la cookie del refresh token
@@ -122,7 +122,22 @@ def oauth_success_redirect(request):
             samesite=cookie_samesite
         )
 
-        print(f"Redirecting authenticated user {request.user.username} to dashboard")
+        # También establecer el token de acceso en una cookie (útil para algunos escenarios)
+        response.set_cookie(
+            'access_token',
+            str(refresh.access_token),
+            max_age=3600,  # 1 hora (debería coincidir con ACCESS_TOKEN_LIFETIME)
+            domain=cookie_domain,
+            path=cookie_path,
+            secure=cookie_secure,
+            httponly=True,  # HttpOnly para seguridad
+            samesite=cookie_samesite
+        )
+
+        if settings.DEBUG:
+            print(f"Redirecting authenticated user {request.user.username} to dashboard")
+            print(f"Cookies set with domain={cookie_domain}, path={cookie_path}, samesite={cookie_samesite}")
+
         return response
 
     except Exception as e:
@@ -261,7 +276,8 @@ class LogoutAPIView(APIView):
             
     def _finish_logout(self, request, blacklisted=False):
         """
-        Método auxiliar que completa el proceso de logout después del blacklisting
+        Método auxiliar que completa el proceso de logout después del blacklisting.
+        Esta versión mejorada separa correctamente las cookies para admin y API.
         """
         # 1. Realizar logout de Django (limpia la sesión)
         if request.user.is_authenticated:
@@ -291,61 +307,84 @@ class LogoutAPIView(APIView):
             'social_auth_azuread-oauth2_state',
         ]
         
-        # Determinar posibles dominios para cookies - evitar duplicados
+        # Obtener configuraciones de settings.py
+        backend_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
+        frontend_url = getattr(settings, 'FRONTEND_BASE_URL', None)
+        admin_path = getattr(settings, 'ADMIN_COOKIE_PATH', '/admin')
+        api_path = getattr(settings, 'API_COOKIE_PATH', '/')
+        samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+        # Nota: 'secure' no se usa en delete_cookie, lo eliminamos
+        
+        # Determinar todos los dominios posibles para eliminar cookies
         domains = []
         
-        # Obtener dominios de configuración
-        base_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
-        if base_domain and base_domain not in domains:
-            domains.append(base_domain)
-        
-        # Añadir el dominio actual y posibles variantes
+        # 1. Dominio del backend configurado en settings
+        if backend_domain and backend_domain not in domains:
+            domains.append(backend_domain)
+            
+        # 2. Dominio actual del request
         current_domain = request.get_host().split(':')[0]  # Quitar el puerto si existe
-        if current_domain not in domains:
+        if current_domain and current_domain not in domains:
             domains.append(current_domain)
         
-        # Añadir variante con punto al inicio si no existe ya
+        # 3. Variante con punto al inicio para subdominios
         dot_domain = f".{current_domain}" if not current_domain.startswith('.') else current_domain
-        if dot_domain not in domains:
+        if dot_domain and dot_domain not in domains:
             domains.append(dot_domain)
-            
-        # Añadir también el dominio del frontend si está configurado
-        frontend_url = getattr(settings, 'FRONTEND_BASE_URL', None)
+        
+        # 4. Dominio del frontend si está configurado
         if frontend_url:
             try:
                 from urllib.parse import urlparse
                 frontend_domain = urlparse(frontend_url).netloc.split(':')[0]
                 if frontend_domain and frontend_domain not in domains:
                     domains.append(frontend_domain)
-                    # También la variante con punto
+                    # También la variante con punto para subdominios
                     dot_frontend = f".{frontend_domain}" if not frontend_domain.startswith('.') else frontend_domain
                     if dot_frontend not in domains:
                         domains.append(dot_frontend)
             except Exception as e:
                 print(f"Error al parsear FRONTEND_BASE_URL: {str(e)}")
+                
+        # 5. Dominio raíz compartido (si aplicable)
+        if settings.IS_RENDER:
+            root_domain = "onrender.com"
+            if root_domain not in domains:
+                domains.append(root_domain)
+            dot_root = f".{root_domain}"
+            if dot_root not in domains:
+                domains.append(dot_root)
         
         print(f"Eliminando cookies en dominios: {domains}")
         
-        # Obtener configuración de samesite
-        samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+        # Lista de paths a limpiar
+        paths = [api_path, admin_path, '/', '/api', '/admin']
+        paths = list(set(paths))  # Eliminar duplicados
         
-        # Eliminar para todos los dominios posibles
+        # Eliminar todas las combinaciones posibles de cookies
         for domain in domains:
             for cookie in cookies_to_delete:
-                # Eliminar en path / y /api para cubrir todas las bases
-                for path in ['/', '/api']:
+                for path in paths:
                     response.delete_cookie(
                         cookie,
                         domain=domain,
                         path=path,
                         samesite=samesite
                     )
-                    print(f"Eliminando cookie {cookie} para dominio={domain}, path={path}")
-        
+                    
         # Headers de seguridad
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
         
-        print(f"Logout completado {'con' if blacklisted else 'sin'} blacklisting de token")
+        if settings.DEBUG:
+            print(f"Logout completado para usuario ID: {request.user.id if hasattr(request, 'user') and request.user.is_authenticated else 'anónimo'}")
+            print(f"Token blacklisted: {blacklisted}")
+            print(f"Cookies eliminadas en dominios: {', '.join(domains)}")
+            print(f"Paths limpiados: {', '.join(paths)}")
+        
+        # Añadir un pequeño delay después del logout
+        import time
+        time.sleep(0.2)  # 200ms de delay para asegurar que todas las operaciones de DB se completan
+        
         return response
