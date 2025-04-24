@@ -252,10 +252,8 @@ SOCIAL_AUTH_PIPELINE = (
 # --- Django REST Framework Settings ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # Primero JWT Authentication (prioridad)
+        # Forzar solo JWT Authentication para la API
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # Mantener SessionAuthentication para compatibilidad con el sistema actual
-        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         # Default to requiring authentication for all API endpoints
