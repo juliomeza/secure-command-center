@@ -83,7 +83,37 @@ def oauth_success_redirect(request):
             user = request.user
             print(f"Usuario ya autenticado en el request: {request.user.username}")
         
-        # 2. Si no está autenticado, verificar si hay user_id en la sesión
+        # 2. Verificar si hubo un cambio de usuario durante la autenticación OAuth
+        elif hasattr(request, 'session') and 'auth_switched_user_id' in request.session:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                # Recuperar el usuario cambiado desde la sesión
+                switched_user_id = request.session['auth_switched_user_id']
+                user = User.objects.get(id=switched_user_id)
+                print(f"Cambio de usuario detectado: {request.session.get('auth_switched_from_user', 'desconocido')} → {user.username}")
+                
+                # Autenticar explícitamente al usuario con cualquier backend disponible
+                if hasattr(user, 'social_auth') and user.social_auth.exists():
+                    provider = user.social_auth.first().provider
+                    backend_path = f'social_core.backends.{provider}.{provider.title().replace("-", "")}OAuth2'
+                    user.backend = backend_path
+                    from django.contrib.auth import login
+                    login(request, user)
+                    print(f"Usuario recuperado del cambio de sesión autenticado con éxito: {user.username}")
+                    authenticated = True
+                
+                # Limpiar las variables de sesión ya utilizadas
+                for key in ['auth_switched_user_id', 'auth_switched_from_user', 'auth_switched_to_user']:
+                    if key in request.session:
+                        del request.session[key]
+                request.session.save()
+            except User.DoesNotExist:
+                print(f"No se encontró usuario con ID {request.session.get('auth_switched_user_id')}")
+            except Exception as e:
+                print(f"Error procesando cambio de usuario: {str(e)}")
+        
+        # 3. Verificar user_id en la sesión (caso normal)
         elif hasattr(request, 'session') and 'user_id' in request.session:
             from django.contrib.auth import get_user_model
             User = get_user_model()
@@ -113,9 +143,9 @@ def oauth_success_redirect(request):
             except Exception as e:
                 print(f"Error recuperando usuario de sesión: {str(e)}")
         
-        # 3. Si aún no está autenticado, intentar recuperar de social_auth
+        # 4. Si aún no está autenticado, intentar recuperar de social_auth
         if not authenticated and hasattr(request, 'session') and 'partial_pipeline_token' in request.session:
-            # Intentar recuperar del pipeline parcial
+            # Intentar recuperar usuario del pipeline parcial
             print("Intentando recuperar usuario del pipeline parcial")
             from social_django.utils import load_strategy, load_partial
             strategy = load_strategy(request)
