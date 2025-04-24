@@ -64,8 +64,8 @@ if IS_RENDER:
     # Configurar paths diferentes para admin y API
     # Cookies para el Django Admin
     ADMIN_COOKIE_PATH = '/admin'
-    # Cookies para la API (usa / por defecto)
-    API_COOKIE_PATH = '/'
+    # Cookies para la API (usa /api/ para evitar conflictos con /admin)
+    API_COOKIE_PATH = '/api/'
 
     # Para la API y el admin, usar cookies con dominios/paths diferentes
     # Esta configuración se usa en el middleware o en las vistas según sea necesario
@@ -74,7 +74,7 @@ else:
     SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_DOMAIN = None
     ADMIN_COOKIE_PATH = '/admin'
-    API_COOKIE_PATH = '/'
+    API_COOKIE_PATH = '/api/' # Mantener consistencia con producción
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
