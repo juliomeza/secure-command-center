@@ -38,34 +38,37 @@ SESSION_COOKIE_AGE = 3600  # 1 hora
 SESSION_SAVE_EVERY_REQUEST = True
 
 # Configuración de cookies de sesión
-SESSION_COOKIE_NAME = 'sessionid'
+# Renombrar para evitar colisión con admin
+SESSION_COOKIE_NAME = 'app_sessionid' 
 SESSION_COOKIE_SECURE = True if IS_RENDER else False
 SESSION_COOKIE_HTTPONLY = True
 # SameSite debe ser 'None' en producción para permitir cross-origin con HTTPS
 SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 
 # Configuración de cookies CSRF
-CSRF_COOKIE_NAME = 'csrftoken'
+# Renombrar para evitar colisión con admin
+CSRF_COOKIE_NAME = 'app_csrftoken' 
 CSRF_COOKIE_SECURE = True if IS_RENDER else False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 
 # Configuración de dominios y paths para cookies
+# Dejar el path por defecto '/' ya que los nombres ahora son diferentes
 if IS_RENDER:
     # En producción, configurar correctamente los dominios
     FRONTEND_DOMAIN = 'dashboard-control-front.onrender.com'
     BACKEND_DOMAIN = 'dashboard-control-back.onrender.com'
     
-    # Dominio de las cookies (usa .onrender.com para compartir entre subdominios si es necesario)
-    # o específico para el backend para evitar compartir con el frontend
     SESSION_COOKIE_DOMAIN = BACKEND_DOMAIN
     CSRF_COOKIE_DOMAIN = BACKEND_DOMAIN
     
-    # Configurar paths diferentes para admin y API
-    # Cookies para el Django Admin
-    ADMIN_COOKIE_PATH = '/admin'
-    # Cookies para la API (usa /api/ para evitar conflictos con /admin)
-    API_COOKIE_PATH = '/api/'
+    # Ya no necesitamos paths diferentes porque los nombres son diferentes
+    SESSION_COOKIE_PATH = '/'
+    CSRF_COOKIE_PATH = '/'
+
+    # Variables antiguas (ya no usadas directamente para settings globales)
+    ADMIN_COOKIE_PATH = '/admin' 
+    API_COOKIE_PATH = '/' # API usa el path raíz ahora
 
     # Para la API y el admin, usar cookies con dominios/paths diferentes
     # Esta configuración se usa en el middleware o en las vistas según sea necesario
@@ -73,8 +76,11 @@ else:
     # En desarrollo, no configurar dominio específico
     SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_DOMAIN = None
+    # Ya no necesitamos paths diferentes
+    SESSION_COOKIE_PATH = '/'
+    CSRF_COOKIE_PATH = '/'
     ADMIN_COOKIE_PATH = '/admin'
-    API_COOKIE_PATH = '/api/' # Mantener consistencia con producción
+    API_COOKIE_PATH = '/' # API usa el path raíz ahora
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
