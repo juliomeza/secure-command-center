@@ -38,16 +38,16 @@ SESSION_COOKIE_AGE = 3600  # 1 hora
 SESSION_SAVE_EVERY_REQUEST = True
 
 # Configuración de cookies de sesión
-# Renombrar para evitar colisión con admin
-SESSION_COOKIE_NAME = 'app_sessionid' 
+# Restaurar nombre original
+SESSION_COOKIE_NAME = 'sessionid' 
 SESSION_COOKIE_SECURE = True if IS_RENDER else False
 SESSION_COOKIE_HTTPONLY = True
 # SameSite debe ser 'None' en producción para permitir cross-origin con HTTPS
 SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 
 # Configuración de cookies CSRF
-# Renombrar para evitar colisión con admin
-CSRF_COOKIE_NAME = 'app_csrftoken' 
+# Restaurar nombre original
+CSRF_COOKIE_NAME = 'csrftoken' 
 CSRF_COOKIE_SECURE = True if IS_RENDER else False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
