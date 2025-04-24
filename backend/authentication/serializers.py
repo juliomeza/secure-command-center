@@ -1,47 +1,29 @@
 # backend/authentication/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from core.models import UserProfile, Company
-from core.serializers import CompanySerializer
+from core.models import Company, UserProfile # Assuming models are still in core
 
-# Serializadores específicos para la autenticación
-# Mantenemos la misma estructura que en core para asegurar compatibilidad
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ['id', 'name']
 
-class AuthProfileSerializer(serializers.ModelSerializer):
-    """
-    Serializador para el perfil de usuario, similar al de core
-    pero con configuración específica para autenticación.
-    """
+class UserProfileSerializer(serializers.ModelSerializer):
     company = CompanySerializer(read_only=True)
-    
     class Meta:
         model = UserProfile
-        fields = ['company', 'azure_oid', 'job_title']
+        fields = ['company', 'azure_oid', 'job_title'] # Add other fields
 
+# Renamed from UserSerializer to match the import in authentication.views
 class AuthUserSerializer(serializers.ModelSerializer):
-    """
-    Serializador para el usuario, similar al de core
-    pero con campos específicos para autenticación.
-    """
-    profile = AuthProfileSerializer(read_only=True)
-    auth_provider = serializers.SerializerMethodField()
-    
+    profile = UserProfileSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile', 'auth_provider']
-        
-    def get_auth_provider(self, obj):
-        """
-        Determina el proveedor de autenticación usado (OAuth o credenciales).
-        """
-        if hasattr(obj, 'social_auth') and obj.social_auth.exists():
-            return obj.social_auth.first().provider
-        return 'credentials'
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile']
 
+# It seems TokenResponseSerializer was also imported in authentication/views.py
+# Let's define it here if it's not already present.
 class TokenResponseSerializer(serializers.Serializer):
-    """
-    Serializador para la respuesta de tokens JWT.
-    """
-    access = serializers.CharField()
     refresh = serializers.CharField()
-    user = AuthUserSerializer()
+    access = serializers.CharField()
+    user = AuthUserSerializer(read_only=True) # Use the renamed serializer

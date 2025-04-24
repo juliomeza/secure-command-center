@@ -235,16 +235,17 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
 
 # Pipeline to save extra data (like company, if available in claims)
+# Ensure this points only to the new authentication app pipelines
 SOCIAL_AUTH_PIPELINE = (
-    'authentication.pipelines.clean_session',  # Función simplificada sin dependencia de sesiones
+    'authentication.pipelines.clean_session',  # From authentication app
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
-    'authentication.pipelines.handle_already_associated_auth',  # Función mejorada usando JWT
+    'authentication.pipelines.handle_already_associated_auth',  # From authentication app
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
-    'authentication.pipelines.save_profile_details', # Función actualizada
+    'authentication.pipelines.save_profile_details', # From authentication app
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
@@ -271,11 +272,13 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
+        # LoginRateThrottle is applied specifically in authentication views, not globally needed here.
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/minute',
         'user': '1000/minute',
-        'login': '5/minute',
+        # The 'login' scope is defined and used within the authentication app's throttling.
+        'login': '5/minute', 
     },
 }
 # Remove None from renderers list if present
