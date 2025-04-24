@@ -21,23 +21,23 @@ from social_core.exceptions import AuthAlreadyAssociated
 class UserProfileAPIView(APIView):
     """
     API endpoint para obtener información del perfil del usuario autenticado.
-    Mejorado para trabajar de manera óptima en un sistema híbrido JWT + sesiones.
+    Solo acepta autenticación JWT para la API.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Verificamos la autenticación y el método utilizado (para mejor logging)
-        auth_method = "JWT" if 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer ') else "Session"
-        print(f"User {request.user.username} accessing profile via {auth_method} authentication")
+        # Verificar que se está usando JWT (no sesión)
+        if not ('Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer ')):
+            return Response({"detail": "Se requiere autenticación JWT para acceder a la API."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Serializamos el usuario con más información de autenticación
+        # Serializamos el usuario
         serializer = AuthUserSerializer(request.user)
         response_data = serializer.data
         
-        # Para debugging, añadimos información sobre el método de autenticación usado
+        # Para debugging
         if settings.DEBUG:
-            response_data['_auth_method'] = auth_method
-
+            response_data['_auth_method'] = "JWT"
+            
         return Response(response_data)
 
 
@@ -70,18 +70,16 @@ def get_csrf_token(request):
 def oauth_success_redirect(request):
     """
     Vista que genera tokens JWT después de un login OAuth2 exitoso y redirige al frontend.
-    Versión mejorada para operar en un sistema híbrido JWT + sesiones Django.
+    Solo genera JWT y no crea sesiones para la aplicación principal.
     """
     try:
-        # Verificación más robusta para autenticación después de OAuth
-        authenticated = False
+        # Verificación para autenticación después de OAuth
         user = None
         
         # 1. Verificar si el usuario está autenticado en el request
         if request.user.is_authenticated:
-            authenticated = True
             user = request.user
-            print(f"Usuario ya autenticado en el request: {request.user.username}")
+            print(f"Usuario autenticado detectado: {request.user.username}")
         
         # 2. Verificar si hubo un cambio de usuario durante la autenticación OAuth
         elif hasattr(request, 'session') and 'auth_switched_user_id' in request.session:
@@ -93,15 +91,7 @@ def oauth_success_redirect(request):
                 user = User.objects.get(id=switched_user_id)
                 print(f"Cambio de usuario detectado: {request.session.get('auth_switched_from_user', 'desconocido')} → {user.username}")
                 
-                # Autenticar explícitamente al usuario con cualquier backend disponible
-                if hasattr(user, 'social_auth') and user.social_auth.exists():
-                    provider = user.social_auth.first().provider
-                    backend_path = f'social_core.backends.{provider}.{provider.title().replace("-", "")}OAuth2'
-                    user.backend = backend_path
-                    from django.contrib.auth import login
-                    login(request, user)
-                    print(f"Usuario recuperado del cambio de sesión autenticado con éxito: {user.username}")
-                    authenticated = True
+                # No hacemos login aquí para evitar crear sesiones
                 
                 # Limpiar las variables de sesión ya utilizadas
                 for key in ['auth_switched_user_id', 'auth_switched_from_user', 'auth_switched_to_user']:
@@ -122,29 +112,15 @@ def oauth_success_redirect(request):
                 user = User.objects.get(id=user_id)
                 print(f"Usuario recuperado de la sesión: {user.username}")
                 
-                # Verificar si hay backend en la sesión para autenticarlo
-                if 'social_auth_last_login_backend' in request.session:
-                    backend_name = request.session['social_auth_last_login_backend']
-                    user.backend = f'social_core.backends.{backend_name}.{backend_name.title().replace("-", "")}OAuth2'
-                    from django.contrib.auth import login
-                    login(request, user)
-                    print(f"Login manual realizado para {user.username} usando backend {backend_name}")
-                    authenticated = True
-                elif hasattr(user, 'social_auth') and user.social_auth.exists():
-                    # Usar el primer backend social asociado
-                    provider = user.social_auth.first().provider
-                    user.backend = f'social_core.backends.{provider}.{provider.title().replace("-", "")}OAuth2'
-                    from django.contrib.auth import login
-                    login(request, user)
-                    print(f"Login manual realizado para {user.username} usando provider detectado {provider}")
-                    authenticated = True
+                # No hacemos login aquí para evitar crear sesiones
+                
             except User.DoesNotExist:
                 print(f"No se encontró usuario con ID {request.session.get('user_id')}")
             except Exception as e:
                 print(f"Error recuperando usuario de sesión: {str(e)}")
         
-        # 4. Si aún no está autenticado, intentar recuperar de social_auth
-        if not authenticated and hasattr(request, 'session') and 'partial_pipeline_token' in request.session:
+        # 4. Verificar si aún no hay usuario, intentar recuperar de social_auth
+        if not user and hasattr(request, 'session') and 'partial_pipeline_token' in request.session:
             # Intentar recuperar usuario del pipeline parcial
             print("Intentando recuperar usuario del pipeline parcial")
             from social_django.utils import load_strategy, load_partial
@@ -153,10 +129,9 @@ def oauth_success_redirect(request):
             if partial and 'kwargs' in partial and 'user' in partial['kwargs']:
                 user = partial['kwargs']['user']
                 print(f"Usuario recuperado del pipeline parcial: {user.username}")
-                authenticated = True
         
         # Si después de todo no hay usuario autenticado, redirigir a login
-        if not authenticated or not user:
+        if not user:
             print("Usuario no autenticado después de todos los intentos, redirigiendo a login")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=auth_failed")
 
@@ -189,7 +164,7 @@ def oauth_success_redirect(request):
         cookie_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
         cookie_secure = getattr(settings, 'SESSION_COOKIE_SECURE', True)
         cookie_samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
-        cookie_path = getattr(settings, 'API_COOKIE_PATH', '/')  # Usar API_COOKIE_PATH en lugar del path por defecto
+        cookie_path = getattr(settings, 'API_COOKIE_PATH', '/')
         max_age = getattr(settings, 'SESSION_COOKIE_AGE', 1209600)
 
         # Configurar la cookie del refresh token
@@ -204,7 +179,7 @@ def oauth_success_redirect(request):
             samesite=cookie_samesite
         )
 
-        # También establecer el token de acceso en una cookie (útil para algunos escenarios)
+        # También establecer el token de acceso en una cookie
         response.set_cookie(
             'access_token',
             str(refresh.access_token),
@@ -212,13 +187,15 @@ def oauth_success_redirect(request):
             domain=cookie_domain,
             path=cookie_path,
             secure=cookie_secure,
-            httponly=True,  # HttpOnly para seguridad
+            httponly=True,
             samesite=cookie_samesite
         )
 
+        # Importante: NO crear una cookie sessionid para la aplicación principal
+        
         if settings.DEBUG:
-            print(f"Redirecting authenticated user {user.username} to dashboard")
-            print(f"Cookies set with domain={cookie_domain}, path={cookie_path}, samesite={cookie_samesite}")
+            print(f"Redirecting authenticated user {user.username} to dashboard with JWT only (no session)")
+            print(f"JWT cookies set with domain={cookie_domain}, path={cookie_path}, samesite={cookie_samesite}")
 
         return response
 
@@ -363,55 +340,56 @@ class LogoutAPIView(APIView):
         Método auxiliar que completa el proceso de logout después del blacklisting.
         Esta versión mejorada separa correctamente las cookies para admin y API.
         """
-        # 1. Realizar logout de Django (limpia la sesión)
-        if request.user.is_authenticated:
-            print(f"Ejecutando Django logout para usuario {request.user.username}")
-            
-            # Limpiar manualmente la sesión antes de hacer logout para asegurarnos de que 
-            # se eliminan todas las variables importantes
-            if hasattr(request, 'session'):
-                # Guardar el session_key actual para eliminarlo correctamente
-                session_key = request.session.session_key
+        # Verificar si es una solicitud de la API (con header JWT) o del admin (con sesión)
+        is_api_request = 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer ')
+        
+        if is_api_request:
+            print("Procesando logout para API (JWT)")
+            # Para API solo nos interesa invalidar el token JWT
+            response = Response({
+                "detail": "Successfully logged out.",
+                "blacklisted": blacklisted
+            })
+        else:
+            print("Procesando logout general (posiblemente desde admin)")
+            # Si no es específicamente una petición con JWT, limpiar la sesión
+            if request.user.is_authenticated:
+                print(f"Ejecutando Django logout para usuario {request.user.username}")
                 
-                # Eliminar todas las claves de OAuth específicas que podrían causar problemas
-                oauth_keys = [
-                    'auth_switched_user_id', 'auth_switched_from_user', 'auth_switched_to_user',
-                    'partial_pipeline_token', 'social_auth_last_login_backend',
-                    'oauth_state', 'google-oauth2_state', 'azuread-oauth2_state',
-                    'next', 'backend', 'user_id'
-                ]
-                
-                for key in oauth_keys:
-                    if key in request.session:
+                # Limpiar la sesión antes de hacer logout
+                if hasattr(request, 'session'):
+                    # Guardar el session_key actual para eliminarlo correctamente
+                    session_key = request.session.session_key
+                    
+                    # Eliminar claves de OAuth específicas
+                    oauth_keys = [
+                        'auth_switched_user_id', 'auth_switched_from_user', 'auth_switched_to_user',
+                        'partial_pipeline_token', 'social_auth_last_login_backend',
+                        'oauth_state', 'google-oauth2_state', 'azuread-oauth2_state',
+                        'next', 'backend', 'user_id'
+                    ]
+                    
+                    for key in oauth_keys:
+                        if key in request.session:
+                            del request.session[key]
+                    
+                    # Eliminar datos asociados a pipelines parciales
+                    pipeline_keys = [k for k in request.session.keys() if 'partial_pipeline' in str(k)]
+                    for key in pipeline_keys:
                         del request.session[key]
+                    
+                    # Forzar la escritura de los cambios
+                    request.session.save()
                 
-                # Eliminar cualquier dato asociado a pipelines parciales
-                pipeline_keys = [k for k in request.session.keys() if 'partial_pipeline' in str(k)]
-                for key in pipeline_keys:
-                    del request.session[key]
-                
-                # Forzar la escritura de los cambios antes del logout
-                request.session.save()
-                
-                # Forzar la eliminación de la sesión del almacenamiento
-                from django.contrib.sessions.models import Session
-                try:
-                    if session_key:
-                        Session.objects.filter(session_key=session_key).delete()
-                        print(f"Sesión con key {session_key[:8]}... eliminada manualmente")
-                except Exception as e:
-                    print(f"Error al eliminar manualmente la sesión: {str(e)}")
+                # Realizar el logout de Django
+                auth_logout(request)
             
-            # Ahora sí realizar el logout de Django
-            auth_logout(request)
+            response = Response({
+                "detail": "Successfully logged out.",
+                "blacklisted": blacklisted
+            })
         
-        # 2. Preparar respuesta y eliminar cookies
-        response = Response({
-            "detail": "Successfully logged out.",
-            "blacklisted": blacklisted
-        })
-        
-        # Lista completa de todas las posibles cookies
+        # Lista de cookies para eliminar
         cookies_to_delete = [
             'csrftoken',
             'refresh_token',
@@ -419,25 +397,31 @@ class LogoutAPIView(APIView):
             'access_token',
             'accessToken',
             'jwt_refresh',
-            'jwt_access',
-            'sessionid',
-            'social_auth_last_login_backend',
-            'oauth_state',
-            'g_state',
-            'social_auth_google-oauth2_state',
-            'social_auth_azuread-oauth2_state',
-            # Añadir cookies adicionales que puedan estar causando problemas
-            'next', 'partial_pipeline_token'
+            'jwt_access'
         ]
         
-        # Obtener configuraciones de settings.py
+        # Si es una solicitud de API, añadir sessionid a las cookies a eliminar
+        # para asegurar que no se mezclan los métodos de autenticación
+        if is_api_request:
+            cookies_to_delete.append('sessionid')
+            cookies_to_delete.extend([
+                'social_auth_last_login_backend',
+                'oauth_state',
+                'g_state',
+                'social_auth_google-oauth2_state',
+                'social_auth_azuread-oauth2_state',
+                'next', 
+                'partial_pipeline_token'
+            ])
+        
+        # Obtener configuraciones
         backend_domain = getattr(settings, 'SESSION_COOKIE_DOMAIN', None)
         frontend_url = getattr(settings, 'FRONTEND_BASE_URL', None)
         admin_path = getattr(settings, 'ADMIN_COOKIE_PATH', '/admin')
         api_path = getattr(settings, 'API_COOKIE_PATH', '/')
         samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
         
-        # Determinar todos los dominios posibles para eliminar cookies
+        # Determinar dominios para eliminar cookies
         domains = []
         
         # 1. Dominio del backend configurado en settings
@@ -467,30 +451,22 @@ class LogoutAPIView(APIView):
                         domains.append(dot_frontend)
             except Exception as e:
                 print(f"Error al parsear FRONTEND_BASE_URL: {str(e)}")
-                
-        # 5. Dominio raíz compartido (si aplicable)
-        if settings.IS_RENDER:
-            root_domain = "onrender.com"
-            if root_domain not in domains:
-                domains.append(root_domain)
-            dot_root = f".{root_domain}"
-            if dot_root not in domains:
-                domains.append(dot_root)
-                
-        # También añadir dominio nulo y vacío para asegurarnos que se borran todas
-        domains.extend(['', None])
         
-        # Eliminar duplicados  
+        # También añadir dominio nulo y vacío
+        domains.extend(['', None])
         domains = [d for d in domains if d is not None]
-        domains = list(dict.fromkeys(domains))  # Preservar orden y eliminar duplicados
+        domains = list(dict.fromkeys(domains))  # Eliminar duplicados
         
         print(f"Eliminando cookies en dominios: {domains}")
         
-        # Lista de paths a limpiar
-        paths = [api_path, admin_path, '/', '/api', '/admin', '/auth']
+        # Paths a limpiar
+        paths = [api_path]
+        if not is_api_request:
+            # Si es logout general, incluir también los paths de admin
+            paths.extend([admin_path, '/', '/api', '/admin', '/auth'])
         paths = list(set(paths))  # Eliminar duplicados
         
-        # Eliminar todas las combinaciones posibles de cookies
+        # Eliminar cookies
         for domain in domains:
             for cookie in cookies_to_delete:
                 for path in paths:
@@ -501,10 +477,11 @@ class LogoutAPIView(APIView):
                         samesite=samesite
                     )
         
-        # Añadir headers especiales que ayudan a borrar cookies problemáticas
-        response['Clear-Site-Data'] = '"cookies", "storage"'
-                    
         # Headers de seguridad
+        if is_api_request:
+            # Solo para API, ayuda a limpiar storage
+            response['Clear-Site-Data'] = '"cookies", "storage"'
+            
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
@@ -512,11 +489,8 @@ class LogoutAPIView(APIView):
         if settings.DEBUG:
             print(f"Logout completado para usuario ID: {request.user.id if hasattr(request, 'user') and request.user.is_authenticated else 'anónimo'}")
             print(f"Token blacklisted: {blacklisted}")
+            print(f"Tipo de solicitud: {'API (JWT)' if is_api_request else 'Admin/Genérico'}")
             print(f"Cookies eliminadas en dominios: {', '.join(str(d) for d in domains if d)}")
             print(f"Paths limpiados: {', '.join(paths)}")
-        
-        # Añadir un pequeño delay después del logout
-        import time
-        time.sleep(0.2)  # 200ms de delay para asegurar que todas las operaciones de DB se completan
         
         return response
