@@ -26,14 +26,24 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
         # Simplemente autenticar al usuario correcto especificando el backend
         strategy = backend.strategy
         if strategy.request:
+            # Guardar esto en la sesión para que la función oauth_success_redirect pueda recuperarlo
+            if hasattr(strategy.request, 'session'):
+                strategy.request.session['auth_switched_user_id'] = social.user.id
+                strategy.request.session['auth_switched_from_user'] = user.username
+                strategy.request.session['auth_switched_to_user'] = social.user.username
+                strategy.request.session.save()
+            
+            # Establecer el usuario correcto y su backend
             strategy.request.user = social.user
-            # Especificar el backend explícitamente para resolver el error de autenticación
             backend_path = f"social_core.backends.{backend.name}.{backend.__class__.__name__}"
             social.user.backend = backend_path
+            
+            # Forzar login con el usuario asociado
             login(strategy.request, social.user)
+            print(f"[Auth Pipeline] Forzando login para el usuario correcto: {social.user.username}")
             
         # Marcar para saltar la asociación
-        return {'user': social.user, 'is_new': False}
+        return {'user': social.user, 'is_new': False, 'social': social}
             
     return None
 

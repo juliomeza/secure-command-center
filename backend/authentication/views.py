@@ -73,22 +73,74 @@ def oauth_success_redirect(request):
     Versión mejorada para operar en un sistema híbrido JWT + sesiones Django.
     """
     try:
-        # Verificar autenticación - primero chequear usuario en sesión (sistema híbrido)
-        if not request.user.is_authenticated:
-            print("User not authenticated after OAuth, redirecting to login")
+        # Verificación más robusta para autenticación después de OAuth
+        authenticated = False
+        user = None
+        
+        # 1. Verificar si el usuario está autenticado en el request
+        if request.user.is_authenticated:
+            authenticated = True
+            user = request.user
+            print(f"Usuario ya autenticado en el request: {request.user.username}")
+        
+        # 2. Si no está autenticado, verificar si hay user_id en la sesión
+        elif hasattr(request, 'session') and 'user_id' in request.session:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user_id = request.session['user_id']
+                user = User.objects.get(id=user_id)
+                print(f"Usuario recuperado de la sesión: {user.username}")
+                
+                # Verificar si hay backend en la sesión para autenticarlo
+                if 'social_auth_last_login_backend' in request.session:
+                    backend_name = request.session['social_auth_last_login_backend']
+                    user.backend = f'social_core.backends.{backend_name}.{backend_name.title().replace("-", "")}OAuth2'
+                    from django.contrib.auth import login
+                    login(request, user)
+                    print(f"Login manual realizado para {user.username} usando backend {backend_name}")
+                    authenticated = True
+                elif hasattr(user, 'social_auth') and user.social_auth.exists():
+                    # Usar el primer backend social asociado
+                    provider = user.social_auth.first().provider
+                    user.backend = f'social_core.backends.{provider}.{provider.title().replace("-", "")}OAuth2'
+                    from django.contrib.auth import login
+                    login(request, user)
+                    print(f"Login manual realizado para {user.username} usando provider detectado {provider}")
+                    authenticated = True
+            except User.DoesNotExist:
+                print(f"No se encontró usuario con ID {request.session.get('user_id')}")
+            except Exception as e:
+                print(f"Error recuperando usuario de sesión: {str(e)}")
+        
+        # 3. Si aún no está autenticado, intentar recuperar de social_auth
+        if not authenticated and hasattr(request, 'session') and 'partial_pipeline_token' in request.session:
+            # Intentar recuperar del pipeline parcial
+            print("Intentando recuperar usuario del pipeline parcial")
+            from social_django.utils import load_strategy, load_partial
+            strategy = load_strategy(request)
+            partial = load_partial(strategy, request.session['partial_pipeline_token'])
+            if partial and 'kwargs' in partial and 'user' in partial['kwargs']:
+                user = partial['kwargs']['user']
+                print(f"Usuario recuperado del pipeline parcial: {user.username}")
+                authenticated = True
+        
+        # Si después de todo no hay usuario autenticado, redirigir a login
+        if not authenticated or not user:
+            print("Usuario no autenticado después de todos los intentos, redirigiendo a login")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=auth_failed")
 
         # El usuario está autenticado, procedemos a generar tokens JWT
-        print(f"OAuth success for user {request.user.username}")
+        print(f"OAuth success for user {user.username}")
         
         # Generar CSRF token y tokens JWT
         csrf_token = get_token(request)
-        refresh = RefreshToken.for_user(request.user)
+        refresh = RefreshToken.for_user(user)
 
         # Obtener información del proveedor OAuth si está disponible
         provider = None
-        if hasattr(request.user, 'social_auth') and request.user.social_auth.exists():
-            provider = request.user.social_auth.first().provider
+        if hasattr(user, 'social_auth') and user.social_auth.exists():
+            provider = user.social_auth.first().provider
             print(f"User authenticated via OAuth provider: {provider}")
 
         # Preparar URL de redirección con tokens
@@ -135,13 +187,15 @@ def oauth_success_redirect(request):
         )
 
         if settings.DEBUG:
-            print(f"Redirecting authenticated user {request.user.username} to dashboard")
+            print(f"Redirecting authenticated user {user.username} to dashboard")
             print(f"Cookies set with domain={cookie_domain}, path={cookie_path}, samesite={cookie_samesite}")
 
         return response
 
     except Exception as e:
         print(f"Error en oauth_success_redirect: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=server_error")
 
 
