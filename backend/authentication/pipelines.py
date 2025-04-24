@@ -23,10 +23,13 @@ def handle_already_associated_auth(backend, details, uid, user=None, *args, **kw
     if social and user and social.user != user:
         print(f"[Auth Pipeline] Found already associated account, but with different user. Social user: {social.user.username}, Current user: {user.username}")
         
-        # Simplemente autenticar al usuario correcto sin manipular la sesión
+        # Simplemente autenticar al usuario correcto especificando el backend
         strategy = backend.strategy
         if strategy.request:
             strategy.request.user = social.user
+            # Especificar el backend explícitamente para resolver el error de autenticación
+            backend_path = f"social_core.backends.{backend.name}.{backend.__class__.__name__}"
+            social.user.backend = backend_path
             login(strategy.request, social.user)
             
         # Marcar para saltar la asociación
