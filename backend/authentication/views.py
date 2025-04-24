@@ -171,7 +171,6 @@ class LogoutAPIView(APIView):
                 try:
                     from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
                     from django.utils import timezone
-                    import pytz
                     from datetime import timedelta
                     
                     # Definir un periodo de tiempo para considerar como "tokens recientes"
