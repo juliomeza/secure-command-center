@@ -192,10 +192,17 @@ def oauth_success_redirect(request):
         )
 
         # Importante: NO crear una cookie sessionid para la aplicación principal
+        # Eliminar explícitamente la cookie sessionid para asegurar que no queda tras OAuth
+        response.delete_cookie(
+            'sessionid',
+            domain=cookie_domain,
+            path='/'
+        )
         
         if settings.DEBUG:
             print(f"Redirecting authenticated user {user.username} to dashboard with JWT only (no session)")
             print(f"JWT cookies set with domain={cookie_domain}, path={cookie_path}, samesite={cookie_samesite}")
+            print("Eliminada cookie sessionid explícitamente")
 
         return response
 

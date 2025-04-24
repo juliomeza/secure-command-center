@@ -7,6 +7,8 @@ class AuthenticationSeparationMiddleware:
     Middleware que garantiza que:
     - Las rutas /api/ solo se autentiquen con JWT (Authorization) y no con sesiones
     - El Admin de Django (/admin/) solo use autenticación por sesiones y no JWT
+    
+    También se encarga de eliminar activamente la cookie de sesión para las rutas API.
     """
     def __init__(self, get_response):
         self.get_response = get_response
@@ -40,6 +42,21 @@ class AuthenticationSeparationMiddleware:
             if settings.DEBUG and request.user.is_authenticated:
                 print(f"Admin request with session auth: {request.path}")
 
-        # Continuar con la solicitud
+        # Procesar la solicitud
         response = self.get_response(request)
+        
+        # Post-procesamiento: Eliminar activamente la cookie sessionid para rutas de API
+        # excepto para las rutas relacionadas con oauth que necesitan sesión temporalmente
+        if path.startswith('/api/') and not path.startswith('/api/auth/oauth'):
+            if 'sessionid' in request.COOKIES:
+                if settings.DEBUG:
+                    print(f"Eliminando cookie sessionid para ruta API: {request.path}")
+                
+                # Eliminar la cookie sessionid
+                response.delete_cookie(
+                    'sessionid',
+                    domain=getattr(settings, 'SESSION_COOKIE_DOMAIN', None),
+                    path='/'
+                )
+
         return response
