@@ -175,7 +175,7 @@ Esta estrategia nos permite:
 - [x] Crear tests que validen paridad de comportamiento con sistema actual
 - [x] Migrar gradualmente a arquitectura JWT manteniendo compatibilidad
 - [x] Validar exhaustivamente antes de eliminar código antiguo
-- [ ] Eliminar código antiguo
+- [x] Eliminar código antiguo
 
 ### Fase 3: Implementación de Control de Acceso (3-4 semanas)
 - [x] Crear app `access` en Django
