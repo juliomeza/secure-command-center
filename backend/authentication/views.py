@@ -169,28 +169,48 @@ class LogoutAPIView(APIView):
             # Intentar obtener el refresh token del usuario basado en su ID
             if not refresh_token and request.user.is_authenticated:
                 try:
-                    from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
-                    # Buscar tokens activos para este usuario
+                    from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+                    from django.utils import timezone
+                    import pytz
+                    from datetime import timedelta
+                    
+                    # Definir un periodo de tiempo para considerar como "tokens recientes"
+                    # Tokens creados en los últimos 10 minutos se consideran parte de la misma sesión
+                    recent_time_threshold = timezone.now() - timedelta(minutes=10)
+                    
+                    # Buscar tokens activos recientes para este usuario
                     outstanding_tokens = OutstandingToken.objects.filter(
                         user=request.user,
-                        expires_at__gt=timezone.now()
+                        expires_at__gt=timezone.now(),  # No expirados
+                        created_at__gt=recent_time_threshold  # Creados recientemente
                     ).order_by('-created_at')
                     
                     if outstanding_tokens.exists():
-                        # Obtener el token más reciente
-                        latest_token = outstanding_tokens.first()
-                        print(f"Usando token activo más reciente para usuario: JTI={latest_token.jti}")
+                        # Contador de tokens blacklisteados
+                        blacklisted_count = 0
+                        jti_list = []
                         
-                        # Blacklistear este token
-                        from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
-                        try:
-                            BlacklistedToken.objects.create(token=latest_token)
-                            print(f"✅ Token JTI {latest_token.jti} blacklisteado exitosamente")
+                        # Blacklistear todos los tokens activos recientes
+                        for token in outstanding_tokens:
+                            try:
+                                # Verificar si ya está en la blacklist
+                                if not BlacklistedToken.objects.filter(token=token).exists():
+                                    BlacklistedToken.objects.create(token=token)
+                                    jti_list.append(token.jti)
+                                    blacklisted_count += 1
+                                    print(f"✅ Token JTI {token.jti} blacklisteado exitosamente (creado: {token.created_at})")
+                                else:
+                                    print(f"⚠️ Token JTI {token.jti} ya estaba blacklisteado")
+                            except Exception as e:
+                                print(f"Error al blacklistear token {token.jti}: {str(e)}")
+                        
+                        if blacklisted_count > 0:
+                            print(f"Se blacklistearon {blacklisted_count} tokens recientes (últimos 10 minutos)")
                             return self._finish_logout(request, True)
-                        except Exception as e:
-                            print(f"Error al blacklistear token manualmente: {str(e)}")
+                        else:
+                            print("No se blacklisteó ningún token (ya estaban todos en blacklist)")
                     else:
-                        print("No se encontraron tokens activos para el usuario")
+                        print("No se encontraron tokens activos recientes para el usuario (últimos 10 minutos)")
                 except Exception as e:
                     print(f"Error al buscar tokens por usuario: {str(e)}")
             
