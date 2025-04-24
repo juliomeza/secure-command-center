@@ -44,8 +44,15 @@ CSRF_COOKIE_HTTPONLY = True # Keep False if frontend needs to read it, True othe
 SESSION_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
 
-# Configurar el dominio de las cookies para que funcionen entre subdominios si es necesario
-SESSION_COOKIE_DOMAIN = None  # Automáticamente detecta el dominio actual
+# Configuración del dominio de cookies - MEJORADO PARA SEPARAR FRONTEND/BACKEND
+if IS_RENDER:
+    # En producción, establecer explícitamente el dominio de las cookies al backend
+    SESSION_COOKIE_DOMAIN = 'dashboard-control-back.onrender.com'
+    CSRF_COOKIE_DOMAIN = 'dashboard-control-back.onrender.com'
+else:
+    # En desarrollo, usar el dominio actual
+    SESSION_COOKIE_DOMAIN = None
+    CSRF_COOKIE_DOMAIN = None
 
 # --- Session and Cookie Settings ---
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
@@ -64,10 +71,6 @@ CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_SECURE = True if IS_RENDER else False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'None' if IS_RENDER else 'Lax'
-
-# Configuración del dominio de cookies
-SESSION_COOKIE_DOMAIN = None  # Se configurará automáticamente basado en el request
-CSRF_COOKIE_DOMAIN = None    # Se configurará automáticamente basado en el request
 
 # --- Allowed Hosts ---
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')

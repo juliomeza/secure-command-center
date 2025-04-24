@@ -155,15 +155,9 @@ class LogoutAPIView(APIView):
             if 'refresh_token' in request.COOKIES:
                 refresh_token = request.COOKIES.get('refresh_token')
                 print("Refresh token encontrado en cookie 'refresh_token'")
-                
-            # Si no está en las cookies, buscar en el Authorization header
-            elif 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer '):
-                # Nota: esto normalmente contendría el access token, pero es bueno verificar
-                print("Usando token de Authorization header")
-                auth_token = request.headers['Authorization'].split(' ')[1]
-                # Solo intentar usar esto como último recurso
-                if not refresh_token:
-                    refresh_token = auth_token
+            
+            # Ya no usaremos el token de Authorization Header ya que es un access token, no un refresh token
+            # El error "Token has wrong type" era porque intentábamos blacklistear un access token
             
             # 2. Manejar el blacklisting con más detalle
             blacklisted = False
@@ -173,39 +167,53 @@ class LogoutAPIView(APIView):
                     token_prefix = refresh_token[:10] if len(refresh_token) > 10 else "token_corto"
                     print(f"Intentando blacklist para token: {token_prefix}...")
                     
-                    token = RefreshToken(refresh_token)
-                    print(f"Token parseado correctamente, JTI: {token['jti']}")
-                    
-                    # Forzar que la operación sea explícita y completa
-                    token.blacklist()
-                    
-                    # Verificar que el blacklist fue exitoso (esto sólo es posible si la transacción ya se completó)
+                    # Verificar que sea un refresh token antes de intentar parsearlo
+                    import jwt
                     try:
-                        # Usar el nombre correcto de la app según Django (token_blacklist, no rest_framework_simplejwt.token_blacklist)
-                        from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-                        # Verificar primero si el token está en OutstandingToken
-                        outstanding = OutstandingToken.objects.filter(jti=token['jti']).first()
-                        if outstanding:
-                            print(f"Token encontrado en OutstandingToken: {outstanding.jti}")
-                            # Luego verificar si está blacklisteado
-                            if BlacklistedToken.objects.filter(token=outstanding).exists():
-                                print(f"Token JTI {token['jti']} blacklisteado exitosamente")
-                                blacklisted = True
-                            else:
-                                print(f"⚠️ Token en OutstandingToken pero no está en BlacklistedToken")
-                                # Intentar blacklistearlo manualmente
-                                try:
-                                    BlacklistedToken.objects.create(token=outstanding)
-                                    print(f"✅ Se creó manualmente entrada en BlacklistedToken para {outstanding.jti}")
+                        # Decode sin verificar para obtener el tipo
+                        decoded = jwt.decode(refresh_token, options={"verify_signature": False})
+                        token_type = decoded.get('token_type', '')
+                        if token_type != 'refresh':
+                            print(f"⚠️ El token no es un refresh token (tipo: {token_type}). No se intentará blacklistear.")
+                            refresh_token = None
+                    except Exception as je:
+                        print(f"Error al decodificar token: {str(je)}")
+                    
+                    if refresh_token:  # Solo continuar si aún tenemos un token válido
+                        token = RefreshToken(refresh_token)
+                        print(f"Token parseado correctamente, JTI: {token['jti']}")
+                        
+                        # Forzar que la operación sea explícita y completa
+                        token.blacklist()
+                        print(f"Blacklist realizado para token con JTI: {token['jti']}")
+                        
+                        # Verificar que el blacklist fue exitoso
+                        try:
+                            # Usar el nombre correcto de la app según Django
+                            from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+                            # Verificar primero si el token está en OutstandingToken
+                            outstanding = OutstandingToken.objects.filter(jti=token['jti']).first()
+                            if outstanding:
+                                print(f"Token encontrado en OutstandingToken: {outstanding.jti}")
+                                # Luego verificar si está blacklisteado
+                                if BlacklistedToken.objects.filter(token=outstanding).exists():
+                                    print(f"✅ Token JTI {token['jti']} blacklisteado exitosamente")
                                     blacklisted = True
-                                except Exception as be:
-                                    print(f"❌ Error al crear manualmente entrada en BlacklistedToken: {str(be)}")
-                        else:
-                            print(f"⚠️ No se encontró el token en OutstandingToken")
-                    except ImportError as ie:
-                        print(f"Error al importar modelos de token_blacklist: {str(ie)}")
-                    except Exception as e:
-                        print(f"Error al verificar blacklisting: {str(e)}")
+                                else:
+                                    print(f"⚠️ Token en OutstandingToken pero no está en BlacklistedToken")
+                                    # Intentar blacklistearlo manualmente
+                                    try:
+                                        BlacklistedToken.objects.create(token=outstanding)
+                                        print(f"✅ Se creó manualmente entrada en BlacklistedToken para {outstanding.jti}")
+                                        blacklisted = True
+                                    except Exception as be:
+                                        print(f"❌ Error al crear manualmente entrada en BlacklistedToken: {str(be)}")
+                            else:
+                                print(f"⚠️ No se encontró el token en OutstandingToken")
+                        except ImportError as ie:
+                            print(f"Error al importar modelos de token_blacklist: {str(ie)}")
+                        except Exception as e:
+                            print(f"Error al verificar blacklisting: {str(e)}")
                 except TokenError as te:
                     print(f"Error TokenError al procesar el refresh token: {str(te)}")
                 except Exception as e:
