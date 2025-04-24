@@ -366,6 +366,43 @@ class LogoutAPIView(APIView):
         # 1. Realizar logout de Django (limpia la sesión)
         if request.user.is_authenticated:
             print(f"Ejecutando Django logout para usuario {request.user.username}")
+            
+            # Limpiar manualmente la sesión antes de hacer logout para asegurarnos de que 
+            # se eliminan todas las variables importantes
+            if hasattr(request, 'session'):
+                # Guardar el session_key actual para eliminarlo correctamente
+                session_key = request.session.session_key
+                
+                # Eliminar todas las claves de OAuth específicas que podrían causar problemas
+                oauth_keys = [
+                    'auth_switched_user_id', 'auth_switched_from_user', 'auth_switched_to_user',
+                    'partial_pipeline_token', 'social_auth_last_login_backend',
+                    'oauth_state', 'google-oauth2_state', 'azuread-oauth2_state',
+                    'next', 'backend', 'user_id'
+                ]
+                
+                for key in oauth_keys:
+                    if key in request.session:
+                        del request.session[key]
+                
+                # Eliminar cualquier dato asociado a pipelines parciales
+                pipeline_keys = [k for k in request.session.keys() if 'partial_pipeline' in str(k)]
+                for key in pipeline_keys:
+                    del request.session[key]
+                
+                # Forzar la escritura de los cambios antes del logout
+                request.session.save()
+                
+                # Forzar la eliminación de la sesión del almacenamiento
+                from django.contrib.sessions.models import Session
+                try:
+                    if session_key:
+                        Session.objects.filter(session_key=session_key).delete()
+                        print(f"Sesión con key {session_key[:8]}... eliminada manualmente")
+                except Exception as e:
+                    print(f"Error al eliminar manualmente la sesión: {str(e)}")
+            
+            # Ahora sí realizar el logout de Django
             auth_logout(request)
         
         # 2. Preparar respuesta y eliminar cookies
@@ -389,6 +426,8 @@ class LogoutAPIView(APIView):
             'g_state',
             'social_auth_google-oauth2_state',
             'social_auth_azuread-oauth2_state',
+            # Añadir cookies adicionales que puedan estar causando problemas
+            'next', 'partial_pipeline_token'
         ]
         
         # Obtener configuraciones de settings.py
@@ -397,7 +436,6 @@ class LogoutAPIView(APIView):
         admin_path = getattr(settings, 'ADMIN_COOKIE_PATH', '/admin')
         api_path = getattr(settings, 'API_COOKIE_PATH', '/')
         samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
-        # Nota: 'secure' no se usa en delete_cookie, lo eliminamos
         
         # Determinar todos los dominios posibles para eliminar cookies
         domains = []
@@ -438,11 +476,18 @@ class LogoutAPIView(APIView):
             dot_root = f".{root_domain}"
             if dot_root not in domains:
                 domains.append(dot_root)
+                
+        # También añadir dominio nulo y vacío para asegurarnos que se borran todas
+        domains.extend(['', None])
+        
+        # Eliminar duplicados  
+        domains = [d for d in domains if d is not None]
+        domains = list(dict.fromkeys(domains))  # Preservar orden y eliminar duplicados
         
         print(f"Eliminando cookies en dominios: {domains}")
         
         # Lista de paths a limpiar
-        paths = [api_path, admin_path, '/', '/api', '/admin']
+        paths = [api_path, admin_path, '/', '/api', '/admin', '/auth']
         paths = list(set(paths))  # Eliminar duplicados
         
         # Eliminar todas las combinaciones posibles de cookies
@@ -455,6 +500,9 @@ class LogoutAPIView(APIView):
                         path=path,
                         samesite=samesite
                     )
+        
+        # Añadir headers especiales que ayudan a borrar cookies problemáticas
+        response['Clear-Site-Data'] = '"cookies", "storage"'
                     
         # Headers de seguridad
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
@@ -464,7 +512,7 @@ class LogoutAPIView(APIView):
         if settings.DEBUG:
             print(f"Logout completado para usuario ID: {request.user.id if hasattr(request, 'user') and request.user.is_authenticated else 'anónimo'}")
             print(f"Token blacklisted: {blacklisted}")
-            print(f"Cookies eliminadas en dominios: {', '.join(domains)}")
+            print(f"Cookies eliminadas en dominios: {', '.join(str(d) for d in domains if d)}")
             print(f"Paths limpiados: {', '.join(paths)}")
         
         # Añadir un pequeño delay después del logout
