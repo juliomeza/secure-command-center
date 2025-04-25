@@ -1,8 +1,10 @@
 import axios from 'axios';
-import { AuthService, JWTTokens, User } from './authService';
-
+import type { JWTTokens, User } from './authService';
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Recibir AuthService en runtime tras configurar mocks
+let AuthService: typeof import('./authService').AuthService;
 
 // Mock sessionStorage
 const sessionStorageMock = (() => {
@@ -23,17 +25,31 @@ const sessionStorageMock = (() => {
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
 describe('AuthService', () => {
-  let authService: AuthService;
+  let authService: InstanceType<typeof AuthService>;
 
-  beforeEach(() => {
-    mockedAxios.create.mockReturnValue(mockedAxios);
-    mockedAxios.interceptors.request.use = jest.fn().mockImplementation(fn => fn);
-    mockedAxios.interceptors.response.use = jest.fn().mockImplementation(fn => fn);
+  beforeEach(async () => {
+    // Reiniciar módulo para reconstruir singleton con nuestros mocks
+    jest.resetModules();
+    // Stub axios.create antes de importar authService
+    mockedAxios.create = jest.fn();
+    mockedAxios.get = jest.fn();
+    mockedAxios.post = jest.fn();
+    // Configurar cliente falso con interceptors
+    const fakeInterceptors = {
+      request: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+      response: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+    };
+    const fakeClient = { interceptors: fakeInterceptors, get: mockedAxios.get, post: mockedAxios.post } as any;
+    (mockedAxios.create as jest.Mock).mockReturnValue(fakeClient);
+    // Limpiar storage y mocks
     mockedAxios.get.mockClear();
     mockedAxios.post.mockClear();
     sessionStorageMock.clear();
 
-    authService = new AuthService();
+    // Importar AuthService luego de configurar axios.create
+    const authModule = await import('./authService');
+    AuthService = authModule.AuthService;
+    authService = new authModule.AuthService();
   });
 
   it('should create axios client with correct config', () => {
