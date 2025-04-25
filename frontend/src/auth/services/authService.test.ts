@@ -145,6 +145,8 @@ describe('AuthService', () => {
     it('returns null and clears tokens on 401', async () => {
       sessionStorageMock.setItem('accessToken', 't');
       const err: any = new Error('fail'); err.response = { status:401 };
+      // Simular un AxiosError para activar clearTokens en checkAuthentication
+      (axios as any).isAxiosError = jest.fn(() => true);
       mockGet.mockRejectedValue(err);
       const result = await authService.checkAuthentication();
       expect(result).toBeNull();
