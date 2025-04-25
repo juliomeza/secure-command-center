@@ -171,16 +171,16 @@ Esta estrategia nos permite:
 - Hacer la migración de manera controlada y segura
 
 ### Fase 1: Estructura y Tests Previos (Frontend - 3-4 semanas)
-- [ ] Preparar estructura `src/auth/`.
-- [ ] Completar tests unitarios para servicios y hooks principales de autenticación.
-- [ ] Implementar tests de integración para flujos críticos de autenticación.
+- [x] Preparar estructura `src/auth/`.
+- [x] Completar tests unitarios para servicios y hooks principales de autenticación.
+- [x] Implementar tests de integración para flujos críticos de autenticación.
 - [ ] Configurar herramientas de calidad de código (linters, formatters).
 
 ### Fase 2: Refactorización del Sistema de Autenticación (Frontend - 4-5 semanas)
-- [ ] Implementar manejo de tokens JWT consolidado y seguro (`AuthService`).
-- [ ] Refactorizar `AuthProvider` extrayendo lógica, basándose en estado JWT.
-- [ ] Fortalecer `AuthService` (errores, logs, interceptor de refresco JWT).
-- [ ] Validar exhaustivamente con tests (flujo JWT) antes de eliminar código antiguo o flags.
+- [x] Implementar manejo de tokens JWT consolidado y seguro (`AuthService`).
+- [x] Refactorizar `AuthProvider` extrayendo lógica, basándose en estado JWT.
+- [x] Fortalecer `AuthService` (errores, logs, interceptor de refresco JWT).
+- [x] Validar exhaustivamente con tests (flujo JWT) antes de eliminar código antiguo o flags.
 - [ ] Eliminar flag `USE_NEW_AUTH_API` y código no JWT cuando sea apropiado.
 
 ### Fase 3: Implementación de Control de Acceso (Frontend - 3-4 semanas)
