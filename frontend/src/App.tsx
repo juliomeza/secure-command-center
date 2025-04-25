@@ -1,10 +1,10 @@
 // frontend/src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
-import { AuthProvider } from './components/AuthProvider';
-import LoginPage from './components/LoginPage';
+import { AuthProvider } from './auth/components/AuthProvider';
+import LoginPage from './auth/components/LoginPage';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './auth/components/ProtectedRoute';
 
 // Layout component without navigation bar for authenticated pages
 const MainLayout: React.FC = () => {

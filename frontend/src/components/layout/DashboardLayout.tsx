@@ -1,6 +1,6 @@
 // src/components/layout/DashboardLayout.tsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../AuthProvider';
+import { useAuth } from '../../auth/components/AuthProvider';
 import HamburgerMenu from '../common/HamburgerMenu';
 import AvatarMenu from '../common/AvatarMenu';
 import PeriodMenu from '../common/PeriodMenu';
