@@ -41,12 +41,12 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 ### Plan de Refactorización (Alta Prioridad)
 
 #### Fase 1: Preparación y Tests (Frontend - 2 semanas)
-- [ ] **Ampliar cobertura de tests (Frontend)**
+- [x] **Ampliar cobertura de tests (Frontend)**  *(Iniciado/En progreso)*
   - [ ] Refinar/completar tests unitarios para `AuthService` (ciclo JWT), `AuthProvider`, `useAuth`.
   - [ ] Implementar tests de integración para flujo JWT completo (Login OAuth -> Recepción/Almacenamiento JWT -> Acceso Protegido -> Refresco JWT -> Logout).
-- [ ] **Reestructurar frontend (`src/auth/`)**
-  - [ ] Confirmar y aplicar estructura: `components/`, `services/`, `hooks/`, `types/`, `utils/`.
-  - [ ] Mover archivos relevantes a la nueva estructura.
+- [x] **Reestructurar frontend (`src/auth/`)**
+  - [x] Confirmar y aplicar estructura: `components/`, `services/`, `hooks/`, `types/`, `utils/`.
+  - [x] Mover archivos relevantes a la nueva estructura.
 
 #### Fase 2: Implementación de Autenticación (Frontend - 3 semanas)
 - [ ] **Consolidar y Asegurar Manejo de Tokens JWT (Frontend)**
