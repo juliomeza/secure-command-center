@@ -1,63 +1,59 @@
 import axios from 'axios';
-import type { JWTTokens, User } from './authService';
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+import { AuthService, JWTTokens, User } from './authService';
 
-// Recibir AuthService en runtime tras configurar mocks
-let AuthService: typeof import('./authService').AuthService;
+// Fake Axios client con interceptors y métodos get/post
+const fakeInterceptors = {
+  request: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+  response: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+};
+const mGet = jest.fn();
+const mPost = jest.fn();
+const fakeClient = { interceptors: fakeInterceptors, get: mGet, post: mPost } as any;
+// Sobrescribir axios.create, get, post antes de instanciar AuthService
+(axios as any).create = jest.fn(() => fakeClient);
+(axios as any).get = mGet;
+(axios as any).post = mPost;
+// Atajos para mocks
+const mockCreate = (axios as any).create as jest.Mock;
+const mockGet = (axios as any).get as jest.Mock;
+const mockPost = (axios as any).post as jest.Mock;
 
 // Mock sessionStorage
 const sessionStorageMock = (() => {
-  let store: { [key: string]: string } = {};
+  let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
+    setItem: (key: string, value: string) => { store[key] = value; },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
   };
 })();
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
 describe('AuthService', () => {
-  let authService: InstanceType<typeof AuthService>;
+  let authService: AuthService;
 
-  beforeEach(async () => {
-    // Reiniciar módulo para reconstruir singleton con nuestros mocks
-    jest.resetModules();
-    // Stub axios.create antes de importar authService
-    mockedAxios.create = jest.fn();
-    mockedAxios.get = jest.fn();
-    mockedAxios.post = jest.fn();
-    // Configurar cliente falso con interceptors
-    const fakeInterceptors = {
-      request: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
-      response: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
-    };
-    const fakeClient = { interceptors: fakeInterceptors, get: mockedAxios.get, post: mockedAxios.post } as any;
-    (mockedAxios.create as jest.Mock).mockReturnValue(fakeClient);
-    // Limpiar storage y mocks
-    mockedAxios.get.mockClear();
-    mockedAxios.post.mockClear();
+  beforeEach(() => {
+    // Limpiar storage y mocks antes de cada prueba
     sessionStorageMock.clear();
-
-    // Importar AuthService luego de configurar axios.create
-    const authModule = await import('./authService');
-    AuthService = authModule.AuthService;
-    authService = new authModule.AuthService();
+    mockGet.mockClear();
+    mockPost.mockClear();
+    // Resetear spies en interceptors
+    fakeInterceptors.request.use.mockClear();
+    fakeInterceptors.response.use.mockClear();
+    // Instanciar servicio
+    authService = new AuthService();
   });
 
   it('should create axios client with correct config', () => {
-    expect(mockedAxios.create).toHaveBeenCalledWith({
+    expect(mockCreate).toHaveBeenCalledWith({
       baseURL: expect.any(String),
       withCredentials: true,
       headers: { 'Content-Type': 'application/json' },
     });
+    // Interceptor de request debe haberse registrado
+    expect(fakeInterceptors.request.use).toHaveBeenCalled();
+    expect(fakeInterceptors.response.use).toHaveBeenCalled();
   });
 
   describe('Token storage methods', () => {
@@ -83,14 +79,14 @@ describe('AuthService', () => {
 
   describe('fetchCSRFToken', () => {
     it('returns csrf token on success', async () => {
-      mockedAxios.get.mockResolvedValue({ data: { csrfToken: 'csrf' } });
+      mockGet.mockResolvedValue({ data: { csrfToken: 'csrf' } });
       const token = await authService.fetchCSRFToken();
       expect(token).toBe('csrf');
-      expect(mockedAxios.get).toHaveBeenCalledWith('/auth/csrf/');
+      expect(mockGet).toHaveBeenCalledWith('/auth/csrf/');
     });
 
     it('returns null on failure', async () => {
-      mockedAxios.get.mockRejectedValue(new Error('fail'));
+      mockGet.mockRejectedValue(new Error('fail'));
       const token = await authService.fetchCSRFToken();
       expect(token).toBeNull();
     });
@@ -99,14 +95,14 @@ describe('AuthService', () => {
   describe('fetchUserProfile', () => {
     it('returns user on success', async () => {
       const user: User = { id:1, username:'u', email:'e', first_name:'f', last_name:'l', profile:{ company:null } };
-      mockedAxios.get.mockResolvedValue({ data: user });
+      mockGet.mockResolvedValue({ data: user });
       const result = await authService.fetchUserProfile();
       expect(result).toEqual(user);
-      expect(mockedAxios.get).toHaveBeenCalledWith('/auth/profile/');
+      expect(mockGet).toHaveBeenCalledWith('/auth/profile/');
     });
 
     it('throws on error', async () => {
-      mockedAxios.get.mockRejectedValue(new Error('fail'));
+      mockGet.mockRejectedValue(new Error('fail'));
       await expect(authService.fetchUserProfile()).rejects.toThrow('fail');
     });
   });
@@ -117,12 +113,12 @@ describe('AuthService', () => {
     it('stores and cleans URL when tokens present', () => {
       const params = '?jwt_access=a&jwt_refresh=r';
       Object.defineProperty(window, 'location', { value: { search: params, pathname: '/p', hash: '#h' }, writable: true });
-      const replaced = jest.spyOn(window.history, 'replaceState');
+      const replaceSpy = jest.spyOn(window.history, 'replaceState');
       const result = authService.handleOAuthCallback();
       expect(result).toBe(true);
       expect(sessionStorageMock.getItem('accessToken')).toBe('a');
       expect(sessionStorageMock.getItem('refreshToken')).toBe('r');
-      expect(replaced).toHaveBeenCalledWith({}, document.title, '/p#h');
+      expect(replaceSpy).toHaveBeenCalledWith({}, document.title, '/p#h');
     });
 
     it('returns false when no tokens', () => {
@@ -141,15 +137,15 @@ describe('AuthService', () => {
     it('returns user if profile fetch succeeds', async () => {
       sessionStorageMock.setItem('accessToken', 't');
       const user: User = { id:1, username:'u', email:'e', first_name:'f', last_name:'l', profile:{ company:null } };
-      mockedAxios.get.mockResolvedValue({ data: user });
+      mockGet.mockResolvedValue({ data: user });
       const result = await authService.checkAuthentication();
       expect(result).toEqual(user);
     });
 
     it('returns null and clears tokens on 401', async () => {
       sessionStorageMock.setItem('accessToken', 't');
-      const err: any = new Error('401'); err.response = { status:401 };
-      mockedAxios.get.mockRejectedValue(err);
+      const err: any = new Error('fail'); err.response = { status:401 };
+      mockGet.mockRejectedValue(err);
       const result = await authService.checkAuthentication();
       expect(result).toBeNull();
       expect(sessionStorageMock.getItem('accessToken')).toBeNull();
@@ -159,17 +155,17 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('calls backend and clears tokens', async () => {
       sessionStorageMock.setItem('refreshToken', 'r');
-      mockedAxios.post.mockResolvedValue({});
+      mockPost.mockResolvedValue({});
       const clearCookiesSpy = jest.spyOn(authService, 'clearRelevantCookies');
       await authService.logout();
-      expect(mockedAxios.post).toHaveBeenCalledWith('/auth/logout/', { refresh: 'r' });
+      expect(mockPost).toHaveBeenCalledWith('/auth/logout/', { refresh: 'r' });
       expect(sessionStorageMock.getItem('refreshToken')).toBeNull();
       expect(clearCookiesSpy).toHaveBeenCalled();
     });
 
     it('clears tokens even if backend fails', async () => {
       sessionStorageMock.setItem('refreshToken', 'r');
-      mockedAxios.post.mockRejectedValue(new Error('fail'));
+      mockPost.mockRejectedValue(new Error('fail'));
       const clearCookiesSpy = jest.spyOn(authService, 'clearRelevantCookies');
       await authService.logout();
       expect(sessionStorageMock.getItem('refreshToken')).toBeNull();
