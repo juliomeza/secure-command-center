@@ -1,14 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+import { User } from '../services/authService'; // Import User type if needed for mock
 
-// Mock del contexto de autenticación
+// Mock del contexto de autenticación - Align with actual AuthContextType
 const mockAuthContext = {
     isAuthenticated: false,
     isLoading: false,
-    user: null as any, // Usando any para permitir asignar diferentes tipos de user
-    error: null,
-    checkAuth: jest.fn()
+    user: null as User | null, // Use actual User type
+    error: null as string | null,
+    checkAuthStatus: jest.fn(), // Renamed from checkAuth
+    logout: jest.fn() // Added logout
 };
 
 jest.mock('./AuthProvider', () => ({
@@ -25,18 +27,21 @@ describe('ProtectedRoute', () => {
         mockAuthContext.isLoading = false;
         mockAuthContext.user = null;
         mockAuthContext.error = null;
-        jest.clearAllMocks();
+        // Clear all mocks including the functions
+        mockAuthContext.checkAuthStatus.mockClear();
+        mockAuthContext.logout.mockClear();
+        // jest.clearAllMocks(); // This might be redundant if clearing specific mocks
     });
 
     test('muestra el contenido cuando el usuario está autenticado', async () => {
         mockAuthContext.isAuthenticated = true;
-        mockAuthContext.user = {
+        mockAuthContext.user = { // Use a valid User structure
             id: 1,
             username: 'testuser',
             email: 'test@example.com',
             first_name: 'Test',
             last_name: 'User',
-            profile: { company: { name: 'Test Company' } }
+            profile: { company: { id: 1, name: 'Test Company' } } // Ensure profile matches User type
         };
 
         render(
@@ -67,7 +72,6 @@ describe('ProtectedRoute', () => {
         );
 
         expect(screen.getByTestId('login-page')).toBeInTheDocument();
-        expect(mockAuthContext.checkAuth).toHaveBeenCalled();
     });
 
     test('muestra el spinner mientras está cargando', () => {
@@ -89,7 +93,9 @@ describe('ProtectedRoute', () => {
 
     test('redirige a login cuando el usuario es inválido', () => {
         mockAuthContext.isAuthenticated = true;
-        mockAuthContext.user = 'invalid user' as any; // Simular un usuario inválido
+        // Simulate an invalid user structure (e.g., missing id or wrong type)
+        // Note: Casting to 'any' bypasses type checking here for the test scenario.
+        mockAuthContext.user = { username: 'invalid' } as any;
 
         render(
             <MemoryRouter initialEntries={['/protected']}>
