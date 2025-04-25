@@ -1,5 +1,5 @@
 // frontend/src/services/authService.ts
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
 // Interfaces (compatibles con las usadas en AuthProvider)
 export interface User {
@@ -13,7 +13,7 @@ export interface User {
         azure_oid?: string;
         job_title?: string;
     };
-    auth_provider?: string; // Campo adicional en la nueva API
+    auth_provider?: string;
 }
 
 export interface JWTTokens {
@@ -21,36 +21,36 @@ export interface JWTTokens {
     refresh: string;
 }
 
-export interface TokenResponse {
-    access: string;
-    refresh: string;
-    user: User;
+export interface TokenResponse extends JWTTokens {
+    user: User; // Assuming the token endpoint might return user info
 }
 
 // Configuración del entorno
 const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-const API_BASE_URL = isProduction 
-  ? 'https://dashboard-control-back.onrender.com/api' 
-  : '/api';
+const API_BASE_URL = isProduction
+  ? 'https://dashboard-control-back.onrender.com/api'
+  : '/api'; // Using relative path for local dev proxy
+
+// Storage keys
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
 
 // Clase para gestionar autenticación
 export class AuthService {
     private apiClient: AxiosInstance;
-    private useNewAPI: boolean;
-    
-    constructor(useNewAPI: boolean = false) {
-        this.useNewAPI = useNewAPI;
-        
-        // Crear cliente axios con la configuración adecuada
+    private isRefreshing = false; // Flag to prevent multiple refresh attempts
+    private refreshSubscribers: ((token: string) => void)[] = []; // Queue requests during refresh
+
+    constructor() {
         this.apiClient = axios.create({
             baseURL: API_BASE_URL,
-            withCredentials: true,
+            withCredentials: true, // Important for CSRF if still used alongside JWT
             headers: {
                 'Content-Type': 'application/json',
             },
         });
-        
-        // Configurar interceptor para incluir el token JWT en solicitudes
+
+        // Request interceptor: Add JWT access token to Authorization header
         this.apiClient.interceptors.request.use(
             (config: InternalAxiosRequestConfig) => {
                 const token = this.getStoredAccessToken();
@@ -59,180 +59,309 @@ export class AuthService {
                 }
                 return config;
             },
-            (error) => {
-                return Promise.reject(error);
-            }
+            (error) => Promise.reject(error)
         );
 
-        // Configurar interceptor para renovar tokens expirados
+        // Response interceptor: Handle token refresh on 401 errors
         this.apiClient.interceptors.response.use(
-            (response) => {
-                return response;
-            },
-            async (error) => {
-                // Manejar errores de límite de tasa
-                if (error.response?.status === 429) {
-                    console.warn("[AuthService] Rate limit exceeded");
-                    return Promise.reject(error);
-                }
+            (response) => response, // Pass through successful responses
+            async (error: AxiosError) => {
+                const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-                const originalRequest = error.config;
-                
-                // Si el error es debido a un token expirado (401) y no hemos intentado renovarlo aún
-                if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-                    
-                    try {
-                        console.log("[AuthService] Access token expired. Attempting to refresh...");
-                        
+                // Check if it's a 401 error, not a retry, and not the refresh token endpoint itself
+                if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/token/refresh/') {
+                    originalRequest._retry = true; // Mark as retried
+
+                    if (!this.isRefreshing) {
+                        this.isRefreshing = true;
                         const refreshToken = this.getStoredRefreshToken();
-                        
+
                         if (!refreshToken) {
-                            console.log("[AuthService] No refresh token available");
+                            console.error("[AuthService] No refresh token available for refresh.");
+                            this.clearTokens(); // Clear tokens if refresh fails
+                            // Optionally redirect to login or notify the app
+                            window.location.href = '/login'; // Simple redirect
                             return Promise.reject(error);
                         }
-                        
-                        // Usar un cliente axios separado para renovar el token y evitar bucles
-                        const response = await this.refreshToken(refreshToken);
-                        
-                        if (response.access) {
-                            console.log("[AuthService] Token refresh successful");
-                            
-                            // Almacenar los nuevos tokens
-                            this.storeTokens({
-                                access: response.access,
-                                refresh: response.refresh || refreshToken // Usar el token de refresco existente si no se proporciona uno nuevo
-                            });
-                            
-                            // Reintentar la solicitud original con el nuevo token
-                            originalRequest.headers.Authorization = `Bearer ${response.access}`;
+
+                        try {
+                            console.log("[AuthService] Access token expired. Attempting refresh...");
+                            const { access: newAccessToken, refresh: newRefreshToken } = await this.performTokenRefresh(refreshToken);
+                            console.log("[AuthService] Token refresh successful.");
+
+                            this.storeTokens({ access: newAccessToken, refresh: newRefreshToken || refreshToken });
+                            this.isRefreshing = false;
+
+                            // Notify queued requests
+                            this.onRefreshed(newAccessToken);
+                            this.refreshSubscribers = []; // Clear queue
+
+                            // Retry the original request with the new token
+                            if (originalRequest.headers) {
+                                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                            }
                             return this.apiClient(originalRequest);
+
+                        } catch (refreshError) {
+                            console.error("[AuthService] Token refresh failed:", refreshError);
+                            this.isRefreshing = false;
+                            this.clearTokens(); // Clear tokens on refresh failure
+                            this.refreshSubscribers = []; // Clear queue
+                            // Optionally redirect or notify
+                             window.location.href = '/login'; // Simple redirect
+                            return Promise.reject(refreshError);
                         }
-                    } catch (refreshError) {
-                        console.error("[AuthService] Token refresh failed:", refreshError);
-                        this.clearTokens();
+                    } else {
+                        // Queue the original request until the token is refreshed
+                        return new Promise((resolve) => {
+                            this.subscribeTokenRefresh((newToken: string) => {
+                                if (originalRequest.headers) {
+                                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                                }
+                                resolve(this.apiClient(originalRequest));
+                            });
+                        });
                     }
                 }
-                
+
+                // Handle other errors (like 429 Rate Limit)
+                if (error.response?.status === 429) {
+                    console.warn("[AuthService] Rate limit exceeded.");
+                    // Potentially implement retry logic or notify user
+                }
+
                 return Promise.reject(error);
             }
         );
     }
-    
-    // Obtiene la ruta base para endpoints de autenticación
-    private get authBasePath(): string {
-        return this.useNewAPI ? '/auth' : '';
-    }
-    
-    // Métodos para gestionar tokens en sessionStorage
+
+    // --- Token Storage Management (SessionStorage) ---
+
     public storeTokens(tokens: JWTTokens): void {
-        sessionStorage.setItem('accessToken', tokens.access);
-        sessionStorage.setItem('refreshToken', tokens.refresh);
+        sessionStorage.setItem(ACCESS_TOKEN_KEY, tokens.access);
+        sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh);
+        console.debug("[AuthService] Tokens stored in sessionStorage.");
     }
-    
+
     public getStoredAccessToken(): string | null {
-        return sessionStorage.getItem('accessToken');
+        return sessionStorage.getItem(ACCESS_TOKEN_KEY);
     }
-    
+
     public getStoredRefreshToken(): string | null {
-        return sessionStorage.getItem('refreshToken');
+        return sessionStorage.getItem(REFRESH_TOKEN_KEY);
     }
-    
+
     public clearTokens(): void {
-        sessionStorage.removeItem('accessToken');
-        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+        console.debug("[AuthService] Tokens cleared from sessionStorage.");
     }
-    
-    // Métodos para interactuar con la API
-    
-    // Obtener token CSRF
-    public async fetchCSRFToken(): Promise<string> {
+
+    // --- Authentication Flow Methods ---
+
+    /**
+     * Handles the OAuth callback by extracting JWT tokens from URL parameters,
+     * storing them, and cleaning the URL.
+     * @returns {boolean} True if tokens were found and stored, false otherwise.
+     */
+    public handleOAuthCallback(): boolean {
+        const urlParams = new URLSearchParams(window.location.search);
+        const jwtAccess = urlParams.get('jwt_access');
+        const jwtRefresh = urlParams.get('jwt_refresh');
+
+        if (jwtAccess && jwtRefresh) {
+            console.log("[AuthService] JWT tokens found in URL from OAuth callback.");
+            this.storeTokens({ access: jwtAccess, refresh: jwtRefresh });
+
+            // Clean the URL
+            const cleanUrl = window.location.pathname + window.location.hash; // Keep hash if present
+            window.history.replaceState({}, document.title, cleanUrl);
+            console.log("[AuthService] URL cleaned after storing tokens.");
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * Checks if the user is currently authenticated by verifying the access token
+     * (implicitly via fetchUserProfile) and potentially refreshing it.
+     * @returns {Promise<User | null>} The user profile if authenticated, null otherwise.
+     */
+    public async checkAuthentication(): Promise<User | null> {
+        const accessToken = this.getStoredAccessToken();
+        if (!accessToken) {
+            console.log("[AuthService] No access token found. User is not authenticated.");
+            return null; // Not authenticated if no token
+        }
+
         try {
-            const response = await this.apiClient.get(`${this.authBasePath}/csrf/`);
-            return response.data.csrfToken;
+            // Attempting to fetch the user profile will trigger the interceptor
+            // to refresh the token if necessary.
+            console.log("[AuthService] Verifying authentication by fetching user profile...");
+            const user = await this.fetchUserProfile();
+            console.log("[AuthService] Authentication verified successfully.");
+            return user;
         } catch (error) {
-            console.error('[AuthService] Error fetching CSRF token:', error);
-            throw error;
+             // Errors (like 401 after refresh failure) are handled by the interceptor,
+             // which might clear tokens or redirect.
+             // If fetchUserProfile fails for other reasons, we consider the user not authenticated.
+            console.error("[AuthService] Authentication check failed after potential refresh attempt:", error);
+            // Ensure tokens are cleared if the error persists after potential refresh
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                 this.clearTokens(); // Ensure cleanup if interceptor didn't catch it
+            }
+            return null;
         }
     }
-    
-    // Obtener perfil de usuario
+
+
+    // Renamed from fetchJWTTokens - This seems redundant if tokens are obtained via OAuth callback
+    // or refresh. Keeping it commented out for now. If needed for a specific flow, uncomment and adapt.
+    /*
+    public async fetchInitialJWTTokens(): Promise<TokenResponse> {
+        try {
+            console.log("[AuthService] Fetching initial JWT tokens..."); // Adjust endpoint if needed
+            const response = await this.apiClient.get<TokenResponse>('/auth/token/');
+            this.storeTokens({ access: response.data.access, refresh: response.data.refresh });
+            console.log("[AuthService] Initial JWT tokens received and stored.");
+            return response.data;
+        } catch (error) {
+            console.error('[AuthService] Error fetching initial JWT tokens:', error);
+            this.handleApiError(error); // Use centralized error handler
+            throw error; // Re-throw for the caller to handle if necessary
+        }
+    }
+    */
+
+    // Fetch user profile
     public async fetchUserProfile(): Promise<User> {
         try {
-            const response = await this.apiClient.get<User>(`${this.authBasePath}/profile/`);
+            const response = await this.apiClient.get<User>('/auth/profile/');
             return response.data;
         } catch (error) {
             console.error('[AuthService] Error fetching user profile:', error);
+            this.handleApiError(error);
             throw error;
         }
     }
-    
-    // Obtener tokens JWT
-    public async fetchJWTTokens(): Promise<TokenResponse> {
+
+    // Perform token refresh using a dedicated client instance
+    private async performTokenRefresh(refreshToken: string): Promise<JWTTokens> {
+         // Use a separate client instance to avoid interceptor loops
+        const refreshClient = axios.create({
+            baseURL: API_BASE_URL,
+            withCredentials: true,
+        });
         try {
-            console.log("[AuthService] Fetching JWT tokens...");
-            const response = await this.apiClient.get<TokenResponse>(`${this.authBasePath}/token/`);
-            console.log("[AuthService] JWT tokens received successfully");
-            return response.data;
-        } catch (error) {
-            console.error('[AuthService] Error fetching JWT tokens:', error);
-            throw error;
-        }
-    }
-    
-    // Refrescar token JWT
-    public async refreshToken(token: string): Promise<JWTTokens> {
-        try {
-            // Usar un cliente axios separado para renovación de token para evitar bucles
-            const tokenRefreshClient = axios.create({
-                baseURL: API_BASE_URL,
-                withCredentials: true
-            });
-            
-            const response = await tokenRefreshClient.post<JWTTokens>(
-                `${this.authBasePath}/token/refresh/`, 
-                { refresh: token }
+            const response = await refreshClient.post<JWTTokens>(
+                '/auth/token/refresh/',
+                { refresh: refreshToken }
             );
             return response.data;
         } catch (error) {
-            console.error('[AuthService] Error refreshing token:', error);
-            throw error;
+             console.error('[AuthService] Error during performTokenRefresh:', error);
+             // Specific handling for refresh failure might be needed here
+             // The main interceptor will catch this and clear tokens/redirect.
+            throw error; // Re-throw for the main interceptor
         }
     }
-    
-    // Cerrar sesión
+
+
+    // Logout
     public async logout(): Promise<void> {
+        const refreshToken = this.getStoredRefreshToken();
         try {
-            await this.apiClient.get(`${this.authBasePath}/logout/`);
-            this.clearTokens();
+             // Optional: Inform the backend about logout, especially to invalidate the refresh token
+             if (refreshToken) {
+                 // Ensure the endpoint exists and accepts this payload
+                 await this.apiClient.post('/auth/logout/', { refresh: refreshToken });
+             }
         } catch (error) {
-            console.error('[AuthService] Error during logout:', error);
-            throw error;
+             // Log error but proceed with client-side cleanup
+             console.error('[AuthService] Error notifying backend on logout:', error);
+        } finally {
+             // Always clear local tokens regardless of backend call success
+             this.clearTokens(); // Clears sessionStorage
+             // Attempt to clear relevant client-accessible cookies
+             this.clearRelevantCookies();
+             // Optional: Clear other session/local storage data if necessary
+             // sessionStorage.clear(); // Use cautiously
+             console.log("[AuthService] User logged out, tokens cleared from storage, attempted cookie clearing.");
         }
     }
-    
-    // Método para limpiar cookies (útil en el proceso de logout)
-    public clearAllAuthCookies(): void {
-        const domains = [
-            window.location.hostname,
-            `.${window.location.hostname}`
-        ];
-        
-        const paths = ['/', '/api'];
-        
-        // Mantener solo las cookies relacionadas con JWT y CSRF
-        const cookiesToDelete = [
-            'csrftoken',
-            'refresh_token',
-            'access_token'
-        ];
+
+    // --- Helper Methods ---
+
+    // Helper to queue requests while refreshing token
+    private subscribeTokenRefresh(cb: (token: string) => void) {
+        this.refreshSubscribers.push(cb);
+    }
+
+    // Helper to notify queued requests after token refresh
+    private onRefreshed(token: string) {
+        this.refreshSubscribers.forEach((cb) => cb(token));
+    }
+
+    // Centralized API error handling (basic example)
+    private handleApiError(error: unknown): void {
+        if (axios.isAxiosError(error)) {
+            console.error(`[AuthService] API Error: ${error.response?.status} ${error.message}`, error.response?.data);
+            // Add more specific error handling based on status codes if needed
+            // e.g., if (error.response?.status === 403) { /* handle forbidden */ }
+        } else {
+            console.error("[AuthService] Non-API Error:", error);
+        }
+        // Do not clear tokens here generally, interceptors handle auth errors
+    }
+
+     // Fetch CSRF token (if still needed alongside JWT - depends on backend setup)
+     public async fetchCSRFToken(): Promise<string | null> {
+        // If your backend doesn't require CSRF for JWT-authenticated requests,
+        // you might be able to remove this. Check backend requirements.
+        try {
+            // Ensure this endpoint exists and is necessary with your JWT setup
+            const response = await this.apiClient.get('/auth/csrf/');
+            const csrfToken = response.data.csrfToken;
+             // Axios might handle the 'csrftoken' cookie automatically if HttpOnly is false.
+             // If HttpOnly is true (recommended), the backend needs to read it from the cookie,
+             // and you might need to include X-CSRFToken header if using Django.
+             // Check if axios needs explicit header setting:
+             // this.apiClient.defaults.headers.common['X-CSRFToken'] = csrfToken;
+            console.debug("[AuthService] CSRF token fetched (if applicable).");
+            return csrfToken;
+        } catch (error) {
+            console.warn('[AuthService] Warning: Could not fetch CSRF token:', error);
+            // Decide if this is critical. If not needed for JWT, can return null.
+            // this.handleApiError(error); // Log it
+            return null; // Or throw error if CSRF is strictly required
+        }
+    }
+
+    // Method to clear cookies (might be less relevant if only using sessionStorage for JWT)
+    // Keep if other cookies (like CSRF) are managed.
+    public clearRelevantCookies(): void {
+        console.log("[AuthService] Clearing relevant client-accessible cookies (CSRF, potentially non-HttpOnly JWTs)...");
+        const domains = [window.location.hostname, `.${window.location.hostname}`];
+        const paths = ['/', '/api']; // Adjust paths as needed
+        // Add JWT cookie names in case they are NOT HttpOnly
+        const cookiesToClear = ['csrftoken', 'access_token', 'refresh_token'];
 
         domains.forEach(domain => {
             paths.forEach(path => {
-                cookiesToDelete.forEach(cookieName => {
-                    document.cookie = `${cookieName}=;domain=${domain};path=${path};expires=Thu, 01 Jan 1970 00:00:00 GMT;secure;samesite=none`;
+                cookiesToClear.forEach(cookieName => {
+                    // Construct cookie string for deletion
+                    // Note: HttpOnly cookies cannot be deleted from JavaScript.
+                    // Use SameSite=Lax by default, adjust if needed (e.g., None for cross-site)
+                    // Secure flag should be used if site is HTTPS
+                    const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+                    document.cookie = `${cookieName}=; domain=${domain}; path=${path}; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secureFlag}`;
                 });
             });
         });
+         console.log("[AuthService] Attempted to clear client-accessible cookies.");
     }
 }
+
+// Export a singleton instance
+export const authService = new AuthService();

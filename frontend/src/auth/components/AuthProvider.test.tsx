@@ -1,60 +1,29 @@
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthProvider';
-import axios from 'axios';
+// Import the singleton instance to mock its methods
+import { authService } from '../services/authService';
+import { User } from '../services/authService'; // Import User type
 
-// Definir los tipos para mejorar la seguridad del tipo
-type MockAxiosFn = jest.Mock<Promise<any>, any[]>;
-type MockAxiosInstance = {
-    get: MockAxiosFn;
-    post: MockAxiosFn;
-    interceptors: {
-        request: {
-            use: jest.Mock;
-            eject: jest.Mock;
-        };
-        response: {
-            use: jest.Mock;
-            eject: jest.Mock;
-        };
-    };
-};
-
-// Mock de axios - Captura el manejador de errores de respuesta
-jest.mock('axios', () => {
-    let capturedResponseErrorHandler: ((error: any) => Promise<any>) | undefined;
-
-    const mockAxiosInstance = {
-        get: jest.fn(),
-        post: jest.fn(),
-        interceptors: {
-            request: { use: jest.fn().mockReturnValue(1), eject: jest.fn() },
-            response: {
-                use: jest.fn().mockImplementation((_onFulfilled, onRejected) => { // Prefix onFulfilled with _
-                    // Captura el manejador de errores real pasado por AuthService/AuthProvider
-                    capturedResponseErrorHandler = onRejected;
-                    return 2; // Return interceptor ID
-                }),
-                eject: jest.fn()
-            }
-        }
-    };
-    return {
-        create: jest.fn(() => mockAxiosInstance),
-        isAxiosError: jest.fn((error) => error && error.response !== undefined),
-        // Helper para acceder a la instancia y al manejador capturado
-        __getMockAxiosInstance: () => mockAxiosInstance,
-        __getCapturedResponseErrorHandler: () => capturedResponseErrorHandler,
-    };
-});
-
-// Mock de react-router-dom
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: jest.fn()
+// Mock the authService singleton
+jest.mock('../services/authService', () => ({
+    // Use a factory function to allow resetting mocks
+    __esModule: true, // This is important for ES6 modules
+    authService: {
+        handleOAuthCallback: jest.fn(),
+        checkAuthentication: jest.fn(),
+        logout: jest.fn(),
+        // Add other methods if needed by AuthProvider directly (likely not)
+    },
 }));
 
-// Componente de prueba que usa el contexto de autenticación
+// Mock react-router-dom
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: jest.fn(),
+}));
+
+// Test Component remains the same
 const TestComponent = () => {
     const auth = useAuth();
     return (
@@ -75,6 +44,8 @@ const TestComponent = () => {
                     {auth.error}
                 </div>
             )}
+            {/* Update to use checkAuthStatus if needed for testing, but usually triggered on mount */}
+            {/* <button onClick={auth.checkAuthStatus} data-testid="check-auth-button">Check Auth</button> */}
             <button onClick={auth.logout} data-testid="logout-button">
                 Logout
             </button>
@@ -84,52 +55,38 @@ const TestComponent = () => {
 
 describe('AuthProvider', () => {
     const mockNavigate = jest.fn();
-    let mockAxiosInstance: MockAxiosInstance;
-    let mockAxiosGet: MockAxiosFn;
-    let mockAxiosPost: MockAxiosFn;
-    // Variable para almacenar el manejador de errores capturado
-    let capturedResponseErrorHandler: ((error: any) => Promise<any>) | undefined;
+    // Get typed mock functions from the mocked authService
+    const mockHandleOAuthCallback = authService.handleOAuthCallback as jest.Mock;
+    const mockCheckAuthentication = authService.checkAuthentication as jest.Mock;
+    const mockLogout = authService.logout as jest.Mock;
+
+    // Mock user data
+    const mockUser: User = {
+        id: 1,
+        email: 'test@example.com',
+        username: 'testuser',
+        first_name: 'Test',
+        last_name: 'User',
+        profile: {
+            company: { id: 1, name: 'Test Company' }
+        }
+    };
 
     beforeEach(() => {
-        // Limpiar todos los mocks
+        // Clear all mocks before each test
         jest.clearAllMocks();
-
-        // Configurar mock de navigate
         (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-
-        // Limpiar sessionStorage
-        sessionStorage.clear();
-
-        // Configurar axios y sus mocks usando el helper
-        const mockedAxios = axios as jest.Mocked<typeof axios> & {
-            __getMockAxiosInstance: () => MockAxiosInstance;
-            __getCapturedResponseErrorHandler: () => ((error: any) => Promise<any>) | undefined;
-        };
-        mockAxiosInstance = mockedAxios.__getMockAxiosInstance();
-        mockAxiosGet = mockAxiosInstance.get;
-        mockAxiosPost = mockAxiosInstance.post;
-        // Resetear el manejador capturado
-        capturedResponseErrorHandler = undefined;
-
-        // Reset handlers for the instance between tests
-        mockAxiosGet.mockReset();
-        mockAxiosPost.mockReset();
-        mockAxiosInstance.interceptors.request.use.mockClear();
-        mockAxiosInstance.interceptors.response.use.mockClear();
-        mockAxiosInstance.interceptors.request.eject.mockClear();
-        mockAxiosInstance.interceptors.response.eject.mockClear();
-
-        // Ensure axios.create returns the same mock instance
-        (axios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
-
-        // Mock para capturar el manejador de errores
-        mockAxiosInstance.interceptors.response.use.mockImplementation((_onFulfilled, onRejected) => { // Prefix onFulfilled with _
-            capturedResponseErrorHandler = onRejected; // Captura el manejador
-            return 2;
-        });
+        // Reset mock implementations if needed
+        mockHandleOAuthCallback.mockReset();
+        mockCheckAuthentication.mockReset();
+        mockLogout.mockReset();
     });
 
-    test('inicia con estado de carga', () => {
+    test('inicia con estado de carga y no autenticado', () => {
+        // Mock initial check returns null (not authenticated)
+        mockHandleOAuthCallback.mockReturnValue(false); // No tokens from URL
+        mockCheckAuthentication.mockResolvedValue(null);
+
         render(
             <MemoryRouter>
                 <AuthProvider>
@@ -138,33 +95,15 @@ describe('AuthProvider', () => {
             </MemoryRouter>
         );
 
+        // Initial state should be loading
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Loading');
         expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
     });
 
-    test('maneja autenticación exitosa', async () => {
-        // Mock el usuario y tokens
-        const mockUser = {
-            id: 1,
-            email: 'test@example.com',
-            username: 'testuser',
-            first_name: 'Test',
-            last_name: 'User',
-            profile: {
-                company: { id: 1, name: 'Test Company' }
-            }
-        };
-
-        const mockTokens = {
-            access: 'mock-token',
-            refresh: 'mock-refresh'
-        };
-
-        // Mock las respuestas en secuencia: CSRF, Profile, Tokens
-        mockAxiosGet
-            .mockResolvedValueOnce({ data: {} }) // CSRF
-            .mockResolvedValueOnce({ data: mockUser }) // Profile
-            .mockResolvedValueOnce({ data: mockTokens }); // Tokens
+    test('maneja autenticación exitosa en el montaje inicial', async () => {
+        // Mock service methods for successful auth
+        mockHandleOAuthCallback.mockReturnValue(false); // No tokens from URL initially
+        mockCheckAuthentication.mockResolvedValue(mockUser);
 
         await act(async () => {
             render(
@@ -176,192 +115,148 @@ describe('AuthProvider', () => {
             );
         });
 
-        // Esperar a que se complete la autenticación inicial
+        // Wait for loading to finish
         await waitFor(() => {
             expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
         });
 
-        // Verificar que el usuario está autenticado y se muestra su información
-        await waitFor(() => {
-            expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
-            expect(screen.getByTestId('user-info')).toHaveTextContent(mockUser.email);
-        });
-
-        // Verificar que se almacenan los tokens correctamente
-        expect(sessionStorage.getItem('accessToken')).toBe(mockTokens.access);
-        expect(sessionStorage.getItem('refreshToken')).toBe(mockTokens.refresh);
+        // Verify authenticated state and user info
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+        expect(screen.getByTestId('user-info')).toHaveTextContent(mockUser.email);
+        expect(mockHandleOAuthCallback).toHaveBeenCalledTimes(1);
+        expect(mockCheckAuthentication).toHaveBeenCalledTimes(1);
     });
 
-    test('maneja error de autenticación', async () => {
-        // Mock error de autenticación
-        mockAxiosGet.mockRejectedValueOnce(new Error('Authentication failed'));
+    test('maneja autenticación exitosa después de callback OAuth', async () => {
+        // Mock service methods for successful auth after callback
+        mockHandleOAuthCallback.mockReturnValue(true); // Tokens FOUND in URL
+        mockCheckAuthentication.mockResolvedValue(mockUser);
 
-        render(
-            <MemoryRouter>
-                <AuthProvider>
-                    <TestComponent />
-                </AuthProvider>
-            </MemoryRouter>
-        );
+        await act(async () => {
+            render(
+                <MemoryRouter initialEntries={['/?jwt_access=token&jwt_refresh=refresh']}>
+                    <AuthProvider>
+                        <TestComponent />
+                    </AuthProvider>
+                </MemoryRouter>
+            );
+        });
 
+        // Wait for loading to finish
         await waitFor(() => {
             expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
         });
 
+        // Verify authenticated state and user info
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+        expect(screen.getByTestId('user-info')).toHaveTextContent(mockUser.email);
+        expect(mockHandleOAuthCallback).toHaveBeenCalledTimes(1);
+        expect(mockCheckAuthentication).toHaveBeenCalledTimes(1);
+    });
+
+
+    test('maneja fallo de autenticación en el montaje inicial', async () => {
+        // Mock service methods for failed auth
+        mockHandleOAuthCallback.mockReturnValue(false);
+        mockCheckAuthentication.mockResolvedValue(null); // checkAuthentication returns null
+
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <AuthProvider>
+                        <TestComponent />
+                    </AuthProvider>
+                </MemoryRouter>
+            );
+        });
+
+        // Wait for loading to finish
+        await waitFor(() => {
+            expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
+        });
+
+        // Verify not authenticated state
         expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
-        expect(sessionStorage.getItem('accessToken')).toBeNull();
-        expect(sessionStorage.getItem('refreshToken')).toBeNull();
+        expect(screen.queryByTestId('user-info')).toBeNull();
+        expect(mockHandleOAuthCallback).toHaveBeenCalledTimes(1);
+        expect(mockCheckAuthentication).toHaveBeenCalledTimes(1);
     });
+
+    test('maneja error inesperado durante checkAuthStatus', async () => {
+        // Mock service methods to throw an error
+        const errorMessage = 'Network Error';
+        mockHandleOAuthCallback.mockReturnValue(false);
+        mockCheckAuthentication.mockRejectedValue(new Error(errorMessage));
+
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <AuthProvider>
+                        <TestComponent />
+                    </AuthProvider>
+                </MemoryRouter>
+            );
+        });
+
+        // Wait for loading to finish
+        await waitFor(() => {
+            expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
+        });
+
+        // Verify not authenticated state and error message
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+        expect(screen.queryByTestId('user-info')).toBeNull();
+        // Check for the generic error message set by AuthProvider's catch block
+        expect(screen.getByTestId('error-message')).toHaveTextContent('An unexpected error occurred during authentication check.');
+        expect(mockHandleOAuthCallback).toHaveBeenCalledTimes(1);
+        expect(mockCheckAuthentication).toHaveBeenCalledTimes(1);
+    });
+
 
     test('maneja logout correctamente', async () => {
-        const mockUser = {
-            id: 1,
-            email: 'test@example.com',
-            username: 'testuser',
-            first_name: 'Test',
-            last_name: 'User',
-            profile: {
-                company: { id: 1, name: 'Test Company' }
-            }
-        };
+        // Setup initial authenticated state
+        mockHandleOAuthCallback.mockReturnValue(false);
+        mockCheckAuthentication.mockResolvedValue(mockUser);
+        mockLogout.mockResolvedValue(undefined); // Mock logout service call
 
-        // Mock autenticación inicial exitosa
-        mockAxiosGet
-            .mockResolvedValueOnce({ data: {} }) // CSRF
-            .mockResolvedValueOnce({ data: mockUser }) // Profile
-            .mockResolvedValueOnce({ data: { access: 'token', refresh: 'refresh' } }); // Tokens
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <AuthProvider>
+                        <TestComponent />
+                    </AuthProvider>
+                </MemoryRouter>
+            );
+        });
 
-        render(
-            <MemoryRouter>
-                <AuthProvider>
-                    <TestComponent />
-                </AuthProvider>
-            </MemoryRouter>
-        );
-
-        // Esperar a que se complete la autenticación inicial
+        // Wait for initial auth to complete
         await waitFor(() => {
             expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
         });
 
-        // Mock respuesta exitosa de logout
-        mockAxiosGet.mockResolvedValueOnce({ data: {} });
-
-        // Hacer clic en el botón de logout
+        // Click logout button
         const logoutButton = screen.getByTestId('logout-button');
         await act(async () => {
             logoutButton.click();
         });
 
-        // Verificar estado después del logout
+        // Wait for logout process (which involves navigation)
         await waitFor(() => {
-            expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
-            expect(sessionStorage.getItem('accessToken')).toBeNull();
-            expect(sessionStorage.getItem('refreshToken')).toBeNull();
-            expect(mockNavigate).toHaveBeenCalledWith('/login');
+            // Verify service logout was called
+            expect(mockLogout).toHaveBeenCalledTimes(1);
         });
+
+        // Verify state after logout
+        // Note: The component might unmount upon navigation, so checking state
+        // might require re-rendering or adjusting the test structure if needed.
+        // However, we can check if navigate was called.
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+        expect(screen.queryByTestId('user-info')).toBeNull();
+        expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
 
-    test('refresca el token cuando expira', async () => {
-        const mockUser = {
-            id: 1,
-            email: 'test@example.com',
-            username: 'testuser',
-            first_name: 'Test',
-            last_name: 'User',
-            profile: {
-                company: { id: 1, name: 'Test Company' }
-            }
-        };
-
-        const mockNewTokens = {
-            access: 'new-access-token',
-            refresh: 'new-refresh-token'
-        };
-
-        // Set up initial tokens in sessionStorage
-        const initialRefreshToken = 'initial-refresh-token';
-        sessionStorage.setItem('accessToken', 'initial-access-token');
-        sessionStorage.setItem('refreshToken', initialRefreshToken);
-
-        // Define expected URLs - Assuming all auth endpoints use the /auth prefix now
-        const profileUrl = '/auth/profile/'; // Use specific path if known, or expect.stringContaining('/auth/profile/')
-        const refreshUrl = '/auth/token/refresh/';
-
-        // Mock API call sequence
-        mockAxiosGet
-            .mockResolvedValueOnce({ data: {} }) // 1. Initial CSRF Token fetch - Reverted data
-            .mockRejectedValueOnce({ // 2. Initial Profile fetch fails with 401
-                response: { status: 401 },
-                config: { url: profileUrl, headers: {}, _retry: false } // Mock config object
-            })
-            .mockResolvedValueOnce({ data: mockUser }); // 4. Profile fetch succeeds after refresh retry (This won't be called by auto-retry in this test)
-
-        mockAxiosPost
-            .mockResolvedValueOnce({ data: mockNewTokens }); // 3. Token refresh call succeeds
-
-        // Render the component - this triggers the initial checkAuthStatus AND sets up the interceptor
-        // Wrap render in act
-        await act(async () => {
-            render(
-                <MemoryRouter>
-                    <AuthProvider>
-                        <TestComponent />
-                    </AuthProvider>
-                </MemoryRouter>
-            );
-        });
-
-        // Wait for the initial loading state to potentially resolve (even if auth fails initially)
-        await waitFor(() => {
-            expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
-        });
-
-        // Verify the interceptor's error handler was captured
-        expect(capturedResponseErrorHandler).toBeDefined();
-
-        // Manually trigger the handler
-        if (capturedResponseErrorHandler) {
-            const error401 = {
-                response: { status: 401 },
-                config: { url: profileUrl, headers: {}, _retry: false }
-            };
-            await act(async () => {
-                try {
-                    // Invoke the handler. This triggers the refresh POST.
-                    // The internal retry might fail (TypeError), potentially calling clearTokens.
-                    await capturedResponseErrorHandler!(error401);
-                } catch (e) {
-                    // console.warn("Interceptor handler threw an error:", e);
-                }
-            });
-        } else {
-            throw new Error("Response error handler was not captured by the mock.");
-        }
-
-
-        // Now, wait for the consequences of the refresh attempt
-        await waitFor(() => {
-            // Verify the refresh endpoint WAS called correctly now
-            expect(mockAxiosPost).toHaveBeenCalledWith(
-                refreshUrl, // Uses the updated URL '/auth/token/refresh/'
-                { refresh: initialRefreshToken }
-            );
-        });
-
-        // Verify the profile endpoint was attempted at least once (the initial fail)
-        expect(mockAxiosGet).toHaveBeenCalledWith(profileUrl);
-
-
-        // REMOVE or COMMENT OUT the final state verification block,
-        // as the state update depends on the retry mechanism which fails in the simulation.
-        /*
-        await waitFor(() => {
-            expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
-            expect(screen.getByTestId('user-info')).toHaveTextContent(mockUser.email);
-        });
-
-        expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
-        */
-    });
+    // Note: Testing the token refresh logic is now an integration detail of AuthService.
+    // Unit tests for AuthProvider should focus on its reaction to AuthService results.
+    // If you need to test the refresh mechanism itself, create separate tests for `AuthService`
+    // where you mock `axios` directly and trigger the interceptor.
 });

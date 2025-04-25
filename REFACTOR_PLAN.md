@@ -110,7 +110,7 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 - [ ] **Eliminar código de logging de depuración (Frontend/Backend)**
 
 ### Media Prioridad
-- [x] **Estandarizar manejo de errores**
+- [ ] **Estandarizar manejo de errores**
 - [ ] **Mejorar nombres de variables y funciones**
 
 ## Pruebas y Calidad

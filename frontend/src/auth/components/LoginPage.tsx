@@ -5,32 +5,35 @@ import { useAuth } from './AuthProvider';
 import { MicrosoftLoginButton, GoogleLoginButton} from 'react-social-login-buttons';
 
 const LoginPage: React.FC = () => {
-    const { isAuthenticated, isLoading, checkAuth } = useAuth();
+    const { isAuthenticated, isLoading, checkAuthStatus } = useAuth();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
-    
+
     // Determine if we're in production based on hostname
     const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
     
     // Get base URL for API calls - Use the correct backend URL for OAuth
-    const baseURL = isProduction 
+    const baseURL = isProduction
         ? 'https://dashboard-control-back.onrender.com'
         : '';
-    
+
     useEffect(() => {
         // Check for authentication on mount and URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const hasAuthParams = urlParams.has('code') || urlParams.has('token');
-        
+        // Check for OAuth callback parameters OR JWT tokens from our custom flow
+        const hasAuthParams = urlParams.has('code') || urlParams.has('state') || urlParams.has('jwt_access');
+
         if (hasAuthParams) {
-            console.log('Auth parameters detected in URL, checking auth status');
-            checkAuth();
+            console.log('[LoginPage] Auth parameters detected in URL, checking auth status');
+            // Call the renamed function
+            checkAuthStatus();
         }
-    }, [checkAuth]);
+        // Update dependency array
+    }, [checkAuthStatus]);
 
     // Add a redirect attempts counter
     const attemptKey = 'loginRedirectAttempts';
-    
+
     const handleMicrosoftLogin = () => {
         // Check and handle redirect attempts to avoid loops
         const attempts = parseInt(sessionStorage.getItem(attemptKey) || '0');
@@ -92,6 +95,8 @@ const LoginPage: React.FC = () => {
 
     if (isAuthenticated) {
        console.log(`User is authenticated, redirecting to: ${from}`);
+       // Clear the counter on successful authentication and redirect
+       sessionStorage.removeItem(attemptKey);
        return <Navigate to={from} replace />;
     }
 

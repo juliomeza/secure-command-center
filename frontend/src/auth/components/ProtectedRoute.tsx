@@ -9,23 +9,15 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
-    const { isAuthenticated, isLoading, checkAuth, user, error } = useAuth();
+    const { isAuthenticated, isLoading, user, error } = useAuth();
     const location = useLocation();
 
-    // Force authentication check when route is accessed directly
+    // useEffect for logging purposes, removed the checkAuthStatus call
     useEffect(() => {
-        // If we're not authenticated and not currently loading, check again
-        // This helps when the route is accessed directly via URL
-        if (!isAuthenticated && !isLoading) {
-            console.log("[ProtectedRoute] Not authenticated, rechecking...");
-            checkAuth();
-        }
-        
-        // Check if the user object is actually HTML (invalid response)
-        const isUserObjectHTML = user && typeof user === 'object' && 
+        // Log current state when relevant dependencies change
+        const isUserObjectHTML = user && typeof user === 'object' &&
                                'id' in user && typeof user.id === 'number' ? false : true;
-        
-        // Log the auth state for debugging
+
         console.log('[ProtectedRoute] Auth state:', {
             path: location.pathname,
             isAuthenticated,
@@ -35,8 +27,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
             isUserObjectHTML,
             error
         });
-        
-        // Log actual user details
+
         if (user && !isUserObjectHTML) {
             console.log('[ProtectedRoute] Authenticated user:', {
                 id: user.id,
@@ -46,10 +37,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
                 company: user.profile?.company?.name || 'No company'
             });
         }
-    }, [isAuthenticated, isLoading, checkAuth, location.pathname, user, error]);
+    }, [isAuthenticated, isLoading, location.pathname, user, error]);
 
     if (isLoading) {
-        // Show a better loading indicator
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="text-center">
@@ -60,28 +50,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
         );
     }
 
-    // Extra validation to detect invalid user objects
     const isInvalidUser = user && (
-        typeof user === 'string' || 
-        !('id' in user) || 
+        typeof user === 'string' ||
+        !('id' in user) ||
         typeof user.id !== 'number'
     );
-    
+
     if (isInvalidUser) {
         console.error("[ProtectedRoute] Invalid user object detected:", user);
-        // Force logout/redirect when invalid user is detected
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (!isAuthenticated) {
         console.log('[ProtectedRoute] User not authenticated, redirecting to login');
-        // Redirect them to the /login page, but save the current location they were
-        // trying to go to. This allows us to send them along to that page after they login,
-        // which is a nicer user experience than dropping them off on the home page.
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // If authenticated, render the child routes/components
     return <Outlet />;
 };
 

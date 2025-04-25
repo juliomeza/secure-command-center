@@ -1,190 +1,130 @@
 // frontend/src/components/AuthProvider.tsx
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AuthService, User } from '../services/authService';
+// Import the singleton instance and User type
+import { authService, User } from '../services/authService';
 
-// Define the context shape
+// Define the context shape (simplified)
 interface AuthContextType {
     isAuthenticated: boolean;
     user: User | null;
     isLoading: boolean;
-    error: string | null;
-    checkAuth: () => Promise<void>;
-    logout: () => Promise<boolean>;
-    getAccessToken: () => string | null;
-    // Nuevo: Expone el authService para poder cambiarlo en futuras iteraciones
-    authService: AuthService; 
+    error: string | null; // Keep error state for UI feedback
+    checkAuthStatus: () => Promise<void>; // Renamed for clarity
+    logout: () => Promise<void>;
 }
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// CONFIGURACIÓN: ¿Usar la nueva API de autenticación?
-// Cambiar a true cuando queramos probar la nueva implementación
-const USE_NEW_AUTH_API = true;
-
-// Track redirect attempts to prevent infinite loops
-let redirectAttempts = 0;
-const MAX_REDIRECT_ATTEMPTS = 2;
-
-// AuthProvider component
+// AuthProvider component (Refactored)
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    // Crear instancia del servicio de autenticación
-    const [authService] = useState<AuthService>(new AuthService(USE_NEW_AUTH_API));
-    
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading on mount
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    const checkAuth = useCallback(async () => {
-        console.log("[AuthProvider] Checking authentication status...");
+    // Function to check authentication status using the AuthService
+    const checkAuthStatus = useCallback(async () => {
+        console.debug("[AuthProvider] Checking authentication status...");
         setIsLoading(true);
         setError(null);
-        
+
         try {
-            // Obtener token CSRF
-            await authService.fetchCSRFToken();
-            
-            // Intentar obtener el perfil del usuario
-            const userData = await authService.fetchUserProfile();
-            setUser(userData);
-            setIsAuthenticated(true);
-            
-            // Intentar obtener tokens JWT
-            try {
-                const tokenResponse = await authService.fetchJWTTokens();
-                authService.storeTokens({
-                    access: tokenResponse.access,
-                    refresh: tokenResponse.refresh
-                });
-                console.log("[AuthProvider] JWT tokens stored successfully");
-            } catch (tokenError) {
-                console.warn("[AuthProvider] Could not fetch JWT tokens:", tokenError);
-                // No interrumpir el proceso si los tokens no se pueden obtener
+            // Handle OAuth callback first - this stores tokens if present
+            authService.handleOAuthCallback();
+
+            // Now, check authentication using the stored tokens (or lack thereof)
+            const currentUser = await authService.checkAuthentication();
+
+            if (currentUser) {
+                setUser(currentUser);
+                setIsAuthenticated(true);
+                console.debug("[AuthProvider] User is authenticated.", currentUser);
+            } else {
+                setUser(null);
+                setIsAuthenticated(false);
+                console.debug("[AuthProvider] User is not authenticated.");
             }
-            
-            redirectAttempts = 0;
         } catch (err) {
-            console.error("[AuthProvider] Authentication check failed:", err);
-            
-            // Limpiar estado de autenticación
+            console.error("[AuthProvider] Error during checkAuthStatus:", err);
             setUser(null);
             setIsAuthenticated(false);
-            
-            if (axios.isAxiosError(err)) {
-                if (err.response?.status === 401 || err.response?.status === 403) {
-                    const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-                    if (isProduction && redirectAttempts < MAX_REDIRECT_ATTEMPTS) {
-                        redirectAttempts++;
-                        navigate('/login');
-                    }
-                }
-            }
+            setError('An unexpected error occurred during authentication check.');
         } finally {
             setIsLoading(false);
         }
-    }, [navigate, authService]);
+    }, []); // Dependency array is empty as navigate is not used directly here
 
-    const logout = async (): Promise<boolean> => {
+    // Logout function using the AuthService
+    const logout = async (): Promise<void> => {
+        console.debug("[AuthProvider] Initiating logout...");
+        setIsLoading(true);
         try {
-            console.log("[AuthProvider] Attempting to logout");
-            
-            // Llamar al servicio para hacer logout
-            await authService.logout();
-            
-            // Limpiar cookies
-            authService.clearAllAuthCookies();
-
-            // Limpiar estado local
+            await authService.logout(); // Service handles backend call and token clearing
             setUser(null);
             setIsAuthenticated(false);
-            
-            // Limpiar cualquier dato en sessionStorage
-            sessionStorage.clear();
-            
-            // Agregar un marcador para logout en múltiples tabs
-            sessionStorage.setItem('auth_logout', 'true');
-            
-            console.log("[AuthProvider] Logout successful");
-            
-            // Redirigir al login
+            setError(null);
+            console.debug("[AuthProvider] Logout successful, navigating to login.");
+
+            // Add marker for multi-tab logout detection (optional but good practice)
+            try {
+                 sessionStorage.setItem('auth_logout', Date.now().toString());
+            } catch (storageError) {
+                 console.warn("[AuthProvider] Could not set logout marker in sessionStorage:", storageError);
+            }
+
             navigate('/login');
-            return true;
         } catch (error) {
             console.error("[AuthProvider] Logout failed:", error);
-            return false;
+            setError('Logout failed. Please try again.'); // Provide feedback
+            setUser(null); // Force clear state even on error
+            setIsAuthenticated(false);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Función para obtener el token de acceso actual
-    const getAccessToken = (): string | null => {
-        return authService.getStoredAccessToken();
-    };
-
-    // Check authentication status when the provider mounts
+    // Effect to check auth status on mount and listen for multi-tab logout
     useEffect(() => {
-        // First, check if there are JWT tokens in the URL (after OAuth redirection)
-        const urlParams = new URLSearchParams(window.location.search);
-        const jwtAccess = urlParams.get('jwt_access');
-        const jwtRefresh = urlParams.get('jwt_refresh');
-        
-        if (jwtAccess && jwtRefresh) {
-            console.log("[AuthProvider] JWT tokens found in URL after OAuth login");
-            // Store the tokens
-            authService.storeTokens({
-                access: jwtAccess,
-                refresh: jwtRefresh
-            });
-            
-            // Clean the URL to avoid keeping the tokens visible
-            const cleanUrl = window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
-            
-            // Verify authentication with the new tokens
-            checkAuth();
-        } else {
-            // If there are no tokens in the URL, verify authentication normally
-            checkAuth();
-        }
-        
-        // Add event listener for storage changes (for multi-tab logout)
+        checkAuthStatus();
+
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'auth_logout' && e.newValue === 'true') {
-                console.log("[AuthProvider] Detected logout in another tab");
-                setUser(null);
-                setIsAuthenticated(false);
-                authService.clearTokens();
-                sessionStorage.removeItem('auth_logout');
+            // Check for the logout marker set by the logout function
+            if (e.key === 'auth_logout' && e.storageArea === sessionStorage) {
+                console.debug("[AuthProvider] Detected logout event from another tab/window.");
+                // Check if already logged out to avoid loop/unnecessary updates
+                if (isAuthenticated) {
+                    setUser(null);
+                    setIsAuthenticated(false);
+                    navigate('/login', { replace: true });
+                }
             }
         };
-        
+
         window.addEventListener('storage', handleStorageChange);
-        
+
         return () => {
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, [checkAuth, authService]);
+    }, [checkAuthStatus, isAuthenticated, navigate]);
 
     return (
-        <AuthContext.Provider value={{ 
-            isAuthenticated, 
-            user, 
-            isLoading, 
-            error, 
-            checkAuth, 
-            logout,
-            getAccessToken,
-            authService
+        <AuthContext.Provider value={{
+            isAuthenticated,
+            user,
+            isLoading,
+            error,
+            checkAuthStatus,
+            logout
         }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-// Custom hook to use the auth context
+// Custom hook to use the auth context (no changes needed here)
 export const useAuth = (): AuthContextType => {
     const context = useContext(AuthContext);
     if (context === undefined) {
