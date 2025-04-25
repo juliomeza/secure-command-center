@@ -44,9 +44,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 - [x] **Ampliar cobertura de tests (Frontend)**  *(Iniciado/En progreso)*
   - [ ] Refinar/completar tests unitarios para `AuthService` (ciclo JWT), `AuthProvider`, `useAuth`.
   - [ ] Implementar tests de integración para flujo JWT completo (Login OAuth -> Recepción/Almacenamiento JWT -> Acceso Protegido -> Refresco JWT -> Logout).
-- [x] **Reestructurar frontend (`src/auth/`)**
-  - [x] Confirmar y aplicar estructura: `components/`, `services/`, `hooks/`, `types/`, `utils/`.
-  - [x] Mover archivos relevantes a la nueva estructura.
 
 #### Fase 2: Implementación de Autenticación (Frontend - 3 semanas)
 - [ ] **Consolidar y Asegurar Manejo de Tokens JWT (Frontend)**
@@ -77,12 +74,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
   - [ ] Adaptar `ProtectedRoute` o crear nuevos componentes/HOCs para proteger rutas/componentes basados en permisos específicos.
 
 ## Estructura y Organización
-
-### Alta Prioridad
-- [ ] **Reorganizar estructura frontend**
-  - [ ] Implementar arquitectura por características (ej. `src/auth`, `src/dashboard`, etc.) vs por tipos (`components`, `services`). (En progreso con `src/auth`).
-  - [ ] Mover componentes/lógica de autenticación a `src/auth/`.
-  - [ ] Separar servicios API (`AuthService`) de lógica de componentes (`AuthProvider`).
 
 ### Media Prioridad
 - [ ] **Estandarizar patrones de importación**
@@ -127,9 +118,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 
 ## Escalabilidad
 
-### Alta Prioridad
-- [x] **Separar responsabilidades en servicios backend**
-
 ### Media Prioridad
 - [ ] **Implementar paginación consistente**
 - [ ] **Mejorar gestión de estado en frontend**
@@ -144,31 +132,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 ## Plan de Acción por Fases
 
 ### Estrategia de Migración Segura
-
-Para garantizar una migración sin interrupciones y minimizar riesgos, se seguirá una estrategia de "parallel implementation":
-
-1. **Mantener código existente como referencia**
-   - El código actual en `core` y `project` permanecerá intacto durante el desarrollo
-   - Servirá como documentación viva y referencia de la implementación funcional
-   - Nos permitirá comparar comportamientos y resultados
-
-2. **Desarrollo paralelo y gradual**
-   - Implementar nueva funcionalidad en `authentication` sin modificar el código existente
-   - Mantener ambas implementaciones funcionando en paralelo
-   - Usar el código existente como guía para replicar comportamientos críticos
-   - Facilita rollback en caso de problemas
-
-3. **Validación y switch**
-   - Validar exhaustivamente la nueva implementación
-   - Realizar pruebas A/B si es necesario
-   - Solo eliminar código antiguo cuando el nuevo esté 100% probado y funcional
-
-Esta estrategia nos permite:
-- Mantener el sistema actual funcionando sin interrupciones
-- Usar el código existente como documentación y referencia
-- Reducir riesgos y frustración en el desarrollo
-- Tener siempre un fallback funcional
-- Hacer la migración de manera controlada y segura
 
 ### Fase 1: Estructura y Tests Previos (Frontend - 3-4 semanas)
 - [x] Preparar estructura `src/auth/`.
@@ -194,15 +157,3 @@ Esta estrategia nos permite:
 - [ ] Refinar documentación técnica
 - [ ] Eliminar código legacy una vez validado el nuevo sistema
 - [ ] Realizar limpieza final de imports y dependencias no usadas
-
-### Resultado Final Esperado
-- **Backend**: 
-  - Arquitectura clara con separación de responsabilidades
-  - Sistema de autenticación y autorización desacoplados
-  - API documentada y fácil de mantener
-  
-- **Frontend**:
-  - Estructura modular con servicios especializados
-  - Componentes más pequeños y mantenibles
-  - Separación clara entre autenticación y autorización
-  - Experiencia de usuario mejorada y accesible
