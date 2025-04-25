@@ -6,10 +6,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('social_django.urls', namespace='social')), # OAuth URLs provided by social-auth-app-django
-    
-    # Include non-auth core API endpoints if any exist
-    path('api/', include('core.urls')), 
-    
+
     # Include all authentication-related endpoints from the dedicated app
     path('api/auth/', include('authentication.urls')), 
 ]

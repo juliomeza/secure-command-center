@@ -1,1 +1,0 @@
-# This file is intentionally left blank as throttling logic related to authentication has been moved to the 'authentication' app.
