@@ -41,30 +41,13 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 ### Plan de Refactorización (Alta Prioridad)
 
 #### Fase 1: Preparación y Tests (Frontend - 2 semanas)
-- [x] **Ampliar cobertura de tests (Frontend)**  *(Iniciado/En progreso)*
-  - [ ] Refinar/completar tests unitarios para `AuthService` (ciclo JWT), `AuthProvider`, `useAuth`.
-  - [ ] Implementar tests de integración para flujo JWT completo (Login OAuth -> Recepción/Almacenamiento JWT -> Acceso Protegido -> Refresco JWT -> Logout).
 
 #### Fase 2: Implementación de Autenticación (Frontend - 3 semanas)
-- [ ] **Consolidar y Asegurar Manejo de Tokens JWT (Frontend)**
-  - [ ] Confirmar estrategia de almacenamiento (`sessionStorage` por ahora, revisar seguridad).
-  - [ ] Asegurar que `AuthService` es el **único** responsable del almacenamiento/recuperación de JWTs.
-  - [ ] Centralizar lógica de obtención/almacenamiento de JWT post-OAuth redirect en `AuthService` o un hook dedicado.
-  - [ ] Limpiar parámetros URL (jwt_access, jwt_refresh) después de leer tokens.
-- [ ] **Refactorizar `AuthProvider` y `useAuth` (Frontend)**
-  - [ ] Extraer lógica compleja (orquestación de llamadas iniciales, validaciones) a `AuthService` o hooks/utils en `src/auth/`.
-  - [ ] Enfocar `AuthProvider` en gestión de estado (basado en JWT) y provisión de contexto.
-  - [ ] Asegurar que `checkAuth` dependa únicamente de la validación de JWTs vía `AuthService`.
-- [ ] **Fortalecer `AuthService` (Frontend)**
-  - [ ] Implementar manejo de errores robusto y estandarizado (especialmente en flujo JWT).
-  - [ ] Eliminar logging de depuración, usar logging controlado si es necesario.
-  - [ ] Revisar y robustecer interceptor de refresco JWT (manejo de casos límite).
 - [ ] **Limpieza (Frontend)**
-  - [ ] Eliminar flag `USE_NEW_AUTH_API` y código asociado cuando la nueva API backend (JWT-only) sea estable.
   - [ ] Eliminar cualquier código remanente relacionado con autenticación basada en sesiones u otros métodos.
 
 #### Fase 3: Implementación de Control de Acceso (Backend: Ya iniciado, Frontend: 3 semanas)
-- [x] **Crear nueva app `access` en Django** (Hecho)
+- [ ] **Crear nueva app `access` en Django** (Hecho)
   - [ ] Diseñar e implementar modelo de permisos granular (Backend)
   - [ ] Desarrollar API para verificación de permisos (Backend)
   - [ ] Implementar middleware de validación de acceso (Backend)
@@ -81,11 +64,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 
 ## Mejoras de Rendimiento
 
-### Alta Prioridad
-- [x] **Optimizar manejo de tokens JWT**
-  - [x] Implementar expiración y renovación adecuada
-  - [x] Reducir tamaño de payload
-
 ### Media Prioridad
 - [ ] **Implementar caché para respuestas API**
 - [ ] **Optimizar carga de componentes frontend**
@@ -93,11 +71,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 ## Mantenibilidad y Código Limpio
 
 ### Alta Prioridad
-- [ ] **Reducir complejidad ciclomática en componentes clave (Frontend)**
-  - [ ] Refactorizar `frontend/src/components/AuthProvider.tsx` (reducir tamaño y responsabilidades).
-  - [ ] Simplificar lógica condicional en `frontend/src/components/ProtectedRoute.tsx`.
-- [ ] **Implementar servicios API estructurados (Frontend)**
-  - [ ] Asegurar que `AuthService` siga principios SOLID. Considerar dividir si crece demasiado.
 - [ ] **Eliminar código de logging de depuración (Frontend/Backend)**
 
 ### Media Prioridad
@@ -105,12 +78,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 - [ ] **Mejorar nombres de variables y funciones**
 
 ## Pruebas y Calidad
-
-### Alta Prioridad
-- [ ] **Ampliar cobertura de tests (Frontend)**
-  - [ ] Tests unitarios para servicios (`AuthService` - ciclo JWT), hooks (`useAuth`, nuevos) y utilidades de autenticación.
-  - [ ] Tests de integración para flujos de autenticación JWT y autorización (Login OAuth, Recepción/Almacenamiento JWT, Refresco, Logout, Acceso basado en permisos).
-- [ ] **Implementar validación de tipos TypeScript estricta (Frontend)**
 
 ### Media Prioridad
 - [ ] **Configurar herramientas de análisis estático**
@@ -144,7 +111,6 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 - [x] Refactorizar `AuthProvider` extrayendo lógica, basándose en estado JWT.
 - [x] Fortalecer `AuthService` (errores, logs, interceptor de refresco JWT).
 - [x] Validar exhaustivamente con tests (flujo JWT) antes de eliminar código antiguo o flags.
-- [ ] Eliminar flag `USE_NEW_AUTH_API` y código no JWT cuando sea apropiado.
 
 ### Fase 3: Implementación de Control de Acceso (Frontend - 3-4 semanas)
 - [ ] Implementar hook `usePermissions`.
@@ -157,3 +123,8 @@ Históricamente, el sistema mezclaba enfoques (sesiones Django, JWT, cookies), c
 - [ ] Refinar documentación técnica
 - [ ] Eliminar código legacy una vez validado el nuevo sistema
 - [ ] Realizar limpieza final de imports y dependencias no usadas
+
+### Próximos Pasos Inmediatos (Sprint Actual)
+- [ ] Crear e implementar hook `usePermissions` para gestionar permisos de usuario
+- [ ] Refactorizar `ProtectedRoute` para utilizar permisos específicos de rutas
+- [ ] Implementar validación de tipos TypeScript estricta en módulos de autenticación
