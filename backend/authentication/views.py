@@ -77,10 +77,10 @@ def oauth_success_redirect(request):
         user = None
         
         # 1. Verificar si el usuario está autenticado en el request
-        if request.user.is_authenticated:
+        if hasattr(request, 'user') and request.user.is_authenticated:
             user = request.user
-            print(f"Usuario autenticado detectado: {request.user.username}")
-        
+            print(f"[Auth] OAuth success for authenticated user: {user.username}")
+
         # 2. Verificar si hubo un cambio de usuario durante la autenticación OAuth
         elif hasattr(request, 'session') and 'auth_switched_user_id' in request.session:
             from django.contrib.auth import get_user_model
@@ -132,7 +132,7 @@ def oauth_success_redirect(request):
         
         # Si después de todo no hay usuario autenticado, redirigir a login
         if not user:
-            print("Usuario no autenticado después de todos los intentos, redirigiendo a login")
+            print("[Auth] No authenticated user found, redirecting to login")
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=auth_failed")
 
         # El usuario está autenticado, procedemos a generar tokens JWT
@@ -207,7 +207,7 @@ def oauth_success_redirect(request):
         return response
 
     except Exception as e:
-        print(f"Error en oauth_success_redirect: {str(e)}")
+        print(f"[Auth] Error in oauth_success_redirect: {str(e)}")
         import traceback
         traceback.print_exc()
         return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=server_error")
@@ -222,34 +222,18 @@ class LogoutAPIView(APIView):
 
     def get(self, request):
         try:
-            user_id = None
             if request.user.is_authenticated:
-                user_id = request.user.id
-                print(f"Iniciando logout para usuario {request.user.username} (ID: {user_id})")
-            else:
-                print("Iniciando logout para usuario no autenticado")
+                print(f"[Auth] Logging out user: {request.user.username}")
 
-            # Imprimir todas las cookies para diagnosticar
-            print(f"Cookies disponibles en la solicitud: {request.COOKIES.keys()}")
-            print(f"Headers disponibles: {request.headers.keys()}")
-
-            # 1. Intentar obtener el refresh token de múltiples fuentes
             refresh_token = None
-            
-            # Buscar en cookies específicas (usando nombre exacto y también posibles variaciones)
-            cookie_options = ['refresh_token', 'refreshToken', 'jwt_refresh']
-            for cookie_name in cookie_options:
+            for cookie_name in ['refresh_token', 'refreshToken', 'jwt_refresh']:
                 if cookie_name in request.COOKIES:
                     refresh_token = request.COOKIES.get(cookie_name)
-                    print(f"Refresh token encontrado en cookie '{cookie_name}'")
                     break
-            
-            # Si no está en cookies, buscar en el query param (usado en algunas implementaciones)
+
             if not refresh_token and 'refresh_token' in request.GET:
                 refresh_token = request.GET.get('refresh_token')
-                print("Refresh token encontrado en query parameter")
 
-            # Intentar obtener el refresh token del usuario basado en su ID
             if not refresh_token and request.user.is_authenticated:
                 try:
                     from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
@@ -270,7 +254,6 @@ class LogoutAPIView(APIView):
                     if outstanding_tokens.exists():
                         # Contador de tokens blacklisteados
                         blacklisted_count = 0
-                        jti_list = []
                         
                         # Blacklistear todos los tokens activos recientes
                         for token in outstanding_tokens:
@@ -278,7 +261,6 @@ class LogoutAPIView(APIView):
                                 # Verificar si ya está en la blacklist
                                 if not BlacklistedToken.objects.filter(token=token).exists():
                                     BlacklistedToken.objects.create(token=token)
-                                    jti_list.append(token.jti)
                                     blacklisted_count += 1
                                     print(f"✅ Token JTI {token.jti} blacklisteado exitosamente (creado: {token.created_at})")
                                 else:
@@ -287,14 +269,14 @@ class LogoutAPIView(APIView):
                                 print(f"Error al blacklistear token {token.jti}: {str(e)}")
                         
                         if blacklisted_count > 0:
-                            print(f"Se blacklistearon {blacklisted_count} tokens recientes (últimos 10 minutos)")
+                            print(f"[Auth] Blacklisted {blacklisted_count} recent tokens")
                             return self._finish_logout(request, True)
                         else:
                             print("No se blacklisteó ningún token (ya estaban todos en blacklist)")
                     else:
                         print("No se encontraron tokens activos recientes para el usuario (últimos 10 minutos)")
                 except Exception as e:
-                    print(f"Error al buscar tokens por usuario: {str(e)}")
+                    print(f"[Auth] Error blacklisting tokens: {str(e)}")
             
             # 2. Manejar el blacklisting con más detalle
             blacklisted = False
@@ -334,14 +316,9 @@ class LogoutAPIView(APIView):
             return self._finish_logout(request, blacklisted)
             
         except Exception as e:
-            print(f"Error crítico durante logout: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return Response(
-                {"detail": "Error during logout process.", "error": str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-            
+            print(f"[Auth] Global error during logout: {str(e)}")
+            return Response({"detail": "Error during logout."}, status=500)
+
     def _finish_logout(self, request, blacklisted=False):
         """
         Método auxiliar que completa el proceso de logout después del blacklisting.

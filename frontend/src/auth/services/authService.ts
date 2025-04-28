@@ -63,12 +63,10 @@ export class AuthService {
 
         // Response interceptor: Handle token refresh on 401 errors
         this.apiClient.interceptors.response.use(
-            (response) => response, // Pass through successful responses
+            (response) => response,
             async (error: AxiosError) => {
                 const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-                // Check if it's a 401 error, not a retry, and not the refresh token endpoint itself
-                if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/token/refresh/') {
+                if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true; // Mark as retried
 
                     if (!this.isRefreshing) {
@@ -84,10 +82,7 @@ export class AuthService {
                         }
 
                         try {
-                            console.log("[AuthService] Access token expired. Attempting refresh...");
                             const { access: newAccessToken, refresh: newRefreshToken } = await this.performTokenRefresh(refreshToken);
-                            console.log("[AuthService] Token refresh successful.");
-
                             this.storeTokens({ access: newAccessToken, refresh: newRefreshToken || refreshToken });
                             this.isRefreshing = false;
 
@@ -102,12 +97,11 @@ export class AuthService {
                             return this.apiClient(originalRequest);
 
                         } catch (refreshError) {
-                            console.error("[AuthService] Token refresh failed:", refreshError);
                             this.isRefreshing = false;
                             this.clearTokens(); // Clear tokens on refresh failure
                             this.refreshSubscribers = []; // Clear queue
                             // Optionally redirect or notify
-                             window.location.href = '/login'; // Simple redirect
+                            window.location.href = '/login'; // Simple redirect
                             return Promise.reject(refreshError);
                         }
                     } else {
@@ -134,12 +128,29 @@ export class AuthService {
         );
     }
 
-    // --- Token Storage Management (SessionStorage) ---
+    public handleOAuthCallback(): boolean {
+        const urlParams = new URLSearchParams(window.location.search);
+        const jwtAccess = urlParams.get('jwt_access');
+        const jwtRefresh = urlParams.get('jwt_refresh');
+
+        if (jwtAccess && jwtRefresh) {
+            this.storeTokens({ access: jwtAccess, refresh: jwtRefresh });
+            // Clean the URL
+            const cleanUrl = window.location.pathname + window.location.hash; // Keep hash if present
+            window.history.replaceState({}, document.title, cleanUrl);
+            return true;
+        }
+        return false;
+    }
 
     public storeTokens(tokens: JWTTokens): void {
         sessionStorage.setItem(ACCESS_TOKEN_KEY, tokens.access);
         sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh);
-        console.debug("[AuthService] Tokens stored in sessionStorage.");
+    }
+
+    public clearTokens(): void {
+        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     }
 
     public getStoredAccessToken(): string | null {
@@ -150,37 +161,7 @@ export class AuthService {
         return sessionStorage.getItem(REFRESH_TOKEN_KEY);
     }
 
-    public clearTokens(): void {
-        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-        console.debug("[AuthService] Tokens cleared from sessionStorage.");
-    }
-
     // --- Authentication Flow Methods ---
-
-    /**
-     * Handles the OAuth callback by extracting JWT tokens from URL parameters,
-     * storing them, and cleaning the URL.
-     * @returns {boolean} True if tokens were found and stored, false otherwise.
-     */
-    public handleOAuthCallback(): boolean {
-        const urlParams = new URLSearchParams(window.location.search);
-        const jwtAccess = urlParams.get('jwt_access');
-        const jwtRefresh = urlParams.get('jwt_refresh');
-
-        if (jwtAccess && jwtRefresh) {
-            console.log("[AuthService] JWT tokens found in URL from OAuth callback.");
-            this.storeTokens({ access: jwtAccess, refresh: jwtRefresh });
-
-            // Clean the URL
-            const cleanUrl = window.location.pathname + window.location.hash; // Keep hash if present
-            window.history.replaceState({}, document.title, cleanUrl);
-            console.log("[AuthService] URL cleaned after storing tokens.");
-            return true;
-        }
-        return false;
-    }
-
 
     /**
      * Checks if the user is currently authenticated by verifying the access token

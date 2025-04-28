@@ -9,37 +9,17 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
-    const { isAuthenticated, isLoading, user, error } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
     const location = useLocation();
 
-    // useEffect for logging purposes, removed the checkAuthStatus call
     useEffect(() => {
-        // Log current state when relevant dependencies change
-        const isUserObjectHTML = user && typeof user === 'object' &&
-                               'id' in user && typeof user.id === 'number' ? false : true;
-
-        console.log('[ProtectedRoute] Auth state:', {
-            path: location.pathname,
-            isAuthenticated,
-            isLoading,
-            hasUser: user !== null,
-            userType: user ? typeof user : 'null',
-            isUserObjectHTML,
-            error
-        });
-
-        // Log actual user details
-        if (user && !isUserObjectHTML) {
-            console.log('[ProtectedRoute] Authenticated user:', {
-                id: user.id,
+        if (user && isAuthenticated) {
+            console.log('[ProtectedRoute] User authenticated:', {
                 username: user.username,
-                fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-                email: user.email,
-                profile_job_title: user.profile?.job_title || 'No job title', // Added job title for context
-                profile_azure_oid: user.profile?.azure_oid || 'No Azure OID' // Added azure_oid for context
+                email: user.email
             });
         }
-    }, [isAuthenticated, isLoading, location.pathname, user, error]);
+    }, [isAuthenticated, user]);
 
     if (isLoading) {
         return (
@@ -59,12 +39,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
     );
 
     if (isInvalidUser) {
-        console.error("[ProtectedRoute] Invalid user object detected:", user);
+        console.error("[ProtectedRoute] Invalid user object detected");
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (!isAuthenticated) {
-        console.log('[ProtectedRoute] User not authenticated, redirecting to login');
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
