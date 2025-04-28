@@ -17,14 +17,13 @@ Este documento describe las áreas de mejora identificadas y propone un plan est
 ## Backend: Estructura y Configuración
 
 ### Media Prioridad
-- [ ] **Modularizar `settings.py`:** Dividir la configuración en archivos `base.py`, `development.py`, `production.py` usando `django-environ` o variables de entorno para mejorar la claridad y separación de entornos.
 - [ ] **Revisar y Simplificar Configuración de Cookies:** Asegurar que la lógica en `settings.py` para `SESSION_COOKIE_*` y `CSRF_COOKIE_*` sea clara, esté actualizada y los comentarios sean precisos. Eliminar configuraciones o comentarios obsoletos.
 
 ---
 
 ## Backend: Lógica de Negocio y API
 
-### Media Prioridad
+### Alta Prioridad (Próximos pasos recomendados)
 - [ ] **Implementar Capa de Servicios:** En las apps (`authentication`, `access`), extraer la lógica de negocio compleja de las vistas (`views.py`) y modelos (`models.py`) a módulos `services.py` para mejorar la reutilización, testeabilidad y mantener las vistas delgadas.
 - [ ] **Refinar Responsabilidades de Apps:** Asegurar que las apps `authentication` y `access` tengan responsabilidades claramente definidas y no haya superposición innecesaria.
 
@@ -32,7 +31,7 @@ Este documento describe las áreas de mejora identificadas y propone un plan est
 
 ## Frontend: Estructura y Componentes
 
-### Media Prioridad
+### Alta Prioridad (Próximos pasos recomendados)
 - [ ] **Descomponer Componentes Grandes:** Revisar componentes como `ExecutiveDashboard.tsx` y vistas en `src/views/` para identificar oportunidades de dividirlos en subcomponentes más pequeños, reutilizables y enfocados.
 - [ ] **Adoptar CSS Modular:** Considerar migrar de CSS global (`App.css`, `index.css`) a una solución como CSS Modules, Styled Components, Emotion o Tailwind CSS para mejorar la encapsulación de estilos y evitar colisiones.
 - [ ] **Crear Índices de Exportación (`index.ts`):** Añadir archivos `index.ts` en directorios clave (ej. `components/common`, `hooks`, `services`) para simplificar las importaciones.
@@ -41,17 +40,15 @@ Este documento describe las áreas de mejora identificadas y propone un plan est
 
 ## Frontend: Manejo de Estado y API
 
-### Baja Prioridad
-- [ ] **Evaluar Biblioteca de Estado Global:** Si la complejidad del estado crece, evaluar la migración de `AuthContext` a una solución como Zustand o Jotai para una gestión más robusta y escalable.
-
 ### Media Prioridad
+- [ ] **Evaluar Biblioteca de Estado Global:** Si la complejidad del estado crece, evaluar la migración de `AuthContext` a una solución como Zustand o Jotai para una gestión más robusta y escalable.
 - [ ] **Formalizar Capa de Servicios API:** Crear servicios específicos (ej. `userService.ts`, `dashboardService.ts`) y centralizar la configuración de llamadas API (URL base, manejo de tokens, errores) usando un wrapper de `fetch` o una instancia de `axios`.
 
 ---
 
 ## Calidad del Código y Mantenibilidad (General)
 
-### Media Prioridad
+### Alta Prioridad (Próximos pasos recomendados)
 - [ ] **Estandarizar Manejo de Errores:** Definir y aplicar un patrón consistente para el manejo y reporte de errores en el backend (vistas, servicios) y frontend (llamadas API, componentes).
 - [ ] **Mejorar Nombres:** Revisar nombres de variables, funciones, clases y componentes para asegurar que sean descriptivos y sigan convenciones consistentes (snake_case en Python, camelCase/PascalCase en TS/React).
 - [ ] **Configurar Linters/Formatters:** Asegurar que linters (ESLint, Flake8) y formatters (Prettier, Black) estén configurados y se usen consistentemente en ambos proyectos para mantener un estilo de código uniforme.
