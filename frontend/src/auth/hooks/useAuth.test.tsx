@@ -66,7 +66,7 @@ describe('useAuth Hook', () => {
     first_name: 'Test',
     last_name: 'User',
     profile: {
-      company: { id: 1, name: 'Test Company' }
+      // company removed
     }
   };
 

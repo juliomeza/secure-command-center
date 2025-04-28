@@ -94,7 +94,7 @@ describe('AuthService', () => {
 
   describe('fetchUserProfile', () => {
     it('returns user on success', async () => {
-      const user: User = { id:1, username:'u', email:'e', first_name:'f', last_name:'l', profile:{ company:null } };
+      const user: User = { id:1, username:'u', email:'e', first_name:'f', last_name:'l', profile:{ /* company removed */ } };
       mockGet.mockResolvedValue({ data: user });
       const result = await authService.fetchUserProfile();
       expect(result).toEqual(user);
@@ -136,7 +136,7 @@ describe('AuthService', () => {
 
     it('returns user if profile fetch succeeds', async () => {
       sessionStorageMock.setItem('accessToken', 't');
-      const user: User = { id:1, username:'u', email:'e', first_name:'f', last_name:'l', profile:{ company:null } };
+      const user: User = { id:1, username:'u', email:'e', first_name:'f', last_name:'l', profile:{ /* company removed */ } };
       mockGet.mockResolvedValue({ data: user });
       const result = await authService.checkAuthentication();
       expect(result).toEqual(user);

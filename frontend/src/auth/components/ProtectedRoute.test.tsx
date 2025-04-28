@@ -41,7 +41,7 @@ describe('ProtectedRoute', () => {
             email: 'test@example.com',
             first_name: 'Test',
             last_name: 'User',
-            profile: { company: { id: 1, name: 'Test Company' } } // Ensure profile matches User type
+            profile: { } // Ensure profile matches User type (company removed)
         };
 
         render(
