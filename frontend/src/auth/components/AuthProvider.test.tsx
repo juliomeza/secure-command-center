@@ -68,7 +68,8 @@ describe('AuthProvider', () => {
         first_name: 'Test',
         last_name: 'User',
         profile: {
-            company: { id: 1, name: 'Test Company' }
+            azure_oid: 'test-oid', // Added example oid
+            job_title: 'Tester' // Added example job title
         }
     };
 
