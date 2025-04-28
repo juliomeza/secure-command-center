@@ -9,7 +9,6 @@ export interface User {
     first_name: string;
     last_name: string;
     profile: {
-        company: { id: number; name: string } | null;
         azure_oid?: string;
         job_title?: string;
     };

@@ -3,19 +3,11 @@ import React, { useState, useRef, useEffect } from 'react';
 // Import the specific icons we need from Lucide
 import { User, Settings, LogOut } from 'lucide-react';
 
-interface AvatarMenuOption {
-  id: string;
-  label: string;
-  onClick: () => Promise<boolean> | void;  // Updated to allow both Promise<boolean> and void
-  icon?: React.ReactNode;
-  color?: string;
-}
-
 interface AvatarMenuProps {
   initials: string;
   fullName: string;
   companyName: string;
-  menuOptions: AvatarMenuOption[];
+  menuOptions: { id: string; label: string; onClick: () => Promise<any> | void }[];
 }
 
 const AvatarMenu: React.FC<AvatarMenuProps> = ({ 
@@ -66,11 +58,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
   };
 
   return (
-    <div 
-      className="relative inline-block text-left" 
-      ref={menuRef}
-      style={{ zIndex: 100 }}
-    >
+    <div style={{ position: 'relative' }} ref={menuRef}>
       {/* Avatar Circle Button */}
       <button
         onClick={toggleMenu}
@@ -103,7 +91,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
 
       {/* Dropdown Menu - More compact with better design */}
       {isOpen && (
-        <div 
+        <div
           style={{
             position: 'absolute',
             right: 24,
@@ -117,7 +105,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
             overflow: 'hidden'
           }}
         >
-          {/* User Info Section - More compact */}
+          {/* User Info Section */}
           <div
             style={{
               padding: '0.75rem 1rem',
@@ -197,7 +185,7 @@ const AvatarMenu: React.FC<AvatarMenuProps> = ({
               >
                 {/* Icon for each option */}
                 <span style={{ marginRight: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                  {option.icon || getIcon(option.id)}
+                  {getIcon(option.id)}
                 </span>
                 {option.label}
               </button>

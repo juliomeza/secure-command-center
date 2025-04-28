@@ -28,13 +28,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = () => {
             error
         });
 
+        // Log actual user details
         if (user && !isUserObjectHTML) {
             console.log('[ProtectedRoute] Authenticated user:', {
                 id: user.id,
                 username: user.username,
                 fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
                 email: user.email,
-                company: user.profile?.company?.name || 'No company'
+                profile_job_title: user.profile?.job_title || 'No job title', // Added job title for context
+                profile_azure_oid: user.profile?.azure_oid || 'No Azure OID' // Added azure_oid for context
             });
         }
     }, [isAuthenticated, isLoading, location.pathname, user, error]);

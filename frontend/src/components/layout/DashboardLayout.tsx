@@ -64,13 +64,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
   };
   
-  // Set the company name based on user profile
-  useEffect(() => {
-    if (user?.profile?.company?.name) {
-      setSelectedCompany(user.profile.company.name);
-    }
-  }, [user]);
-  
   // User avatar menu options con iconos personalizados
   const avatarMenuOptions = [
     {
