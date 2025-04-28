@@ -103,7 +103,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',  # JWT token blacklist
 
     # Your apps
-    'core',
     'authentication',
     'access',
 ]
