@@ -51,9 +51,6 @@ Este documento describe las áreas de mejora identificadas y propone un plan est
 
 ## Calidad del Código y Mantenibilidad (General)
 
-### Alta Prioridad
-- [ ] **Eliminar Logs de Depuración:** Buscar y eliminar llamadas `console.log` o `print` innecesarias en producción tanto en frontend como en backend.
-
 ### Media Prioridad
 - [ ] **Estandarizar Manejo de Errores:** Definir y aplicar un patrón consistente para el manejo y reporte de errores en el backend (vistas, servicios) y frontend (llamadas API, componentes).
 - [ ] **Mejorar Nombres:** Revisar nombres de variables, funciones, clases y componentes para asegurar que sean descriptivos y sigan convenciones consistentes (snake_case en Python, camelCase/PascalCase en TS/React).
