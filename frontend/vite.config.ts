@@ -22,20 +22,27 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-       '/static': { // Proxy static files if needed during dev (less common with Vite)
+      '/static': { // Proxy static files if needed during dev (less common with Vite)
         target: 'https://localhost:8000',
         changeOrigin: true,
         secure: false,
       },
-       '/admin': { // Proxy admin
+      '/admin': { // Proxy admin
         target: 'https://localhost:8000',
         changeOrigin: true,
         secure: false,
       },
-       '/logout': { // Proxy logout
+      // Eliminar la configuración anterior de /logout y usar la nueva
+      // '/logout': {
+      //   target: 'https://localhost:8000',
+      //   changeOrigin: true,
+      //   secure: false,
+      // }
+      '/api/auth/logout/': { // Configuración específica para la ruta de logout
         target: 'https://localhost:8000',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   }

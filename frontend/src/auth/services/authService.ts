@@ -254,8 +254,10 @@ export class AuthService {
         try {
              // Optional: Inform the backend about logout, especially to invalidate the refresh token
              if (refreshToken) {
-                 // Ensure the endpoint exists and accepts this payload
-                 await this.apiClient.post('/auth/logout/', { refresh: refreshToken });
+                 // Cambiado de POST a GET para coincidir con el backend
+                 await this.apiClient.get('/auth/logout/', { 
+                     params: { refresh: refreshToken } 
+                 });
              }
         } catch (error) {
              // Log error but proceed with client-side cleanup
