@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
-from .serializers import AuthUserSerializer, TokenResponseSerializer
+from .serializers import UserSerializer, TokenResponseSerializer
 from django.middleware.csrf import get_token
 from django.http import JsonResponse, HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
@@ -30,8 +30,8 @@ class UserProfileAPIView(APIView):
         if not ('Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer ')):
             return Response({"detail": "Se requiere autenticación JWT para acceder a la API."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Serializamos el usuario
-        serializer = AuthUserSerializer(request.user)
+        # Serializamos el usuario usando UserSerializer que incluye el perfil
+        serializer = UserSerializer(request.user)
         response_data = serializer.data
         
         # Para debugging

@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from core.models import Company
 
 # Estos modelos son compatibles con los definidos en core/models.py
 # pero están específicamente relacionados con la autenticación
@@ -43,3 +42,14 @@ class AuthUser(User):
         if self.is_oauth_user:
             return self.social_auth.first().provider
         return None
+
+# Moved UserProfile from core.models
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    # Store additional details from OAuth if needed
+    azure_oid = models.CharField(max_length=100, blank=True, null=True, unique=True) # Store Azure Object ID
+    job_title = models.CharField(max_length=100, blank=True, null=True)
+    # Add other fields as necessary
+
+    def __str__(self):
+        return self.user.username

@@ -1,10 +1,10 @@
 # backend/authentication/pipelines.py
-from core.models import Company, UserProfile
 from django.contrib.auth.models import User
 from social_core.exceptions import AuthAlreadyAssociated
 from social_django.models import UserSocialAuth
 from django.contrib.auth import login
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import UserProfile
 
 def clean_session(strategy, *args, **kwargs):
     """
@@ -55,6 +55,7 @@ def save_profile_details(backend, user: User, response, *args, **kwargs):
     """
     # Asegurar que existe el perfil de usuario
     if not hasattr(user, 'profile'):
+        # Ensure UserProfile is imported correctly from .models
         UserProfile.objects.create(user=user)
 
     # Actualizar datos del perfil según el backend

@@ -1,5 +1,4 @@
 from django.contrib import admin
-from .models import Company, UserProfile
 
-admin.site.register(Company)
-admin.site.register(UserProfile)
+# Register your models here.
+# UserProfile registration moved to authentication/admin.py
