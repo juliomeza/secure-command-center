@@ -156,18 +156,20 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('calls backend and clears tokens', async () => {
+      sessionStorageMock.setItem('accessToken', 'a');
       sessionStorageMock.setItem('refreshToken', 'r');
-      mockPost.mockResolvedValue({});
+      mockGet.mockResolvedValue({});
       const clearCookiesSpy = jest.spyOn(authService, 'clearRelevantCookies');
       await authService.logout();
-      expect(mockPost).toHaveBeenCalledWith('/auth/logout/', { refresh: 'r' });
+      expect(mockGet).toHaveBeenCalledWith('/auth/logout/', { params: { refresh: 'r' } });
       expect(sessionStorageMock.getItem('refreshToken')).toBeNull();
+      expect(sessionStorageMock.getItem('accessToken')).toBeNull();
       expect(clearCookiesSpy).toHaveBeenCalled();
     });
 
     it('clears tokens even if backend fails', async () => {
       sessionStorageMock.setItem('refreshToken', 'r');
-      mockPost.mockRejectedValue(new Error('fail'));
+      mockGet.mockRejectedValue(new Error('fail'));
       const clearCookiesSpy = jest.spyOn(authService, 'clearRelevantCookies');
       await authService.logout();
       expect(sessionStorageMock.getItem('refreshToken')).toBeNull();
