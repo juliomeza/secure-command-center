@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'authentication.middleware.AuthenticationSeparationMiddleware',  # Nuevo middleware para separar JWT y sesiones
+    'access.middleware.AuthorizationMiddleware', # <<< ADD THIS LINE: Checks if the authenticated user is authorized
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware', # Para manejo de errores OAuth
