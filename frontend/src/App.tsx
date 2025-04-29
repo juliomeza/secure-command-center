@@ -5,6 +5,7 @@ import { AuthProvider } from './auth/components/AuthProvider';
 import LoginPage from './auth/components/LoginPage';
 import ExecutiveDashboard from './features/dashboard/ExecutiveDashboard';
 import ProtectedRoute from './auth/components/ProtectedRoute';
+import UnauthorizedPage from './auth/components/UnauthorizedPage'; // <<< IMPORT ADDED
 
 // Layout component without navigation bar for authenticated pages
 const MainLayout: React.FC = () => {
@@ -39,7 +40,11 @@ const App: React.FC = () => {
                     <Route path="/login" element={<LoginLayout />}>
                         <Route index element={<LoginPage />} />
                     </Route>
-                    
+
+                    {/* Unauthorized route - outside protected routes */}
+                    {/* <<< ROUTE ADDED */}
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
                     {/* Main layout for authenticated routes */}
                     <Route path="/" element={<MainLayout />}>
                         {/* Protected Routes */}

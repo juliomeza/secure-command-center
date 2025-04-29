@@ -8,10 +8,7 @@ export interface User {
     email: string;
     first_name: string;
     last_name: string;
-    profile: {
-        azure_oid?: string;
-        job_title?: string;
-    };
+    is_app_authorized: boolean; // <<< ADDED THIS FIELD
     auth_provider?: string;
 }
 

@@ -8,11 +8,10 @@ from .models import UserProfile
 # (e.g., login, logout, admin, the permissions endpoint itself)
 AUTHORIZATION_EXEMPT_URLS = [
     reverse('admin:index'),
-    # Add URLs from authentication app (adjust names if different)
-    # Example: reverse('authentication:login'), reverse('authentication:logout'), ...
-    # Add URLs from social_django if used for login
-    # Example: '/api/social/',
-    '/api/auth/', # Assuming your auth endpoints start with this
+    # Add specific URLs from authentication app if needed (e.g., logout)
+    # Example: reverse('authentication:logout'),
+    # Add specific URLs from social_django if used for login
+    # Example: '/api/social/disconnect/',
     '/api/access/permissions/', # The endpoint we will create
 ]
 
@@ -20,7 +19,8 @@ AUTHORIZATION_EXEMPT_URLS = [
 AUTHORIZATION_EXEMPT_URL_PATTERNS = [
     settings.STATIC_URL, # Allow static files
     '/admin/', # Allow all admin paths
-    '/auth/', # <<< ADD THIS LINE: Exempt social auth URLs (login/complete)
+    '/auth/', # Exempt social auth URLs (login/complete) provided by social-app-django
+    '/api/auth/', # Exempt all API authentication endpoints (DRF, dj-rest-auth, etc.)
     '/api/schema/', # Allow API schema if you have one
     '/api/docs/', # Allow API docs if you have one
 ]
@@ -55,12 +55,13 @@ class AuthorizationMiddleware:
                     status=403 # Forbidden
                 )
         except UserProfile.DoesNotExist:
-            # Profile doesn't exist for this user (should ideally be created on user creation)
-            # Treat as unauthorized for now
+            # Profile doesn't exist for this user (should ideally be created on user creation)            # Treat as unauthorized for now
              return JsonResponse(
                 {'detail': 'User profile not found. Authorization pending.'},
                 status=403 # Forbidden
             )
 
-        # Fallback (should not be reached ideally)
-        return self.get_response(request)
+        # Fallback removed: The try/except block should handle all cases
+        # for authenticated users on non-exempt paths. If execution reaches here,
+        # it implies an unexpected state, safer to implicitly deny or raise error.
+        # However, with current logic, this point should not be reachable for auth users on non-exempt paths.

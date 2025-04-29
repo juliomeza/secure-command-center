@@ -5,8 +5,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken # Added import
 import factory # Asegúrate de tener factory-boy instalado
 
-from .models import UserProfile, AuthUser
-from .serializers import UserSerializer, UserProfileSerializer, TokenResponseSerializer
+# <<< Import UserProfile from access.models
+from access.models import UserProfile
+from .models import AuthUser
+# <<< REMOVED UserProfileSerializer from import
+from .serializers import UserSerializer, TokenResponseSerializer
 
 # --- Factories para crear datos de prueba ---
 
@@ -21,24 +24,17 @@ class UserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker('last_name')
     password = factory.PostGenerationMethodCall('set_password', 'defaultpassword')
 
-class UserProfileFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = UserProfile
-
-    user = factory.SubFactory(UserFactory)
-    job_title = factory.Faker('job')
-    azure_oid = factory.Faker('uuid4')
+# <<< REMOVED UserProfileFactory (moved to access/tests.py)
+# class UserProfileFactory(factory.django.DjangoModelFactory):
+#     ...
 
 
 # --- Pruebas para Modelos ---
 
-@pytest.mark.django_db
-def test_user_profile_creation():
-    """Prueba la creación de un UserProfile."""
-    profile = UserProfileFactory()
-    assert UserProfile.objects.count() == 1
-    assert profile.user is not None
-    assert str(profile) == profile.user.username
+# <<< REMOVED test_user_profile_creation (moved to access/tests.py)
+# @pytest.mark.django_db
+# def test_user_profile_creation():
+#    ...
 
 @pytest.mark.django_db
 def test_auth_user_proxy():
@@ -66,45 +62,40 @@ def test_auth_user_get_jwt_tokens():
 # --- Pruebas para Serializadores ---
 
 @pytest.mark.django_db
-def test_user_profile_serializer():
-    """Prueba la serialización de UserProfile."""
-    profile = UserProfileFactory()
-    serializer = UserProfileSerializer(profile)
-    data = serializer.data
-    assert data['job_title'] == profile.job_title
-    assert data['azure_oid'] == profile.azure_oid
-
-@pytest.mark.django_db
 def test_user_serializer_without_profile():
-    """Prueba la serialización de User sin perfil."""
+    """Prueba la serialización de User sin perfil de acceso."""
     user = UserFactory()
     serializer = UserSerializer(user)
     data = serializer.data
     assert data['id'] == user.id
     assert data['username'] == user.username
     assert data['email'] == user.email
-    assert 'profile' in data
-    assert data['profile'] is None # Esperamos None si no hay perfil explícito
+    # <<< Updated assertion: check for is_app_authorized, expect False if no profile
+    assert 'is_app_authorized' in data
+    assert data['is_app_authorized'] is False
 
 @pytest.mark.django_db
 def test_user_serializer_with_profile():
-    """Prueba la serialización de User con perfil."""
-    profile = UserProfileFactory() # Crea User y UserProfile
+    """Prueba la serialización de User con perfil de acceso."""
+    # <<< Need UserProfileFactory from access.tests
+    from access.tests import UserProfileFactory
+    profile = UserProfileFactory(is_authorized=True)
     user = profile.user
     serializer = UserSerializer(user)
     data = serializer.data
     assert data['id'] == user.id
     assert data['username'] == user.username
-    assert 'profile' in data
-    assert data['profile'] is not None
-    assert data['profile']['job_title'] == profile.job_title
-    assert data['profile']['azure_oid'] == profile.azure_oid
+    # <<< Updated assertion: check for is_app_authorized, expect True
+    assert 'is_app_authorized' in data
+    assert data['is_app_authorized'] is True
 
 @pytest.mark.django_db
 def test_token_response_serializer():
     """Prueba la serialización de la respuesta de token."""
+    # <<< Need UserProfileFactory from access.tests
+    from access.tests import UserProfileFactory
     user = UserFactory()
-    profile = UserProfileFactory(user=user) # Asegurar que el usuario tiene perfil
+    profile = UserProfileFactory(user=user, is_authorized=True)
     refresh = RefreshToken.for_user(user)
     token_data = {
         'access': str(refresh.access_token),
@@ -119,8 +110,9 @@ def test_token_response_serializer():
     assert 'user' in data
     assert data['user']['id'] == user.id
     assert data['user']['username'] == user.username
-    assert 'profile' in data['user']
-    assert data['user']['profile']['job_title'] == profile.job_title
+    # <<< Updated assertion: check for is_app_authorized in nested user data
+    assert 'is_app_authorized' in data['user']
+    assert data['user']['is_app_authorized'] is True
 
 # --- Pruebas para Vistas (inicial) ---
 
@@ -146,20 +138,22 @@ def test_user_profile_api_view_unauthenticated():
 @pytest.mark.django_db
 def test_user_profile_api_view_authenticated_jwt():
     """Prueba UserProfileAPIView con autenticación JWT."""
+    # <<< Need UserProfileFactory from access.tests
+    from access.tests import UserProfileFactory
     user = UserFactory()
-    UserProfileFactory(user=user) # Asegurar perfil
+    profile = UserProfileFactory(user=user, is_authorized=True)
     client = APIClient()
     refresh = RefreshToken.for_user(user)
     client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}')
 
-    # Corrected URL
-    response = client.get('/api/auth/profile/') 
+    response = client.get('/api/auth/profile/')
     assert response.status_code == 200
     data = response.json()
     assert data['id'] == user.id
     assert data['username'] == user.username
-    assert 'profile' in data
-    assert data['profile']['job_title'] is not None
+    # <<< Updated assertion: check for is_app_authorized
+    assert 'is_app_authorized' in data
+    assert data['is_app_authorized'] is True
 
 @pytest.mark.django_db
 def test_logout_api_view_authenticated_jwt():
@@ -191,10 +185,10 @@ def test_logout_api_view_authenticated_jwt():
 @pytest.mark.django_db
 def test_token_obtain_api_view_authenticated():
     """Prueba TokenObtainAPIView con un usuario ya autenticado."""
-    # Nota: Esta vista parece diseñada para post-OAuth, pero requiere IsAuthenticated.
-    # Aquí simulamos un usuario ya autenticado (p.ej., con JWT válido)
+    # <<< Need UserProfileFactory from access.tests
+    from access.tests import UserProfileFactory
     user = UserFactory()
-    UserProfileFactory(user=user) # Asegurar perfil
+    profile = UserProfileFactory(user=user, is_authorized=False)
     client = APIClient()
     refresh = RefreshToken.for_user(user)
     client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}')
@@ -207,6 +201,9 @@ def test_token_obtain_api_view_authenticated():
     assert 'refresh' in data
     assert 'user' in data
     assert data['user']['id'] == user.id
+    # <<< Updated assertion: check for is_app_authorized in nested user data
+    assert 'is_app_authorized' in data['user']
+    assert data['user']['is_app_authorized'] is False # Check based on profile created
 
 # --- Pruebas para oauth_success_redirect (Más complejo, requiere simulación) ---
 # @pytest.mark.django_db

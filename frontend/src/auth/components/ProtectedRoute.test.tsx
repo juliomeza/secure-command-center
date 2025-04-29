@@ -1,113 +1,143 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
-import { User } from '../services/authService'; // Import User type if needed for mock
+import { AuthContextType } from './AuthProvider'; // Import only AuthContextType
+import { User } from '../services/authService'; // Import User type
 
-// Mock del contexto de autenticación - Align with actual AuthContextType
-const mockAuthContext = {
-    isAuthenticated: false,
-    isLoading: false,
-    user: null as User | null, // Use actual User type
-    error: null as string | null,
-    checkAuthStatus: jest.fn(), // Renamed from checkAuth
-    logout: jest.fn() // Added logout
-};
-
+// Mock the useAuth hook
+const mockUseAuth = jest.fn();
 jest.mock('./AuthProvider', () => ({
-    useAuth: () => mockAuthContext
+    ...jest.requireActual('./AuthProvider'),
+    useAuth: () => mockUseAuth(),
 }));
 
-// Componente de prueba para simular una ruta protegida
-const TestComponent = () => <div data-testid="protected-content">Protected Content</div>;
+const LoginPage = () => <div data-testid="login-page">Login Page</div>;
+const UnauthorizedPage = () => <div data-testid="unauthorized-page">Unauthorized Page</div>;
 
 describe('ProtectedRoute', () => {
+    let mockAuthContext: Partial<AuthContextType>;
+
     beforeEach(() => {
-        // Reiniciar el estado del mock antes de cada test
-        mockAuthContext.isAuthenticated = false;
-        mockAuthContext.isLoading = false;
-        mockAuthContext.user = null;
-        mockAuthContext.error = null;
-        // Clear all mocks including the functions
-        mockAuthContext.checkAuthStatus.mockClear();
-        mockAuthContext.logout.mockClear();
-        // jest.clearAllMocks(); // This might be redundant if clearing specific mocks
+        // Reset mocks before each test
+        mockUseAuth.mockReset();
+        mockAuthContext = {
+            isAuthenticated: false,
+            isAuthorized: false,
+            isLoading: false,
+            user: null,
+            error: null,
+            checkAuthStatus: jest.fn(),
+            logout: jest.fn(),
+        };
+        mockUseAuth.mockImplementation(() => mockAuthContext);
     });
 
-    test('muestra el contenido cuando el usuario está autenticado', async () => {
+    test('muestra el contenido cuando el usuario está autenticado y autorizado', async () => {
+        // Arrange: Set user as authenticated and authorized
         mockAuthContext.isAuthenticated = true;
-        mockAuthContext.user = { // Use a valid User structure
+        mockAuthContext.isAuthorized = true;
+        mockAuthContext.user = {
             id: 1,
             username: 'testuser',
             email: 'test@example.com',
             first_name: 'Test',
             last_name: 'User',
-            profile: { } // Ensure profile matches User type (company removed)
-        };
+            is_app_authorized: true,
+            auth_provider: undefined // Add optional property
+        } as User;
 
+        // Act
         render(
             <MemoryRouter initialEntries={['/protected']}>
                 <Routes>
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/protected" element={<TestComponent />} />
+                        <Route path="/protected" element={<div data-testid="protected-content">Protected Content</div>} />
                     </Route>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 </Routes>
             </MemoryRouter>
         );
 
-        expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+        // Assert: Check if protected content is rendered
+        await waitFor(() => {
+            expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+        });
     });
 
     test('redirige a login cuando el usuario no está autenticado', async () => {
-        mockAuthContext.isAuthenticated = false;
+        // Arrange: Default state is unauthenticated
 
+        // Act
         render(
             <MemoryRouter initialEntries={['/protected']}>
                 <Routes>
-                    <Route path="/login" element={<div data-testid="login-page">Login Page</div>} />
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/protected" element={<TestComponent />} />
+                        <Route path="/protected" element={<div data-testid="protected-content">Protected Content</div>} />
                     </Route>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 </Routes>
             </MemoryRouter>
         );
 
-        expect(screen.getByTestId('login-page')).toBeInTheDocument();
+        // Assert: Check if redirected to login page
+        await waitFor(() => {
+            expect(screen.getByTestId('login-page')).toBeInTheDocument();
+        });
     });
 
     test('muestra el spinner mientras está cargando', () => {
+        // Arrange: Set loading state
         mockAuthContext.isLoading = true;
 
+        // Act
         render(
             <MemoryRouter initialEntries={['/protected']}>
                 <Routes>
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/protected" element={<TestComponent />} />
+                        <Route path="/protected" element={<div data-testid="protected-content">Protected Content</div>} />
                     </Route>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 </Routes>
             </MemoryRouter>
         );
 
-        expect(screen.getByText('Verifying authentication...')).toBeInTheDocument();
-        expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+        // Assert: Check if loading spinner is present
+        expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     });
 
-    test('redirige a login cuando el usuario es inválido', () => {
+    test('redirige a unauthorized cuando el usuario está autenticado pero no autorizado', async () => {
+        // Arrange: Set user as authenticated but NOT authorized
         mockAuthContext.isAuthenticated = true;
-        // Simulate an invalid user structure (e.g., missing id or wrong type)
-        // Note: Casting to 'any' bypasses type checking here for the test scenario.
-        mockAuthContext.user = { username: 'invalid' } as any;
+        mockAuthContext.isAuthorized = false;
+        mockAuthContext.user = {
+            id: 2,
+            username: 'unauthorizedUser',
+            email: 'unauth@example.com',
+            first_name: 'Unauth',
+            last_name: 'User',
+            is_app_authorized: false,
+            auth_provider: undefined // Add optional property
+        } as User;
 
+        // Act
         render(
             <MemoryRouter initialEntries={['/protected']}>
                 <Routes>
-                    <Route path="/login" element={<div data-testid="login-page">Login Page</div>} />
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/protected" element={<TestComponent />} />
+                        <Route path="/protected" element={<div data-testid="protected-content">Protected Content</div>} />
                     </Route>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 </Routes>
             </MemoryRouter>
         );
 
-        expect(screen.getByTestId('login-page')).toBeInTheDocument();
+        // Assert: Check if redirected to unauthorized page
+        await waitFor(() => {
+            expect(screen.getByTestId('unauthorized-page')).toBeInTheDocument();
+        });
     });
 });

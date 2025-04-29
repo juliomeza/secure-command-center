@@ -3,8 +3,10 @@ import React, { createContext, useState, useContext, useEffect, ReactNode, useCa
 import { useNavigate } from 'react-router-dom';
 import { authService, User } from '../services/authService';
 
-interface AuthContextType {
+// Define the shape of the context data
+export interface AuthContextType { // Add export keyword
     isAuthenticated: boolean;
+    isAuthorized: boolean; // Added authorization status
     user: User | null;
     isLoading: boolean;
     error: string | null;
@@ -12,10 +14,12 @@ interface AuthContextType {
     logout: () => Promise<void>;
 }
 
+// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isAuthorized, setIsAuthorized] = useState<boolean>(false); // <<< ADDED
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -26,20 +30,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setError(null);
 
         try {
-            authService.handleOAuthCallback();
+            authService.handleOAuthCallback(); // Handle potential tokens from redirect
             const currentUser = await authService.checkAuthentication();
 
             if (currentUser) {
                 setUser(currentUser);
                 setIsAuthenticated(true);
+                // Set authorization based on the flag from backend
+                setIsAuthorized(currentUser.is_app_authorized); // <<< MODIFIED
             } else {
                 setUser(null);
                 setIsAuthenticated(false);
+                setIsAuthorized(false); // <<< ADDED
             }
         } catch (err) {
             console.error("[AuthProvider] Authentication error:", err);
             setUser(null);
             setIsAuthenticated(false);
+            setIsAuthorized(false); // <<< ADDED
             setError('An unexpected error occurred during authentication check.');
         } finally {
             setIsLoading(false);
@@ -52,6 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             await authService.logout();
             setUser(null);
             setIsAuthenticated(false);
+            setIsAuthorized(false); // <<< ADDED
             setError(null);
 
             try {
@@ -66,6 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setError('Logout failed. Please try again.');
             setUser(null);
             setIsAuthenticated(false);
+            setIsAuthorized(false); // <<< ADDED
         } finally {
             setIsLoading(false);
         }
@@ -78,17 +88,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (e.key === 'auth_logout' && e.storageArea === sessionStorage && isAuthenticated) {
                 setUser(null);
                 setIsAuthenticated(false);
+                setIsAuthorized(false); // <<< ADDED
                 navigate('/login', { replace: true });
             }
         };
 
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [checkAuthStatus, isAuthenticated, navigate]);
+    }, [checkAuthStatus, isAuthenticated, navigate]); // isAuthorized not needed in dependency array here
 
     return (
         <AuthContext.Provider value={{
             isAuthenticated,
+            isAuthorized, // <<< ADDED
             user,
             isLoading,
             error,
