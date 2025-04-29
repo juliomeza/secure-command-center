@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Company, Warehouse
+from .models import UserProfile, Company, Warehouse, Tab # Import Tab
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
@@ -11,12 +11,20 @@ class WarehouseAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
+# Register the new Tab model
+@admin.register(Tab)
+class TabAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'id_name')
+    search_fields = ('display_name', 'id_name')
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_authorized', 'display_allowed_companies', 'display_allowed_warehouses', 'allowed_tabs_list')
+    # Update list_display: remove allowed_tabs_list, add display_allowed_tabs
+    list_display = ('user', 'user__email', 'is_authorized', 'display_allowed_companies', 'display_allowed_warehouses', 'display_allowed_tabs')
     list_filter = ('is_authorized',)
     search_fields = ('user__username', 'user__email')
-    filter_horizontal = ('allowed_companies', 'allowed_warehouses')
+    # Add allowed_tabs to filter_horizontal
+    filter_horizontal = ('allowed_companies', 'allowed_warehouses', 'allowed_tabs')
     list_select_related = ('user',)
 
     # Remove 'user' from base readonly_fields
@@ -28,7 +36,7 @@ class UserProfileAdmin(admin.ModelAdmin):
             'fields': ('user', 'is_authorized')
         }),
         ('Permissions', {
-            'fields': ('allowed_companies', 'allowed_warehouses', 'allowed_tabs_list')
+            'fields': ('allowed_companies', 'allowed_warehouses', 'allowed_tabs') # Updated field
         }),
     )
 
@@ -51,6 +59,11 @@ class UserProfileAdmin(admin.ModelAdmin):
     def display_allowed_warehouses(self, obj):
         return ", ".join([warehouse.name for warehouse in obj.allowed_warehouses.all()])
     display_allowed_warehouses.short_description = 'Allowed Warehouses'
+
+    # Add method to display allowed tabs
+    def display_allowed_tabs(self, obj):
+        return ", ".join([tab.display_name for tab in obj.allowed_tabs.all()])
+    display_allowed_tabs.short_description = 'Allowed Tabs'
 
     actions = ['authorize_users', 'unauthorize_users']
 
