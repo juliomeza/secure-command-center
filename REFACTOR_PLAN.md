@@ -51,7 +51,7 @@ Este documento describe las áreas de mejora identificadas y propone un plan est
 ### Alta Prioridad (Próximos pasos recomendados)
 - [ ] **Estandarizar Manejo de Errores:** Definir y aplicar un patrón consistente para el manejo y reporte de errores en el backend (vistas, servicios) y frontend (llamadas API, componentes).
 - [ ] **Mejorar Nombres:** Revisar nombres de variables, funciones, clases y componentes para asegurar que sean descriptivos y sigan convenciones consistentes (snake_case en Python, camelCase/PascalCase en TS/React).
-- [ ] **Configurar Linters/Formatters:** Asegurar que linters (ESLint, Flake8) y formatters (Prettier, Black) estén configurados y se usen consistentemente en ambos proyectos para mantener un estilo de código uniforme.
+- [x] **Configurar Linters/Formatters:** Asegurar que linters (ESLint, Flake8) y formatters (Prettier, Black) estén configurados y se usen consistentemente en ambos proyectos para mantener un estilo de código uniforme. <!-- Parcialmente completado: ESLint está configurado para el frontend (package.json tiene las dependencias y el script "lint") -->
 - [ ] **Añadir Documentación:** Incorporar docstrings (Python) y TSDoc/JSDoc (TypeScript) para funciones, clases y lógica compleja.
 
 ---
@@ -59,7 +59,7 @@ Este documento describe las áreas de mejora identificadas y propone un plan est
 ## Pruebas
 
 ### Media Prioridad
-- [ ] **Incrementar Cobertura de Pruebas Unitarias:** Añadir más pruebas unitarias para lógica de negocio (servicios backend), componentes y hooks de React.
+- [x] **Incrementar Cobertura de Pruebas Unitarias:** Añadir más pruebas unitarias para lógica de negocio (servicios backend), componentes y hooks de React. <!-- Parcialmente completado: Existen pruebas unitarias para el servicio de autenticación (authService.test.ts) -->
 - [ ] **Implementar Pruebas de Integración/E2E:** Añadir pruebas de integración para flujos clave (ej. autenticación completa) y considerar pruebas E2E (con Cypress o Playwright) para verificar la interacción del usuario.
 
 ---
