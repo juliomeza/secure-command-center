@@ -1,6 +1,6 @@
 // src/components/tables/ProjectTable.tsx
 import React, { useRef, useState, useEffect } from 'react';
-import { Project } from '../../features/dashboard/data/types';
+import { Project } from '../data/types';
 
 interface ProjectTableProps {
   projects: Project[];
