@@ -16,9 +16,19 @@ class Company(models.Model):
 # Placeholder model for Warehouses
 class Warehouse(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE, # Or models.PROTECT, models.SET_NULL depending on desired behavior
+        related_name='warehouses',
+        null=True, # Allow null temporarily for migration
+        blank=True # Allow blank temporarily for migration
+    )
     # Add other relevant fields later if needed for access control itself
 
     def __str__(self):
+        # Optionally include company name in string representation
+        if self.company:
+            return f"{self.name} ({self.company.name})"
         return self.name
 
 # User Profile to store access permissions
