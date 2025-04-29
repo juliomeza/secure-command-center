@@ -65,9 +65,8 @@ describe('useAuth Hook', () => {
     username: 'testuser',
     first_name: 'Test',
     last_name: 'User',
-    profile: {
-      // company removed
-    }
+    is_app_authorized: true, // Added based on User interface
+    // profile property removed as it's not in the User interface
   };
 
   beforeEach(() => {

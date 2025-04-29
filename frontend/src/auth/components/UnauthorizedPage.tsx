@@ -39,7 +39,15 @@ const UnauthorizedPage: React.FC = () => {
                     You are authenticated, but you do not have permission to access this application.
                     Please contact the administrator if you believe this is an error.
                 </p>
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                {/* Add role="status" for accessibility and testing */}
+                <div
+                    role="status"
+                    aria-live="polite" // Indicate that updates should be announced politely
+                    className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"
+                    aria-label="Loading..." // Provide an accessible label
+                >
+                     <span className="sr-only">Loading...</span> {/* Visually hidden text for screen readers */}
+                </div>
                 <p className="text-gray-600">Redirecting to login page shortly...</p>
             </div>
         </div>

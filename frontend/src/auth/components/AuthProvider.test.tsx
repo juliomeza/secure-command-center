@@ -67,10 +67,8 @@ describe('AuthProvider', () => {
         username: 'testuser',
         first_name: 'Test',
         last_name: 'User',
-        profile: {
-            azure_oid: 'test-oid', // Added example oid
-            job_title: 'Tester' // Added example job title
-        }
+        is_app_authorized: true, // Added based on User interface
+        // profile property removed as it's not in the User interface
     };
 
     beforeEach(() => {
