@@ -1,12 +1,12 @@
 // frontend/src/components/ExecutiveDashboard.tsx
 import React, { useState } from 'react';
-import DashboardLayout from '../layouts/DashboardLayout';
-import TabsNavigation from '../navigation/TabsNavigation';
-import CEOView from '../views/CEOView';
-import CFOView from '../views/CFOView';
-import COOView from '../views/COOView';
-import CIOView from '../views/CIOView';
-import LeadersView from '../views/LeadersView';
+import DashboardLayout from './layouts/DashboardLayout';
+import TabsNavigation from './navigation/TabsNavigation';
+import CEOView from './views/CEOView';
+import CFOView from './views/CFOView';
+import COOView from './views/COOView';
+import CIOView from './views/CIOView';
+import LeadersView from './views/LeadersView';
 // Importamos iconos de Lucide para cada rol ejecutivo
 import { 
   BarChart2, // CEO - Indicadores generales
