@@ -2,6 +2,7 @@ import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken # Added import
 import factory # Asegúrate de tener factory-boy instalado
 
 from .models import UserProfile, AuthUser
@@ -184,9 +185,8 @@ def test_logout_api_view_authenticated_jwt():
     assert 'refresh_token' in response.cookies
     assert response.cookies['refresh_token']['max-age'] == 0
 
-    # Opcional: Verificar blacklisting (puede requerir ajustes si la lógica es compleja)
-    # from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-    # assert BlacklistedToken.objects.filter(token__jti=refresh['jti']).exists()
+    # Verificar blacklisting (Uncommented)
+    assert BlacklistedToken.objects.filter(token__jti=refresh['jti']).exists()
 
 @pytest.mark.django_db
 def test_token_obtain_api_view_authenticated():
