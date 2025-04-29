@@ -1,13 +1,13 @@
 // src/views/LeadersView.tsx
 import React from 'react';
-import Card from '../components/common/Card';
-import KpiCard from '../components/common/KpiCard';
-import LineChart from '../components/charts/LineChart';
-import PieChart from '../components/charts/PieChart';
-import BarChart from '../components/charts/BarChart';
-import DashboardGrid from '../components/layout/DashboardGrid';
-import SubCard from '../components/common/SubCard';
-import WarehouseIssueTable from '../components/tables/WarehouseIssueTable';
+import Card from '../cards/Card';
+import KpiCard from '../cards/KpiCard';
+import LineChart from '../charts/LineChart';
+import PieChart from '../charts/PieChart';
+import BarChart from '../charts/BarChart';
+import DashboardGrid from '../layouts/DashboardGrid';
+import SubCard from '../cards/SubCard';
+import WarehouseIssueTable from '../tables/WarehouseIssueTable';
 import { 
   warehouseInventoryData, 
   warehouseSpaceUtilizationData, 

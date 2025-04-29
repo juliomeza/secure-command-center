@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   TooltipProps
 } from 'recharts';
-import { DataPoint } from '../../data/types'; // Assuming DataPoint has 'name', 'value', 'color'
+import { DataPoint } from '../data/types'; // Assuming DataPoint has 'name', 'value', 'color'
 
 interface PieConfig {
   dataKey?: string;

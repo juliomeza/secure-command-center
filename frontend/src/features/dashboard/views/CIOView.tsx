@@ -1,11 +1,11 @@
 // src/views/CIOView.tsx
 import React from 'react';
-import KpiCard from '../components/common/KpiCard';
-import Card from '../components/common/Card';
-import BarChart from '../components/charts/BarChart';
-import DashboardGrid from '../components/layout/DashboardGrid';
-import ProjectTable from '../components/tables/ProjectTable';
-import { formatCurrency, formatPercent } from '../utils/formatters';
+import KpiCard from '../cards/KpiCard';
+import Card from '../cards/Card';
+import BarChart from '../charts/BarChart';
+import DashboardGrid from '../layouts/DashboardGrid';
+import ProjectTable from '../tables/ProjectTable';
+import { formatCurrency, formatPercent } from '../../../utils/formatters';
 import { systemUptimeData, itProjectsData } from '../data/mockData';
 
 // Tooltip Formatter

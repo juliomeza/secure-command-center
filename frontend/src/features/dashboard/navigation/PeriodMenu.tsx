@@ -1,7 +1,7 @@
 // src/components/common/PeriodMenu.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, CalendarDays } from 'lucide-react';
-import { Period } from '../../data/types';
+import { Period } from '../data/types';
 
 interface PeriodMenuProps {
   periods: Period[];

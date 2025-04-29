@@ -1,13 +1,13 @@
 // src/views/COOView.tsx
 import React from 'react';
-import KpiCard from '../components/common/KpiCard';
-import Card from '../components/common/Card';
-import SubCard from '../components/common/SubCard';
-import LineChart from '../components/charts/LineChart';
-import PieChart from '../components/charts/PieChart';
-import BarChart from '../components/charts/BarChart';
-import DashboardGrid from '../components/layout/DashboardGrid';
-import { formatPercent } from '../utils/formatters';
+import KpiCard from '../cards/KpiCard';
+import Card from '../cards/Card';
+import SubCard from '../cards/SubCard';
+import LineChart from '../charts/LineChart';
+import PieChart from '../charts/PieChart';
+import BarChart from '../charts/BarChart';
+import DashboardGrid from '../layouts/DashboardGrid';
+import { formatPercent } from '../../../utils/formatters';
 import { projectStatusData, marketShareData, teamPerformanceData } from '../data/mockData';
 
 // Tooltip Formatters

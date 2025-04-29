@@ -1,6 +1,6 @@
 // src/components/common/CompanySelector.tsx
 import React from 'react';
-import { Company } from '../../data/types';
+import { Company } from '../data/types';
 
 interface CompanySelectorProps {
   companies: Company[];

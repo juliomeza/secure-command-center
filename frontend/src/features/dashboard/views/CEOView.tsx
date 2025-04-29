@@ -1,12 +1,12 @@
 // src/views/CEOView.tsx
 import React from 'react';
-import KpiCard from '../components/common/KpiCard';
-import Card from '../components/common/Card';
-import LineChart from '../components/charts/LineChart';
-import PieChart from '../components/charts/PieChart';
-import BarChart from '../components/charts/BarChart';
-import DashboardGrid from '../components/layout/DashboardGrid';
-import { formatCurrency, formatK, formatM } from '../utils/formatters';
+import KpiCard from '../cards/KpiCard';
+import Card from '../cards/Card';
+import LineChart from '../charts/LineChart';
+import PieChart from '../charts/PieChart';
+import BarChart from '../charts/BarChart';
+import DashboardGrid from '../layouts/DashboardGrid';
+import { formatCurrency, formatK, formatM } from '../../../utils/formatters';
 import { revenueGrowthData, salesByRegionData, expenseData } from '../data/mockData';
 
 // Define Tooltip formatters with explicit types

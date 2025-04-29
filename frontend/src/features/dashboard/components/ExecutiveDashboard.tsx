@@ -1,7 +1,7 @@
 // frontend/src/components/ExecutiveDashboard.tsx
 import React, { useState } from 'react';
-import DashboardLayout from './layout/DashboardLayout';
-import TabsNavigation from './common/TabsNavigation';
+import DashboardLayout from '../layouts/DashboardLayout';
+import TabsNavigation from '../navigation/TabsNavigation';
 import CEOView from '../views/CEOView';
 import CFOView from '../views/CFOView';
 import COOView from '../views/COOView';

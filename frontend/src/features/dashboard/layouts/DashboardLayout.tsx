@@ -1,10 +1,10 @@
 // src/components/layout/DashboardLayout.tsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../auth/components/AuthProvider';
-import HamburgerMenu from '../common/HamburgerMenu';
-import AvatarMenu from '../common/AvatarMenu';
-import PeriodMenu from '../common/PeriodMenu';
-import { periods } from '../../data/mockData';
+import { useAuth } from '../../../auth/components/AuthProvider';
+import HamburgerMenu from '../navigation/HamburgerMenu';
+import AvatarMenu from '../navigation/AvatarMenu';
+import PeriodMenu from '../navigation/PeriodMenu';
+import { periods } from '../data/mockData';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
