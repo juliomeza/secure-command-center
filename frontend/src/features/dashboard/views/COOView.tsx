@@ -7,7 +7,7 @@ import LineChart from '../charts/LineChart';
 import PieChart from '../charts/PieChart';
 import BarChart from '../charts/BarChart';
 import DashboardGrid from '../layouts/DashboardGrid';
-import { formatPercent } from '../../../utils/formatters';
+import { formatPercent } from '../utils/formatters';
 import { projectStatusData, marketShareData, teamPerformanceData } from '../data/mockData';
 
 // Tooltip Formatters

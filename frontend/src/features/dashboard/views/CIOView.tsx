@@ -5,7 +5,7 @@ import Card from '../cards/Card';
 import BarChart from '../charts/BarChart';
 import DashboardGrid from '../layouts/DashboardGrid';
 import ProjectTable from '../tables/ProjectTable';
-import { formatCurrency, formatPercent } from '../../../utils/formatters';
+import { formatCurrency, formatPercent } from '../utils/formatters';
 import { systemUptimeData, itProjectsData } from '../data/mockData';
 
 // Tooltip Formatter

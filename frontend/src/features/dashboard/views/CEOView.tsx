@@ -6,7 +6,7 @@ import LineChart from '../charts/LineChart';
 import PieChart from '../charts/PieChart';
 import BarChart from '../charts/BarChart';
 import DashboardGrid from '../layouts/DashboardGrid';
-import { formatCurrency, formatK, formatM } from '../../../utils/formatters';
+import { formatCurrency, formatK, formatM } from '../utils/formatters';
 import { revenueGrowthData, salesByRegionData, expenseData } from '../data/mockData';
 
 // Define Tooltip formatters with explicit types

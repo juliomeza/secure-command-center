@@ -6,7 +6,7 @@ import SubCard from '../cards/SubCard';
 import LineChart from '../charts/LineChart';
 import PieChart from '../charts/PieChart';
 import DashboardGrid from '../layouts/DashboardGrid';
-import { formatCurrency, formatM } from '../../../utils/formatters';
+import { formatCurrency, formatM } from '../utils/formatters';
 import { cashFlowData, expenseData } from '../data/mockData';
 
 // Tooltip Formatters
