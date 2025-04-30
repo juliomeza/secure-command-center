@@ -4,7 +4,8 @@ from django.urls import reverse, re_path, path, include # Added path, include
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib import admin # Added admin import
-from .models import UserProfile, Company, Warehouse
+# <<< Import Tab model
+from .models import UserProfile, Company, Warehouse, Tab
 import factory # Add factory import
 # <<< Import UserFactory from authentication tests
 from authentication.tests import UserFactory
@@ -31,7 +32,17 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     is_authorized = factory.Faker('boolean')
     # Add other fields from access.UserProfile if needed by tests
-    # allowed_tabs_list = factory.LazyFunction(lambda: ",".join(random.sample(UserProfile.VALID_TABS, k=random.randint(0, len(UserProfile.VALID_TABS)))))
+    # allowed_tabs_list = factory.LazyFunction(lambda: \",\".join(random.sample(UserProfile.VALID_TABS, k=random.randint(0, len(UserProfile.VALID_TABS)))))
+    # <<< Add ManyToMany relation for allowed_tabs
+    @factory.post_generation
+    def allowed_tabs(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+        if extracted:
+            # A list of tabs were passed in, use them
+            for tab in extracted:
+                self.allowed_tabs.add(tab)
 
 class UserProfileModelTest(TestCase):
     """Tests for the UserProfile model."""
@@ -39,6 +50,9 @@ class UserProfileModelTest(TestCase):
         self.user = User.objects.create_user(username='testuser_profile', password='password')
         # Assuming profile is NOT automatically created by signal (adjust if it is)
         self.profile = UserProfile.objects.create(user=self.user)
+        # <<< Create some Tab objects for testing allowed_tabs
+        self.tab1 = Tab.objects.create(id_name='tab1', display_name='Tab 1')
+        self.tab2 = Tab.objects.create(id_name='tab2', display_name='Tab 2')
 
     # <<< ADDED test_profile_creation_str (moved and corrected from authentication/tests.py)
     def test_profile_creation_str(self):
@@ -55,31 +69,45 @@ class UserProfileModelTest(TestCase):
         self.assertFalse(self.profile.is_authorized)
         self.assertEqual(self.profile.allowed_companies.count(), 0)
         self.assertEqual(self.profile.allowed_warehouses.count(), 0)
-        self.assertEqual(self.profile.allowed_tabs_list, "")
-        self.assertEqual(self.profile.get_allowed_tabs(), [])
+        # <<< Check the ManyToMany relation count instead of old fields
+        self.assertEqual(self.profile.allowed_tabs.count(), 0)
+        # self.assertEqual(self.profile.allowed_tabs_list, "") # Removed
+        # self.assertEqual(self.profile.get_allowed_tabs(), []) # Removed
 
-    def test_get_set_allowed_tabs(self):
-        """Test the get_allowed_tabs and set_allowed_tabs methods."""
-        self.assertEqual(self.profile.get_allowed_tabs(), [])
+    # <<< Renamed and rewrote test to use ManyToManyField
+    def test_add_remove_allowed_tabs(self):
+        """Test adding and removing tabs from the allowed_tabs relation."""
+        # Initially no tabs allowed
+        self.assertEqual(self.profile.allowed_tabs.count(), 0)
 
-        tabs_to_set = ['CEO', 'Leaders', 'InvalidTab']
-        valid_tabs_expected = ['CEO', 'Leaders'] # 'InvalidTab' should be ignored
-        valid_tabs_string_expected = 'CEO,Leaders'
-
-        self.profile.set_allowed_tabs(tabs_to_set)
+        # Add one tab
+        self.profile.allowed_tabs.add(self.tab1)
         self.profile.save()
-
-        # Reload from DB to ensure changes were saved and methods work correctly
         reloaded_profile = UserProfile.objects.get(user=self.user)
-        self.assertEqual(reloaded_profile.allowed_tabs_list, valid_tabs_string_expected)
-        self.assertEqual(reloaded_profile.get_allowed_tabs(), valid_tabs_expected)
+        self.assertEqual(reloaded_profile.allowed_tabs.count(), 1)
+        self.assertIn(self.tab1, reloaded_profile.allowed_tabs.all())
 
-        # Test setting empty list
-        reloaded_profile.set_allowed_tabs([])
+        # Add another tab
+        reloaded_profile.allowed_tabs.add(self.tab2)
         reloaded_profile.save()
         final_profile = UserProfile.objects.get(user=self.user)
-        self.assertEqual(final_profile.allowed_tabs_list, "")
-        self.assertEqual(final_profile.get_allowed_tabs(), [])
+        self.assertEqual(final_profile.allowed_tabs.count(), 2)
+        self.assertIn(self.tab1, final_profile.allowed_tabs.all())
+        self.assertIn(self.tab2, final_profile.allowed_tabs.all())
+
+        # Remove one tab
+        final_profile.allowed_tabs.remove(self.tab1)
+        final_profile.save()
+        cleared_profile = UserProfile.objects.get(user=self.user)
+        self.assertEqual(cleared_profile.allowed_tabs.count(), 1)
+        self.assertNotIn(self.tab1, cleared_profile.allowed_tabs.all())
+        self.assertIn(self.tab2, cleared_profile.allowed_tabs.all())
+
+        # Clear all tabs
+        cleared_profile.allowed_tabs.clear()
+        cleared_profile.save()
+        empty_profile = UserProfile.objects.get(user=self.user)
+        self.assertEqual(empty_profile.allowed_tabs.count(), 0)
 
 
 class AuthorizationMiddlewareTest(TestCase):

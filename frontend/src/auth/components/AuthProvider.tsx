@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService, User } from '../services/authService';
-import { fetchUserPermissions, Tab } from '../permissionsService'; // <<< CORRECTED IMPORT PATH
+import { fetchUserPermissions, Tab } from '../services/permissionsService'; // <<< CORRECTED IMPORT PATH
 
 // Define the shape of the context data
 export interface AuthContextType { // Add export keyword

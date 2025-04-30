@@ -1,5 +1,5 @@
 // filepath: c:\Users\jmeza.WOODFIELD\git\Projects\secure-command-center\frontend\src\auth\permissionsService.ts
-import { authService } from './services/authService'; // <<< Import the singleton instance
+import { authService } from './authService'; // <<< Import the singleton instance
 
 export interface Company {
   id: number;
