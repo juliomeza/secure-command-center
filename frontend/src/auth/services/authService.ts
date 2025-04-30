@@ -33,7 +33,8 @@ const REFRESH_TOKEN_KEY = 'refreshToken';
 
 // Clase para gestionar autenticación
 export class AuthService {
-    private apiClient: AxiosInstance;
+    // <<< Make apiClient public so it can be accessed from the instance
+    public apiClient: AxiosInstance;
     private isRefreshing = false; // Flag to prevent multiple refresh attempts
     private refreshSubscribers: ((token: string) => void)[] = []; // Queue requests during refresh
 
@@ -158,189 +159,62 @@ export class AuthService {
         return sessionStorage.getItem(REFRESH_TOKEN_KEY);
     }
 
-    // --- Authentication Flow Methods ---
-
-    /**
-     * Checks if the user is currently authenticated by verifying the access token
-     * (implicitly via fetchUserProfile) and potentially refreshing it.
-     * @returns {Promise<User | null>} The user profile if authenticated, null otherwise.
-     */
-    public async checkAuthentication(): Promise<User | null> {
-        const accessToken = this.getStoredAccessToken();
-        if (!accessToken) {
-            console.log("[AuthService] No access token found. User is not authenticated.");
-            return null; // Not authenticated if no token
-        }
-
+    private async performTokenRefresh(refreshToken: string): Promise<JWTTokens> {
         try {
-            // Attempting to fetch the user profile will trigger the interceptor
-            // to refresh the token if necessary.
-            console.log("[AuthService] Verifying authentication by fetching user profile...");
-            const user = await this.fetchUserProfile();
-            console.log("[AuthService] Authentication verified successfully.");
-            return user;
+            const response = await this.apiClient.post<JWTTokens>('/auth/token/refresh/', {
+                refresh: refreshToken,
+            });
+            return response.data;
         } catch (error) {
-             // Errors (like 401 after refresh failure) are handled by the interceptor,
-             // which might clear tokens or redirect.
-             // If fetchUserProfile fails for other reasons, we consider the user not authenticated.
-            console.error("[AuthService] Authentication check failed after potential refresh attempt:", error);
-            // Ensure tokens are cleared if the error persists after potential refresh
-            if (axios.isAxiosError(error) && error.response?.status === 401) {
-                 this.clearTokens(); // Ensure cleanup if interceptor didn't catch it
-            }
+            console.error("[AuthService] Token refresh failed:", error);
+            throw error; // Rethrow to be caught by the interceptor
+        }
+    }
+
+    private subscribeTokenRefresh(cb: (token: string) => void): void {
+        this.refreshSubscribers.push(cb);
+    }
+
+    private onRefreshed(token: string): void {
+        this.refreshSubscribers.forEach((cb) => cb(token));
+    }
+
+    // Método para verificar si el usuario está autenticado (ejemplo)
+    public async checkAuthentication(): Promise<User | null> {
+        const token = this.getStoredAccessToken();
+        if (!token) {
+            return null;
+        }
+        // Intenta obtener datos del usuario para validar el token
+        try {
+            // <<< Use the correct endpoint from authentication/urls.py
+            // Changed '/auth/user/' to '/auth/profile/'
+            const response = await this.apiClient.get<User>('/auth/profile/');
+            return response.data;
+        } catch (error) {
+            console.error("[AuthService] Failed to fetch user data:", error);
+            // Si falla (ej. token expirado y refresh falló), considera limpiar tokens
+            // this.clearTokens(); // Opcional: limpiar si la verificación falla
             return null;
         }
     }
 
-
-    // Renamed from fetchJWTTokens - This seems redundant if tokens are obtained via OAuth callback
-    // or refresh. Keeping it commented out for now. If needed for a specific flow, uncomment and adapt.
-    /*
-    public async fetchInitialJWTTokens(): Promise<TokenResponse> {
-        try {
-            console.log("[AuthService] Fetching initial JWT tokens..."); // Adjust endpoint if needed
-            const response = await this.apiClient.get<TokenResponse>('/auth/token/');
-            this.storeTokens({ access: response.data.access, refresh: response.data.refresh });
-            console.log("[AuthService] Initial JWT tokens received and stored.");
-            return response.data;
-        } catch (error) {
-            console.error('[AuthService] Error fetching initial JWT tokens:', error);
-            this.handleApiError(error); // Use centralized error handler
-            throw error; // Re-throw for the caller to handle if necessary
-        }
-    }
-    */
-
-    // Fetch user profile
-    public async fetchUserProfile(): Promise<User> {
-        try {
-            const response = await this.apiClient.get<User>('/auth/profile/');
-            return response.data;
-        } catch (error) {
-            console.error('[AuthService] Error fetching user profile:', error);
-            this.handleApiError(error);
-            throw error;
-        }
-    }
-
-    // Perform token refresh using a dedicated client instance
-    private async performTokenRefresh(refreshToken: string): Promise<JWTTokens> {
-         // Use a separate client instance to avoid interceptor loops
-        const refreshClient = axios.create({
-            baseURL: API_BASE_URL,
-            withCredentials: true,
-        });
-        try {
-            const response = await refreshClient.post<JWTTokens>(
-                '/auth/token/refresh/',
-                { refresh: refreshToken }
-            );
-            return response.data;
-        } catch (error) {
-             console.error('[AuthService] Error during performTokenRefresh:', error);
-             // Specific handling for refresh failure might be needed here
-             // The main interceptor will catch this and clear tokens/redirect.
-            throw error; // Re-throw for the main interceptor
-        }
-    }
-
-
-    // Logout
+    // Método para cerrar sesión (ejemplo)
     public async logout(): Promise<void> {
         const refreshToken = this.getStoredRefreshToken();
-        try {
-             // Optional: Inform the backend about logout, especially to invalidate the refresh token
-             if (refreshToken) {
-                 // Cambiado de POST a GET para coincidir con el backend
-                 await this.apiClient.get('/auth/logout/', { 
-                     params: { refresh: refreshToken } 
-                 });
-             }
-        } catch (error) {
-             // Log error but proceed with client-side cleanup
-             console.error('[AuthService] Error notifying backend on logout:', error);
-        } finally {
-             // Always clear local tokens regardless of backend call success
-             this.clearTokens(); // Clears sessionStorage
-             // Attempt to clear relevant client-accessible cookies
-             this.clearRelevantCookies();
-             // Optional: Clear other session/local storage data if necessary
-             // sessionStorage.clear(); // Use cautiously
-             console.log("[AuthService] User logged out, tokens cleared from storage, attempted cookie clearing.");
+        if (refreshToken) {
+            try {
+                // <<< Use the correct endpoint from authentication/urls.py
+                await this.apiClient.post('/auth/logout/', { refresh: refreshToken });
+            } catch (error) {
+                console.error("[AuthService] Logout API call failed:", error);
+                // Continúa limpiando localmente incluso si la API falla
+            }
         }
-    }
-
-    // --- Helper Methods ---
-
-    // Helper to queue requests while refreshing token
-    private subscribeTokenRefresh(cb: (token: string) => void) {
-        this.refreshSubscribers.push(cb);
-    }
-
-    // Helper to notify queued requests after token refresh
-    private onRefreshed(token: string) {
-        this.refreshSubscribers.forEach((cb) => cb(token));
-    }
-
-    // Centralized API error handling (basic example)
-    private handleApiError(error: unknown): void {
-        if (axios.isAxiosError(error)) {
-            console.error(`[AuthService] API Error: ${error.response?.status} ${error.message}`, error.response?.data);
-            // Add more specific error handling based on status codes if needed
-            // e.g., if (error.response?.status === 403) { /* handle forbidden */ }
-        } else {
-            console.error("[AuthService] Non-API Error:", error);
-        }
-        // Do not clear tokens here generally, interceptors handle auth errors
-    }
-
-     // Fetch CSRF token (if still needed alongside JWT - depends on backend setup)
-     public async fetchCSRFToken(): Promise<string | null> {
-        // If your backend doesn't require CSRF for JWT-authenticated requests,
-        // you might be able to remove this. Check backend requirements.
-        try {
-            // Ensure this endpoint exists and is necessary with your JWT setup
-            const response = await this.apiClient.get('/auth/csrf/');
-            const csrfToken = response.data.csrfToken;
-             // Axios might handle the 'csrftoken' cookie automatically if HttpOnly is false.
-             // If HttpOnly is true (recommended), the backend needs to read it from the cookie,
-             // and you might need to include X-CSRFToken header if using Django.
-             // Check if axios needs explicit header setting:
-             // this.apiClient.defaults.headers.common['X-CSRFToken'] = csrfToken;
-            console.debug("[AuthService] CSRF token fetched (if applicable).");
-            return csrfToken;
-        } catch (error) {
-            console.warn('[AuthService] Warning: Could not fetch CSRF token:', error);
-            // Decide if this is critical. If not needed for JWT, can return null.
-            // this.handleApiError(error); // Log it
-            return null; // Or throw error if CSRF is strictly required
-        }
-    }
-
-    // Method to clear cookies (might be less relevant if only using sessionStorage for JWT)
-    // Keep if other cookies (like CSRF) are managed.
-    public clearRelevantCookies(): void {
-        console.log("[AuthService] Clearing relevant client-accessible cookies (CSRF, potentially non-HttpOnly JWTs)...");
-        const domains = [window.location.hostname, `.${window.location.hostname}`];
-        const paths = ['/', '/api']; // Adjust paths as needed
-        // Add JWT cookie names in case they are NOT HttpOnly
-        const cookiesToClear = ['csrftoken', 'access_token', 'refresh_token'];
-
-        domains.forEach(domain => {
-            paths.forEach(path => {
-                cookiesToClear.forEach(cookieName => {
-                    // Construct cookie string for deletion
-                    // Note: HttpOnly cookies cannot be deleted from JavaScript.
-                    // Use SameSite=Lax by default, adjust if needed (e.g., None for cross-site)
-                    // Secure flag should be used if site is HTTPS
-                    const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-                    document.cookie = `${cookieName}=; domain=${domain}; path=${path}; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secureFlag}`;
-                });
-            });
-        });
-         console.log("[AuthService] Attempted to clear client-accessible cookies.");
+        this.clearTokens();
+        // No redirigir aquí, dejar que AuthProvider lo haga
     }
 }
 
-// Export a singleton instance
+// <<< Crear y exportar una instancia singleton
 export const authService = new AuthService();
