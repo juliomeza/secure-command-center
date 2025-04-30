@@ -9,4 +9,7 @@ urlpatterns = [
 
     # Include all authentication-related endpoints from the dedicated app
     path('api/auth/', include('authentication.urls')), 
+
+    # Include access control endpoints
+    path('api/access/', include('access.urls')), # Added this line
 ]
