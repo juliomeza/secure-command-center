@@ -205,7 +205,14 @@ export class AuthService {
         if (refreshToken) {
             try {
                 // <<< Use the correct endpoint from authentication/urls.py
-                await this.apiClient.post('/auth/logout/', { refresh: refreshToken });
+                // Changed from POST to GET to match potential server configuration or previous behavior
+                await this.apiClient.get('/auth/logout/', {
+                    // Pass refresh token as a query parameter if needed by GET endpoint
+                    // params: { refresh_token: refreshToken } // Uncomment if backend GET expects it
+                });
+                // Note: The backend LogoutAPIView's GET method doesn't explicitly use the refresh token
+                // from query params in the provided snippet, but focuses on cookies and blacklisting.
+                // Sending it might be unnecessary unless the backend logic was changed.
             } catch (error) {
                 console.error("[AuthService] Logout API call failed:", error);
                 // Continúa limpiando localmente incluso si la API falla
