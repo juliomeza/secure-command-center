@@ -28,12 +28,13 @@ urlpatterns = [
 class UserProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserProfile # Use the UserProfile model from this app
+        skip_postgeneration_save = True  # Corrige el warning de DeprecationWarning
 
     user = factory.SubFactory(UserFactory)
     is_authorized = factory.Faker('boolean')
     # Add other fields from access.UserProfile if needed by tests
     # allowed_tabs_list = factory.LazyFunction(lambda: \",\".join(random.sample(UserProfile.VALID_TABS, k=random.randint(0, len(UserProfile.VALID_TABS)))))
-    # <<< Add ManyToMany relation for allowed_tabs
+    
     @factory.post_generation
     def allowed_tabs(self, create, extracted, **kwargs):
         if not create:
@@ -43,6 +44,8 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
             # A list of tabs were passed in, use them
             for tab in extracted:
                 self.allowed_tabs.add(tab)
+            # Guardamos explícitamente después de modificar relaciones M2M
+            self.save()
 
 class UserProfileModelTest(TestCase):
     """Tests for the UserProfile model."""
