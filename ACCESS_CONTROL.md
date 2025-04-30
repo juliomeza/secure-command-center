@@ -20,15 +20,21 @@ El acceso se controla en varios niveles jerárquicos:
     *   `is_authorized`: BooleanField (default: `False`). Indica si el usuario tiene permiso para acceder a la aplicación después de iniciar sesión.
     *   `allowed_companies`: ManyToManyField con `Company`.
     *   `allowed_warehouses`: ManyToManyField con `Warehouse`.
-    *   `allowed_tabs`: CharField (con choices predefinidos para los tabs: 'CEO', 'CIO', 'COO', 'CFO', 'CTO', 'Leaders'). Almacenará una lista separada por comas de los tabs permitidos. *Alternativa futura: Modelo `Tab` con relación ManyToMany.*
+    *   `allowed_tabs`: ManyToManyField con `Tab`. Indica las vistas/secciones principales a las que el usuario puede acceder.
 
-*   **`Company` (Placeholder):**
+*   **`Company`:**
     *   `name`: CharField (unique).
-    *   *Otros campos relevantes pueden añadirse aquí o en el modelo final de la app de datos.*
+    *   *Modelo implementado en `access.models`.*
 
-*   **`Warehouse` (Placeholder):**
+*   **`Warehouse`:**
     *   `name`: CharField (unique).
-    *   *Otros campos relevantes pueden añadirse aquí o en el modelo final de la app de datos.*
+    *   `company`: ForeignKey a `Company`.
+    *   *Modelo implementado en `access.models`.*
+
+*   **`Tab`:**
+    *   `id_name`: CharField (unique). Identificador interno (e.g., 'CEO', 'Leaders').
+    *   `display_name`: CharField. Nombre para mostrar en la UI (e.g., 'CEO View').
+    *   *Modelo implementado en `access.models` para gestionar los tabs permitidos.*
 
 ## Flujo de Acceso
 
