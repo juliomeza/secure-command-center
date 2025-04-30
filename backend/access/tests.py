@@ -63,8 +63,7 @@ class UserProfileModelTest(TestCase):
         # Use the factory to create a profile for this specific test
         profile = UserProfileFactory()
         # <<< CORRECTED Assertion based on actual __str__ output
-        # Assuming the __str__ method is: return f"{self.user.username}'s Access Profile"
-        self.assertEqual(str(profile), f"{profile.user.username}'s Access Profile")
+        self.assertEqual(str(profile), f"Perfil de Acceso de {profile.user.username}")
 
     def test_profile_creation_defaults(self):
         """Test that a new profile has the correct default values."""
