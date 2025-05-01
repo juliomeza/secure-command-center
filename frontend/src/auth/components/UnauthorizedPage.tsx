@@ -28,8 +28,8 @@ const UnauthorizedPage: React.FC = () => {
 
     // Usamos exactamente la misma estructura que LoginPage
     return (
-        <div className="login-container" style={{ paddingTop: '80px' }}>
-            <h1 className="text-4xl font-semibold mb-4 text-gray-800">Access Denied</h1>
+        <div className="login-container unauthorized-page" style={{ paddingTop: '80px' }}>
+            <h1 className="text-3xl font-semibold mb-4 text-gray-800">Access Denied</h1>
             
             <p style={{ fontSize: '18px' }} className="text-gray-700 mb-4">
                 You are authenticated, but you do not have permission to access this application.
@@ -40,7 +40,14 @@ const UnauthorizedPage: React.FC = () => {
             </p>
             
             <div className="mt-6">
-                <p style={{ fontSize: '18px' }} className="text-gray-600">Loading...</p>
+                <p style={{ fontSize: '18px' }} className="text-gray-600">
+                    Loading
+                    <span className="dot-animation">
+                        <span>.</span>
+                        <span>.</span>
+                        <span>.</span>
+                    </span>
+                </p>
             </div>
         </div>
     );
