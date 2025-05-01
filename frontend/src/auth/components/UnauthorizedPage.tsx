@@ -1,6 +1,7 @@
 // frontend/src/auth/components/UnauthorizedPage.tsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
+import { ShieldAlert } from 'lucide-react'; // Importando el icono de Lucide
 
 const UnauthorizedPage: React.FC = () => {
     const { logout } = useAuth();
@@ -17,7 +18,7 @@ const UnauthorizedPage: React.FC = () => {
                     console.error("[UnauthorizedPage] Automatic logout failed:", error);
                     setIsLoggingOut(false);
                 });
-            }, 4000);
+            }, 5000);
 
             return () => {
                 console.log('[UnauthorizedPage] Cleanup: Clearing logout timer.');
@@ -28,10 +29,17 @@ const UnauthorizedPage: React.FC = () => {
 
     return (
         <div className="login-container unauthorized-page">
-            <h1 className="text-3xl font-semibold mb-4 text-gray-800">Access Denied</h1>
+            <div className="text-center mb-4">
+                <ShieldAlert 
+                    size={64} 
+                    strokeWidth={1.5} 
+                    className="text-red-600 mx-auto mb-2" 
+                />
+            </div>
+            <h1 className="text-4xl font-semibold mb-4 text-gray-800">Access Denied</h1>
             
             <p className="text-gray-700 mb-4">
-                You do not have permission to access this application.
+                You are authenticated, but you do not have permission to access this application.
             </p>
             
             <p className="text-gray-700 mb-8">
