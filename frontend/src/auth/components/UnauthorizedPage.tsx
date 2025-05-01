@@ -28,7 +28,7 @@ const UnauthorizedPage: React.FC = () => {
     }, [logout, isLoggingOut]);
 
     return (
-        <div className="login-container unauthorized-page">
+        <div className="login-container unauthorized-page" style={{ maxWidth: '450px' }}>
             <div className="text-center mb-4">
                 <ShieldAlert 
                     size={64} 
@@ -36,7 +36,7 @@ const UnauthorizedPage: React.FC = () => {
                     className="text-red-600 mx-auto mb-2" 
                 />
             </div>
-            <h1 className="text-4xl font-semibold mb-4 text-gray-800">Access Denied</h1>
+            <h1 style={{ whiteSpace: 'nowrap' }}>Access Denied</h1>
             
             <p className="text-gray-700 mb-4">
                 You are authenticated, but you do not have permission to access this application.
