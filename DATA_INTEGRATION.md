@@ -420,6 +420,15 @@ def sync_financial_data():
 
 ## 7. Plan de Implementación
 
+### 7.0. Fase 0: Ambiente de Pruebas (1 Semana)
+
+- Crear nuevo tab "Testing"
+- Implementar dashboard básico en el frontend para este tab
+- Configurar endpoints de prueba en el backend
+- Establecer conexión inicial con PostgreSQL
+- Implementar visualización básica de datos de prueba
+- Validar sistema de permisos y control de acceso
+
 ### 7.1. Fase 1: Cimientos (2 Semanas)
 
 - Crear app `data_integration`
