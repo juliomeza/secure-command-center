@@ -37,3 +37,6 @@ docker-compose.override.yml # Local overrides
 .vscode/
 *.DS_Store
 Thumbs.db
+
+# Ignore ETL agent environment file
+etl_agent/.env

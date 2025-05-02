@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # Your apps
     'authentication',
     'access',
+    'data'
 ]
 
 MIDDLEWARE = [
