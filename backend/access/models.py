@@ -37,11 +37,11 @@ class Tab(models.Model):
     id_name = models.CharField(
         max_length=50,
         unique=True,
-        help_text="Unique identifier for the tab (e.g., CEO, Leaders). Used internally."
+        help_text="Unique identifier for the tab (e.g., CEO, Leaders, Testing). Used internally."
     )
     display_name = models.CharField(
         max_length=100,
-        help_text="User-friendly name for the tab (e.g., CEO View, Leaders View)."
+        help_text="User-friendly name for the tab (e.g., CEO View, Leaders View, Testing View)."
     )
     # Add other fields if needed, like description, icon, order, etc.
 

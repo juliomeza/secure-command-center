@@ -7,12 +7,13 @@ import CFOView from './views/CFOView';
 import COOView from './views/COOView';
 import CIOView from './views/CIOView';
 import LeadersView from './views/LeadersView';
+import TestingView from './views/TestingView'; // <<< Added import for TestingView
 import { useAuth } from '../../auth/components/AuthProvider';
 import {
-  BarChart2, DollarSign, Settings, Monitor, Users
+  BarChart2, DollarSign, Settings, Monitor, Users, TestTubeDiagonal
 } from 'lucide-react';
 
-type DashboardTabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS';
+type DashboardTabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS' | 'TESTING'; // Added TESTING
 
 const iconProps = {
   size: 18,
@@ -25,6 +26,7 @@ const allDashboardTabs: Array<{ id: DashboardTabId; label: string; icon: React.R
   { id: 'COO', label: 'COO', icon: <Settings {...iconProps} /> },
   { id: 'CIO', label: 'CIO', icon: <Monitor {...iconProps} /> },
   { id: 'LEADERS', label: 'Leaders', icon: <Users {...iconProps} /> },
+  { id: 'TESTING', label: 'Testing', icon: <TestTubeDiagonal {...iconProps} /> }, // Added TESTING tab
 ];
 
 const ExecutiveDashboard: React.FC = () => {
@@ -72,6 +74,7 @@ const ExecutiveDashboard: React.FC = () => {
       case 'COO': return <COOView />;
       case 'CIO': return <CIOView />;
       case 'LEADERS': return <LeadersView />;
+      case 'TESTING': return <TestingView />; // Added TESTING case
       default: return <div>Invalid tab selected.</div>;
     }
   };
