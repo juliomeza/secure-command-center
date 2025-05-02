@@ -61,7 +61,7 @@ def get_postgres_connection():
             database=os.getenv('PG_DATABASE'),
             user=os.getenv('PG_USER'),
             password=os.getenv('PG_PASSWORD'),
-            sslmode='require' # Important for Render connections
+            sslmode=os.getenv('PG_SSLMODE', 'disable')  # Use sslmode from env or default to disable
         )
         logging.info("Successfully connected to PostgreSQL.")
         return conn
@@ -90,10 +90,10 @@ def extract_recent_orders(mssql_conn, limit=5):
         # IMPORTANT: Adjust this query to your actual table and column names
         # Assuming a table named 'Orders' and a datetime column 'OrderDate'
         query = f"""
-            SELECT TOP ({limit}) OrderID, CustomerID, OrderDate, SomeValue
-            FROM YourOrderTable
-            WHERE CAST(OrderDate AS DATE) = CAST(GETDATE() AS DATE) -- Orders from today
-            ORDER BY OrderDate DESC
+            SELECT TOP ({limit}) id, orderClassId, orderStatusId, lookupCode
+            FROM datex_footprint.Orders
+            WHERE createdSysDateTime >= '2025-05-01'
+            ORDER BY id
         """
         logging.info(f"Executing MSSQL query: {query}")
         cursor.execute(query)
@@ -111,37 +111,52 @@ def extract_recent_orders(mssql_conn, limit=5):
 def load_test_data(pg_conn, data):
     """Loads the extracted data into the PostgreSQL test table."""
     cursor = pg_conn.cursor()
-    # IMPORTANT: Adjust table and column names to match your Django model
-    # Assuming a table named 'data_testdata' created by Django
-    # And columns 'source_id', 'description', 'fetched_at'
     insert_query = """
-        INSERT INTO data_testdata (source_id, description, fetched_at)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (source_id) DO UPDATE SET
-        description = EXCLUDED.description,
-        fetched_at = EXCLUDED.fetched_at;
+        INSERT INTO data_testdata (order_id, order_class_id, order_status_id, lookup_code, fetched_at)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (order_id) DO UPDATE SET
+            order_class_id = EXCLUDED.order_class_id,
+            order_status_id = EXCLUDED.order_status_id,
+            lookup_code = EXCLUDED.lookup_code,
+            fetched_at = EXCLUDED.fetched_at
+        RETURNING (xmax = 0) as inserted;
     """
     try:
         now = datetime.now()
         prepared_data = []
         for item in data:
-            # Adapt this mapping based on your MSSQL query and PG table
-            source_id = str(item.get('OrderID', 'N/A')) # Example mapping
-            description = f"Customer: {item.get('CustomerID', '?')} - Value: {item.get('SomeValue', 0)}" # Example mapping
-            prepared_data.append((source_id, description, now))
+            prepared_data.append((
+                item['id'],
+                item['orderClassId'],
+                item['orderStatusId'],
+                item['lookupCode'],
+                now
+            ))
 
         if not prepared_data:
             logging.info("No data to load into PostgreSQL.")
             return
 
-        logging.info(f"Loading {len(prepared_data)} records into PostgreSQL...")
-        cursor.executemany(insert_query, prepared_data)
+        # Ejecutar el insert y contar inserciones vs actualizaciones
+        results = []
+        for record in prepared_data:
+            cursor.execute(insert_query, record)
+            results.append(cursor.fetchone()[0])
+        
+        inserted = sum(1 for r in results if r)
+        updated = len(results) - inserted
+        
         pg_conn.commit()
-        logging.info("Successfully loaded data into PostgreSQL.")
+        print("\n=== ETL Process Summary ===")
+        print(f"Total records processed: {len(prepared_data)}")
+        print(f"New records inserted: {inserted}")
+        print(f"Existing records updated: {updated}")
+        print("===========================\n")
+        logging.info("ETL process completed successfully.")
 
     except psycopg2.Error as e:
         logging.error(f"Error loading data into PostgreSQL: {e}")
-        pg_conn.rollback() # Roll back in case of error
+        pg_conn.rollback()
     except Exception as e:
         logging.error(f"Unexpected error during data loading: {e}")
         pg_conn.rollback()
