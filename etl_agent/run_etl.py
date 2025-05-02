@@ -1,5 +1,6 @@
 # etl_agent/run_etl.py
 import os
+import argparse
 import pyodbc
 import psycopg2
 import logging
@@ -7,9 +8,6 @@ from dotenv import load_dotenv
 from datetime import datetime
 
 # --- Configuration ---
-load_dotenv() # Load variables from .env file
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 # --- Database Connection Functions ---
 def get_mssql_connection():
     """Establishes a connection to the MSSQL database."""
@@ -72,6 +70,16 @@ def get_postgres_connection():
         return None
     except Exception as e:
         logging.error(f"Unexpected error connecting to PostgreSQL: {e}")
+        return None
+
+def get_db_connection(db_type):
+    """Establece conexión a la base de datos especificada."""
+    if db_type == 'postgresql':
+        return get_postgres_connection()
+    elif db_type == 'mssql':
+        return get_mssql_connection()
+    else:
+        logging.error(f"Tipo de base de datos no soportado: {db_type}")
         return None
 
 # --- ETL Logic ---
@@ -141,8 +149,24 @@ def load_test_data(pg_conn, data):
         cursor.close()
 
 # --- Main Execution ---
-def main():
-    logging.info("Starting ETL process...")
+def main(environment):
+    logging.info(f"Starting ETL process for environment: {environment}")
+
+    # Construir la ruta al archivo .env basado en el argumento
+    env_file = f".env.{environment}"
+    # __file__ da la ruta del script actual (run_etl.py)
+    # os.path.dirname(__file__) da el directorio del script (etl_agent)
+    # os.path.join une las partes para formar la ruta completa al .env file
+    env_path = os.path.join(os.path.dirname(__file__), env_file)
+
+    if not os.path.exists(env_path):
+        logging.error(f"El archivo de entorno '{env_file}' no se encontró en {os.path.dirname(__file__)}")
+        logging.error(f"Ruta buscada: {env_path}")
+        return
+
+    # Cargar las variables de entorno desde el archivo especificado
+    load_dotenv(dotenv_path=env_path)
+    logging.info(f"Cargando configuración desde: {env_path}")
 
     mssql_conn = get_mssql_connection()
     pg_conn = get_postgres_connection()
@@ -176,4 +200,12 @@ def main():
     logging.info("ETL process finished.")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Ejecuta el proceso ETL para un entorno específico.")
+    parser.add_argument(
+        "environment",
+        choices=['dev', 'prod'],
+        help="El entorno de ejecución ('dev' para desarrollo local, 'prod' para producción)."
+    )
+    args = parser.parse_args()
+
+    main(args.environment)
