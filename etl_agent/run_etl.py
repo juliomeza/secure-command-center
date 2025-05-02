@@ -5,7 +5,7 @@ import pyodbc
 import psycopg2
 import logging
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # --- Configuration ---
 # --- Database Connection Functions ---
@@ -163,6 +163,240 @@ def load_test_data(pg_conn, data):
     finally:
         cursor.close()
 
+def extract_datacard_reports(mssql_conn, year, week, warehouses=None):
+    """
+    Extrae los datos de DataCard Reports desde MSSQL usando la función KPower_BI.RHL_DataCard_Reports,
+    aplicando transformaciones específicas a los datos según su tipo.
+    
+    Args:
+        mssql_conn: Conexión a MSSQL
+        year: Año para el reporte (int)
+        week: Semana para el reporte (int)
+        warehouses: Lista de IDs de almacenes o string con IDs separados por comas (opcional)
+    
+    Returns:
+        Lista de diccionarios con los datos del DataCard transformados
+    """
+    cursor = mssql_conn.cursor()
+    try:
+        # Si warehouses es una lista, convertirla a string separado por comas
+        if isinstance(warehouses, list):
+            warehouses_param = ','.join(map(str, warehouses))
+        else:
+            warehouses_param = warehouses if warehouses else ''
+        
+        # Query completo con transformaciones similares al original
+        query = """
+        SELECT
+            d.warehouseId,
+            d.warehouseOrder,
+            d.warehouse,
+            d.section,
+            d.listOrder,
+            d.description,
+            -- Formateo de valores según tipo
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d1, '0')
+                WHEN d.totalPorc = 1 THEN d.d1
+                WHEN d.vText = 1 THEN d.d1
+                ELSE d.d1
+            END AS day1_value,
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d2, '0')
+                WHEN d.totalPorc = 1 THEN d.d2
+                WHEN d.vText = 1 THEN d.d2
+                ELSE d.d2
+            END AS day2_value,
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d3, '0')
+                WHEN d.totalPorc = 1 THEN d.d3
+                WHEN d.vText = 1 THEN d.d3
+                ELSE d.d3
+            END AS day3_value,
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d4, '0')
+                WHEN d.totalPorc = 1 THEN d.d4
+                WHEN d.vText = 1 THEN d.d4
+                ELSE d.d4
+            END AS day4_value,
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d5, '0')
+                WHEN d.totalPorc = 1 THEN d.d5
+                WHEN d.vText = 1 THEN d.d5
+                ELSE d.d5
+            END AS day5_value,
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d6, '0')
+                WHEN d.totalPorc = 1 THEN d.d6
+                WHEN d.vText = 1 THEN d.d6
+                ELSE d.d6
+            END AS day6_value,
+            CASE 
+                WHEN d.tInt = 1 THEN ISNULL(d.d7, '0')
+                WHEN d.totalPorc = 1 THEN d.d7
+                WHEN d.vText = 1 THEN d.d7
+                ELSE d.d7
+            END AS day7_value,
+            -- Calculando el total cuando es posible
+            CASE
+                WHEN d.tInt = 1 AND ISNULL(d.totalPorc, 0) = 0 
+                    AND ISNUMERIC(ISNULL(d.d1, 0)) = 1 
+                    AND ISNUMERIC(ISNULL(d.d2, 0)) = 1 
+                    AND ISNUMERIC(ISNULL(d.d3, 0)) = 1 
+                    AND ISNUMERIC(ISNULL(d.d4, 0)) = 1 
+                    AND ISNUMERIC(ISNULL(d.d5, 0)) = 1 
+                    AND ISNUMERIC(ISNULL(d.d6, 0)) = 1 
+                    AND ISNUMERIC(ISNULL(d.d7, 0)) = 1 
+                THEN CONVERT(VARCHAR, CONVERT(INT, ISNULL(d.d1, 0)) + CONVERT(INT, ISNULL(d.d2, 0)) 
+                    + CONVERT(INT, ISNULL(d.d3, 0)) + CONVERT(INT, ISNULL(d.d4, 0)) 
+                    + CONVERT(INT, ISNULL(d.d5, 0)) + CONVERT(INT, ISNULL(d.d6, 0)) 
+                    + CONVERT(INT, ISNULL(d.d7, 0)))
+                ELSE NULL
+            END AS total,
+            -- Indicadores de tipo
+            ISNULL(d.tInt, 0) AS is_integer,
+            ISNULL(d.totalPorc, 0) AS is_percentage,
+            ISNULL(d.vText, 0) AS is_text,
+            -- Metadatos adicionales útiles
+            ISNULL(d.title, 0) AS is_title,
+            ISNULL(d.heatColors, 0) AS has_heat_colors
+        FROM KPower_BI.RHL_DataCard_Reports(?, ?, ?) d
+        WHERE ISNULL(d.projectDetails, 0) = 0
+        """
+        
+        logging.info(f"Ejecutando consulta mejorada de DataCard: year={year}, week={week}, warehouses={warehouses_param}")
+        cursor.execute(query, (year, week, warehouses_param))
+        
+        # Convertir resultados a lista de diccionarios
+        columns = [column[0] for column in cursor.description]
+        datacard_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        logging.info(f"Extraídos {len(datacard_data)} registros de DataCard desde MSSQL.")
+        return datacard_data
+        
+    except pyodbc.Error as ex:
+        logging.error(f"Error al ejecutar consulta de DataCard: {ex}")
+        return []
+    finally:
+        cursor.close()
+
+def load_datacard_data(pg_conn, data, year, week):
+    """
+    Carga los datos del DataCard en PostgreSQL.
+    
+    Args:
+        pg_conn: Conexión a PostgreSQL
+        data: Lista de diccionarios con datos del DataCard
+        year: Año del reporte
+        week: Semana del reporte
+    """
+    cursor = pg_conn.cursor()
+    
+    # Consulta con UPSERT para insertar o actualizar datos
+    insert_query = """
+        INSERT INTO data_datacardreport (
+            warehouse_id, warehouse_order, warehouse, section, list_order, description,
+            day1_value, day2_value, day3_value, day4_value, day5_value, day6_value, day7_value,
+            total, is_integer, is_percentage, is_text, is_title, has_heat_colors,
+            year, week, fetched_at
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (warehouse_id, section, list_order, year, week) DO UPDATE SET
+            warehouse_order = EXCLUDED.warehouse_order,
+            warehouse = EXCLUDED.warehouse,
+            description = EXCLUDED.description,
+            day1_value = EXCLUDED.day1_value,
+            day2_value = EXCLUDED.day2_value,
+            day3_value = EXCLUDED.day3_value,
+            day4_value = EXCLUDED.day4_value,
+            day5_value = EXCLUDED.day5_value,
+            day6_value = EXCLUDED.day6_value,
+            day7_value = EXCLUDED.day7_value,
+            total = EXCLUDED.total,
+            is_integer = EXCLUDED.is_integer,
+            is_percentage = EXCLUDED.is_percentage,
+            is_text = EXCLUDED.is_text,
+            is_title = EXCLUDED.is_title,
+            has_heat_colors = EXCLUDED.has_heat_colors,
+            fetched_at = EXCLUDED.fetched_at
+        RETURNING (xmax = 0) as inserted;
+    """
+    
+    try:
+        now = datetime.now()
+        prepared_data = []
+        
+        for item in data:
+            prepared_data.append((
+                item['warehouseId'],
+                item.get('warehouseOrder'),
+                item['warehouse'],
+                item['section'],
+                item['listOrder'],
+                item['description'],
+                item['day1_value'],
+                item['day2_value'],
+                item['day3_value'],
+                item['day4_value'],
+                item['day5_value'],
+                item['day6_value'],
+                item['day7_value'],
+                item.get('total'),
+                bool(item['is_integer']),
+                bool(item['is_percentage']),
+                bool(item['is_text']),
+                bool(item.get('is_title', 0)),
+                bool(item.get('has_heat_colors', 0)),
+                year,
+                week,
+                now
+            ))
+        
+        if not prepared_data:
+            logging.info("No hay datos de DataCard para cargar.")
+            return
+            
+        # Ejecutar INSERT/UPDATE
+        results = []
+        for record in prepared_data:
+            cursor.execute(insert_query, record)
+            results.append(cursor.fetchone()[0])
+        
+        inserted = sum(1 for r in results if r)
+        updated = len(results) - inserted
+        
+        pg_conn.commit()
+        
+        print("\n=== Resumen proceso ETL DataCard ===")
+        print(f"Año: {year}, Semana: {week}")
+        print(f"Total registros procesados: {len(prepared_data)}")
+        print(f"Nuevos registros insertados: {inserted}")
+        print(f"Registros existentes actualizados: {updated}")
+        print("====================================\n")
+        
+    except psycopg2.Error as e:
+        logging.error(f"Error al cargar datos en PostgreSQL: {e}")
+        pg_conn.rollback()
+    finally:
+        cursor.close()
+
+def get_current_year_week():
+    """
+    Obtiene el año y número de semana anterior según ISO.
+    """
+    # Obtenemos la fecha actual
+    today = datetime.now()
+    
+    # Restamos 7 días para obtener la semana anterior
+    last_week = today - timedelta(days=7)
+    
+    # Obtenemos el año y la semana de la semana anterior
+    year = last_week.year
+    # isocalendar() retorna una tupla (año, semana, día de la semana)
+    week = last_week.isocalendar()[1]
+    
+    logging.info(f"Usando año={year}, semana={week} (semana anterior)")
+    return year, week
+
 # --- Main Execution ---
 def main(environment):
     logging.info(f"Starting ETL process for environment: {environment}")
@@ -191,17 +425,47 @@ def main(environment):
         return
 
     try:
-        # 1. Extract
-        recent_orders = extract_recent_orders(mssql_conn, limit=5)
-
-        # 2. Transform (Minimal transformation in this example)
-        # Transformation is done within load_test_data for simplicity here
-
-        # 3. Load
-        if recent_orders:
-            load_test_data(pg_conn, recent_orders)
-        else:
-            logging.info("No recent orders found to load.")
+        # Configurar qué procesos ejecutar
+        run_test_orders = True       # Proceso de prueba existente
+        run_datacard = True          # Nuevo proceso DataCard
+        
+        # 1. Proceso de prueba (órdenes recientes)
+        if run_test_orders:
+            print("\n=== Iniciando proceso ETL de Test Orders ===")
+            recent_orders = extract_recent_orders(mssql_conn, limit=5)
+            if recent_orders:
+                load_test_data(pg_conn, recent_orders)
+            else:
+                logging.info("No recent orders found to load.")
+                print("No se encontraron órdenes recientes para cargar.")
+                
+        # 2. Proceso DataCard
+        if run_datacard:
+            print("\n=== Iniciando proceso ETL de DataCard ===")
+            # Obtener año y semana actual (o usar parámetros específicos)
+            year, week = get_current_year_week()
+            
+            # Lista específica de warehouses IDs que funcionan
+            warehouses = '1,12,20,23,27'  # Lista de warehouses específicos que funcionan
+            
+            print(f"Extrayendo DataCard para año={year}, semana={week}, warehouses={warehouses}")
+            logging.info(f"Iniciando extracción de DataCard para año={year}, semana={week}")
+            try:
+                datacard_data = extract_datacard_reports(mssql_conn, year, week, warehouses)
+                
+                if datacard_data:
+                    print(f"Se extrajeron {len(datacard_data)} registros de DataCard.")
+                    load_datacard_data(pg_conn, datacard_data, year, week)
+                else:
+                    message = "No se encontraron datos de DataCard para cargar."
+                    logging.info(message)
+                    print(f"⚠️ {message}")
+            except Exception as e:
+                error_message = f"❌ Error procesando DataCard: {str(e)}"
+                logging.error(error_message)
+                print(error_message)
+            
+            print("=== Proceso ETL de DataCard finalizado ===\n")
 
     finally:
         # Ensure connections are closed
