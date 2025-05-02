@@ -16,7 +16,7 @@ El sistema de integración de datos reemplazará los datos simulados (mock data)
 
 ### 1.2. Componentes Principales
 
-- **App de Integración**: Nuevo módulo Django para gestionar ETL
+- **App de Datos**: Nuevo módulo Django (`data`) para gestionar ETL
 - **Almacén de Datos**: Esquemas en PostgreSQL para datos operacionales
 - **APIs de Datos**: Endpoints para consumo del frontend
 - **Tareas Programadas**: Procesos de sincronización automática
@@ -366,7 +366,7 @@ def aggregate_metrics(metrics, granularity):
 
 ```
 backend/
-  └── data_integration/
+  └── data/
       ├── __init__.py
       ├── admin.py
       ├── apps.py
@@ -403,7 +403,7 @@ app = Celery('secure_command_center')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
-# data_integration/tasks/scheduled_tasks.py
+# data/tasks/scheduled_tasks.py
 from celery import shared_task
 from ..services.etl_service import ETLService
 
@@ -431,7 +431,7 @@ def sync_financial_data():
 
 ### 7.1. Fase 1: Cimientos (2 Semanas)
 
-- Crear app `data_integration`
+- Crear app `data`
 - Diseñar e implementar modelos de datos
 - Configurar entorno de integración
 - Implementar conector base para MSSQL
