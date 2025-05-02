@@ -381,20 +381,17 @@ def load_datacard_data(pg_conn, data, year, week):
 
 def get_current_year_week():
     """
-    Obtiene el año y número de semana anterior según ISO.
+    Obtiene el año y número de semana actual según ISO.
     """
     # Obtenemos la fecha actual
     today = datetime.now()
     
-    # Restamos 7 días para obtener la semana anterior
-    last_week = today - timedelta(days=7)
-    
-    # Obtenemos el año y la semana de la semana anterior
-    year = last_week.year
+    # Obtenemos el año y la semana actual
+    year = today.year
     # isocalendar() retorna una tupla (año, semana, día de la semana)
-    week = last_week.isocalendar()[1]
+    week = today.isocalendar()[1]
     
-    logging.info(f"Usando año={year}, semana={week} (semana anterior)")
+    logging.info(f"Usando año={year}, semana={week} (semana actual)")
     return year, week
 
 # --- Main Execution ---
