@@ -12,4 +12,7 @@ urlpatterns = [
 
     # Include access control endpoints
     path('api/access/', include('access.urls')), # Added this line
+
+    # Include data-related endpoints
+    path('api/data/', include('data.urls')), # NEW: Data app URLs
 ]
