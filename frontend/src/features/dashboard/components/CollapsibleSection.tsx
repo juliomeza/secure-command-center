@@ -30,17 +30,12 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-              {!isOpen && itemCount && (
-                <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
-                  {itemCount} items
-                </span>
-              )}
             </div>
             {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
           </div>
           
           <div className="flex items-center">
-            {isOpen && itemCount && (
+            {!isOpen && itemCount && (
               <span className="text-sm text-gray-500 mr-2">
                 {itemCount} items
               </span>
