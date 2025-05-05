@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../../../auth/services/authService';
 import { AxiosError } from 'axios';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 // Definición de la estructura de datos para DataCard
 interface DataCardItem {
@@ -241,85 +241,56 @@ const DataCardView: React.FC = () => {
         </div>
       )}
 
-      {/* Secciones de datos agrupadas (estilo acordeón) */}
+      {/* Secciones de datos */}
       {!loading && !error && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {dataGroups.map((group, groupIndex) => (
-            <div 
-              key={`group-${groupIndex}`} 
-              className="border border-gray-200 rounded-lg overflow-hidden"
+            <CollapsibleSection
+              key={`group-${groupIndex}`}
+              isOpen={group.isOpen}
+              setIsOpen={() => toggleGroup(groupIndex)}
+              title={group.name}
+              itemCount={group.items.length}
             >
-              {/* Encabezado del grupo con botón para expandir/contraer */}
-              <button 
-                onClick={() => toggleGroup(groupIndex)}
-                className="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center">
-                  {group.isOpen ? 
-                    <ChevronDown className="h-5 w-5 mr-2 text-blue-600" /> : 
-                    <ChevronRight className="h-5 w-5 mr-2 text-blue-600" />
-                  }
-                  <span className="font-medium text-gray-900">{group.name}</span>
-                </div>
-                <span className="text-sm text-gray-500">{group.items.length} items</span>
-              </button>
-
-              {/* Contenido del grupo (visible solo si está abierto) */}
-              {group.isOpen && (
-                <div className="border-t border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monday</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tuesday</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wednesday</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thursday</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Friday</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saturday</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sunday</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {group.items.length > 0 ? (
-                        group.items.map((item) => (
-                          <tr key={item.id} className="hover:bg-gray-50">
-                            <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{item.description}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day1_value, item.is_percentage, item.is_integer)}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day2_value, item.is_percentage, item.is_integer)}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day3_value, item.is_percentage, item.is_integer)}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day4_value, item.is_percentage, item.is_integer)}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day5_value, item.is_percentage, item.is_integer)}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day6_value, item.is_percentage, item.is_integer)}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm">
-                              {formatValue(item.day7_value, item.is_percentage, item.is_integer)}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
-                            No data found for this group.
-                          </td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tuesday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wednesday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thursday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Friday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saturday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sunday</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {group.items.length > 0 ? (
+                      group.items.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{item.description}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
+                          No data found for this group.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CollapsibleSection>
           ))}
 
           {dataGroups.length === 0 && !loading && (
