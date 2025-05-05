@@ -247,47 +247,60 @@ const DataCardView: React.FC = () => {
               itemCount={group.items.length}
             >
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full border-collapse">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase sticky left-0" style={{
                         width: '250px',
                         minWidth: '250px',
-                        position: 'sticky',
-                        left: 0,
-                        backgroundColor: '#f9fafb',
-                        zIndex: 1,
-                        boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
+                        backgroundColor: '#f9fafb'
                       }}>Description</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Monday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Tuesday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Wednesday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Thursday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Friday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Saturday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Sunday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Monday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Tuesday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Wednesday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Thursday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Friday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Saturday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                        minWidth: '100px',
+                        backgroundColor: '#f9fafb'
+                      }}>Sunday</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody>
                     {group.items.length > 0 ? (
-                      group.items.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-3 py-2 text-sm font-medium" style={{
-                            position: 'sticky',
-                            left: 0,
-                            backgroundColor: 'white',
-                            zIndex: 1,
+                      group.items.map((item, index) => (
+                        <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-3 py-2 text-sm sticky left-0" style={{
                             width: '250px',
                             minWidth: '250px',
-                            boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
+                            backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
                           }}>{item.description}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
+                          <td className="px-3 py-2 text-sm">{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
                         </tr>
                       ))
                     ) : (
