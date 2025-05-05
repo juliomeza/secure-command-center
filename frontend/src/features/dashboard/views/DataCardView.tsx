@@ -26,6 +26,12 @@ interface DataCardItem {
   fetched_at: string;
 }
 
+// Estructura para opciones del dropdown de warehouses
+interface WarehouseOption {
+  id: number;
+  name: string;
+}
+
 const DataCardView: React.FC = () => {
   // Estado para los datos y UI
   const [data, setData] = useState<DataCardItem[]>([]);
@@ -42,6 +48,15 @@ const DataCardView: React.FC = () => {
     return Math.ceil(days / 7);
   });
   const [warehouseId, setWarehouseId] = useState<string>('');
+
+  // Lista de warehouses disponibles
+  const warehouseOptions: WarehouseOption[] = [
+    { id: 1, name: 'WH: 10 - Boca Raton (951) - FL' },
+    { id: 12, name: 'WH: 15 - Sugar Land - TX' },
+    { id: 20, name: 'WH: 18 - Pompano Beach (751) - FL' },
+    { id: 23, name: 'WH: 20 - Lockbourne - OH' },
+    { id: 27, name: 'WH: 23 - Dayton - NJ' },
+  ];
 
   useEffect(() => {
     fetchDataCard();
@@ -94,8 +109,6 @@ const DataCardView: React.FC = () => {
   // Renderización basada en el estado
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">DataCard Report</h2>
-      
       {/* Filtros */}
       <div className="mb-6 flex flex-wrap gap-4">
         <div>
@@ -125,14 +138,17 @@ const DataCardView: React.FC = () => {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Warehouse ID:</label>
-          <input
-            type="text"
+          <label className="block text-sm font-medium mb-1">Warehouse:</label>
+          <select
             className="border rounded px-2 py-1"
             value={warehouseId}
             onChange={(e) => setWarehouseId(e.target.value)}
-            placeholder="Todas"
-          />
+          >
+            <option value="">All</option>
+            {warehouseOptions.map((wh) => (
+              <option key={wh.id} value={wh.id}>{wh.name}</option>
+            ))}
+          </select>
         </div>
         
         <div className="flex items-end">
