@@ -49,7 +49,7 @@ const DataCardView: React.FC = () => {
   });
   const [warehouseId, setWarehouseId] = useState<string>('');
 
-  // Lista de warehouses disponibles
+  // Lista de warehouses disponibles con nombres descriptivos
   const warehouseOptions: WarehouseOption[] = [
     { id: 1, name: 'WH: 10 - Boca Raton (951) - FL' },
     { id: 12, name: 'WH: 15 - Sugar Land - TX' },
@@ -77,7 +77,7 @@ const DataCardView: React.FC = () => {
       setData(response.data);
       
     } catch (err) {
-      let errorText = 'Ocurrió un error desconocido';
+      let errorText = 'An unknown error occurred';
       if (err instanceof AxiosError) {
         if (err.response?.data?.detail) {
           errorText = err.response.data.detail;
@@ -112,7 +112,7 @@ const DataCardView: React.FC = () => {
       {/* Filtros */}
       <div className="mb-6 flex flex-wrap gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Año:</label>
+          <label className="block text-sm font-medium mb-1">Year:</label>
           <select 
             className="border rounded px-2 py-1"
             value={year}
@@ -125,7 +125,7 @@ const DataCardView: React.FC = () => {
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Semana:</label>
+          <label className="block text-sm font-medium mb-1">Week:</label>
           <select 
             className="border rounded px-2 py-1"
             value={week}
@@ -156,7 +156,7 @@ const DataCardView: React.FC = () => {
             className="bg-blue-600 text-white px-4 py-1 rounded"
             onClick={() => fetchDataCard()}
           >
-            Actualizar
+            Update
           </button>
         </div>
       </div>
@@ -164,7 +164,7 @@ const DataCardView: React.FC = () => {
       {/* Estados de carga y error */}
       {loading && (
         <div className="text-center py-4">
-          <p>Cargando datos...</p>
+          <p>Loading data...</p>
         </div>
       )}
 
@@ -181,22 +181,20 @@ const DataCardView: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Warehouse</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lunes</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Martes</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Miércoles</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jueves</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Viernes</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sábado</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Domingo</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monday</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tuesday</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wednesday</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thursday</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Friday</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saturday</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sunday</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {data.length > 0 ? (
                 data.map((item) => (
                   <tr key={item.id}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.warehouse}</td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm">{item.description}</td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm">
                       {formatValue(item.day1_value, item.is_percentage, item.is_integer)}
@@ -223,8 +221,8 @@ const DataCardView: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-3 py-2 text-center text-sm text-gray-500">
-                    No se encontraron datos para los filtros seleccionados.
+                  <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
+                    No data found for the selected filters.
                   </td>
                 </tr>
               )}
