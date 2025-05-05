@@ -250,21 +250,37 @@ const DataCardView: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tuesday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wednesday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thursday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Friday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saturday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sunday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{
+                        width: '250px',
+                        minWidth: '250px',
+                        position: 'sticky',
+                        left: 0,
+                        backgroundColor: '#f9fafb',
+                        zIndex: 1,
+                        boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
+                      }}>Description</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Monday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Tuesday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Wednesday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Thursday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Friday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Saturday</th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ minWidth: '100px' }}>Sunday</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {group.items.length > 0 ? (
                       group.items.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{item.description}</td>
+                          <td className="px-3 py-2 text-sm font-medium" style={{
+                            position: 'sticky',
+                            left: 0,
+                            backgroundColor: 'white',
+                            zIndex: 1,
+                            width: '250px',
+                            minWidth: '250px',
+                            boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
+                          }}>{item.description}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
