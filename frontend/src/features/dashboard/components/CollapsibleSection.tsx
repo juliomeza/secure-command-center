@@ -23,9 +23,9 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 }) => {
   const getIcon = () => {
     switch (title.toLowerCase()) {
-      case 'order management':
-        return <Package className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
-      case 'outbound operations':
+      case 'held orders':
+        return <AlertCircle className="w-5 h-5 text-red-500" style={{ marginRight: '10px' }} />;
+      case 'outbound':
         return <TruckIcon className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       case 'open order summary':
         return <ClipboardList className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
@@ -63,9 +63,6 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
             <div className="flex items-center gap-2">
               {getIcon()}
               <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-              {status === 'critical' && (
-                <AlertCircle className="w-5 h-5 text-red-500" />
-              )}
             </div>
             {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
           </div>
