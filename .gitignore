@@ -14,6 +14,11 @@ build/
 venv/
 .env
 
+# Environment files
+etl_agent/.env.*
+etl_agent/.env.dev
+etl_agent/.env.prod
+
 # Django
 db.sqlite3 # Ignore if using sqlite for quick tests
 staticfiles/
