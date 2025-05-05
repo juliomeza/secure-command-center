@@ -102,32 +102,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     onChange(option.id);
                     setIsOpen(false);
                   }}
-                  className="w-full text-left"
-                  role="option"
-                  aria-selected={option.id === value}
+                  className="w-full text-left hover:bg-gray-50"
                   style={{
-                    padding: '0.5rem 1rem',
-                    fontSize: '0.875rem',
                     color: option.id === value ? '#1e3a8a' : '#4b5563',
                     backgroundColor: option.id === value ? '#f0f7ff' : 'transparent',
-                    width: '100%',
-                    border: 'none',
+                    fontSize: '0.875rem',
                     cursor: 'pointer',
-                    outline: 'none'
+                    border: 'none',
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    paddingLeft: '1rem',
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem'
                   }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f9fafb';
-                    e.currentTarget.style.color = '#1e3a8a';
-                  }}
-                  onMouseOut={(e) => {
-                    if (option.id === value) {
-                      e.currentTarget.style.backgroundColor = '#f0f7ff';
-                      e.currentTarget.style.color = '#1e3a8a';
-                    } else {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#4b5563';
-                    }
-                  }}
+                  role="option"
+                  aria-selected={option.id === value}
                 >
                   {option.label}
                 </button>
