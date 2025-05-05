@@ -110,7 +110,7 @@ const DataCardView: React.FC = () => {
 
       // Configurar grupos iniciales
       setDataGroups([
-        { name: 'Order Management', isOpen: false, items: heldOrdersItems },
+        { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
         { name: 'Outbound Operations', isOpen: false, items: outboundOrdersItems },
         { name: 'Open Order Summary', isOpen: false, items: otherItems }
       ]);
@@ -225,7 +225,7 @@ const DataCardView: React.FC = () => {
               title={group.name}
               itemCount={group.items.length}
               status={
-                group.name === 'Order Management' ? 'critical' :
+                group.name === 'Held Orders' ? 'critical' :
                 group.name === 'Outbound Operations' ? 'review' : 'normal'
               }
             >
