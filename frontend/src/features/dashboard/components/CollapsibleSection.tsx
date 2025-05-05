@@ -24,11 +24,11 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const getIcon = () => {
     switch (title.toLowerCase()) {
       case 'order management':
-        return <Package className="w-5 h-5 text-gray-600 mr-2" />;
+        return <Package className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       case 'outbound operations':
-        return <TruckIcon className="w-5 h-5 text-gray-600 mr-2" />;
+        return <TruckIcon className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       case 'open order summary':
-        return <ClipboardList className="w-5 h-5 text-gray-600 mr-2" />;
+        return <ClipboardList className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       default:
         return null;
     }
