@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Package, TruckIcon, ClipboardList, AlertCircle } from 'lucide-react';
 import Card from '../cards/Card';
 
 interface CollapsibleSectionProps {
@@ -8,6 +8,7 @@ interface CollapsibleSectionProps {
   title: string;
   subtitle?: string;
   itemCount?: number;
+  status?: 'critical' | 'review' | 'normal';
   children: React.ReactNode;
 }
 
@@ -17,10 +18,35 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   title,
   subtitle,
   itemCount,
+  status = 'normal',
   children
 }) => {
+  const getIcon = () => {
+    switch (title.toLowerCase()) {
+      case 'order management':
+        return <Package className="w-5 h-5 text-gray-600 mr-2" />;
+      case 'outbound operations':
+        return <TruckIcon className="w-5 h-5 text-gray-600 mr-2" />;
+      case 'open order summary':
+        return <ClipboardList className="w-5 h-5 text-gray-600 mr-2" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Card className="mb-4">
+    <Card 
+      className="mb-4 overflow-hidden" 
+      style={{
+        borderLeft: `6px solid ${
+          status === 'critical' ? '#ef4444' : 
+          status === 'review' ? '#f59e0b' : 
+          '#10b981'
+        }`,
+        borderRadius: '8px',
+        position: 'relative'
+      }}
+    >
       {/* Header */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
@@ -35,7 +61,11 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         <div className="flex justify-between items-center">
           <div>
             <div className="flex items-center gap-2">
+              {getIcon()}
               <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+              {status === 'critical' && (
+                <AlertCircle className="w-5 h-5 text-red-500" />
+              )}
             </div>
             {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
           </div>
@@ -53,7 +83,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         </div>
       </div>
 
-      {/* Contenido */}
+      {/* Content */}
       <div 
         className={`
           transition-all duration-200 ease-in-out overflow-hidden

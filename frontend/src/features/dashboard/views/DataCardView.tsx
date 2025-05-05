@@ -109,9 +109,9 @@ const DataCardView: React.FC = () => {
 
       // Configurar grupos iniciales
       setDataGroups([
-        { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
-        { name: 'Outbound', isOpen: false, items: outboundOrdersItems },
-        { name: 'Other', isOpen: false, items: otherItems }
+        { name: 'Order Management', isOpen: false, items: heldOrdersItems },
+        { name: 'Outbound Operations', isOpen: false, items: outboundOrdersItems },
+        { name: 'Open Order Summary', isOpen: false, items: otherItems }
       ]);
     }
   }, [data]);
@@ -245,6 +245,10 @@ const DataCardView: React.FC = () => {
               setIsOpen={() => toggleGroup(groupIndex)}
               title={group.name}
               itemCount={group.items.length}
+              status={
+                group.name === 'Order Management' ? 'critical' :
+                group.name === 'Outbound Operations' ? 'review' : 'normal'
+              }
             >
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse">
