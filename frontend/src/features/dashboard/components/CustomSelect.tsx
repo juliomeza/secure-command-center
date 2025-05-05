@@ -35,44 +35,43 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
   return (
     <div style={{ minWidth }} className="relative" ref={menuRef}>
-      <label className="text-xs font-medium text-gray-500 mb-1 block">
-        {label}
-      </label>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left focus:outline-none"
-        type="button"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.5rem 0',
-          fontSize: '0.875rem',
-          color: '#1e293b',
-          cursor: 'pointer',
-          border: 'none',
-          background: 'transparent'
-        }}
-      >
-        <span>{selectedOption?.label}</span>
-        <ChevronDown
-          size={16}
-          className={`text-gray-500 transition-transform duration-200 ${
-            isOpen ? 'transform rotate-180' : ''
-          }`}
-        />
-      </button>
+      <div className="flex items-center gap-3">
+        <label className="text-xs font-medium text-gray-500 whitespace-nowrap">
+          {label}
+        </label>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex-1 text-left focus:outline-none"
+          type="button"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.875rem',
+            color: '#1e293b',
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent'
+          }}
+        >
+          <span>{selectedOption?.label}</span>
+          <ChevronDown
+            size={16}
+            className={`text-gray-500 transition-transform duration-200 ${
+              isOpen ? 'transform rotate-180' : ''
+            }`}
+          />
+        </button>
+      </div>
 
       {isOpen && (
         <>
-          {/* Overlay transparente para capturar clicks fuera del menú */}
           <div 
             className="fixed inset-0" 
             style={{ zIndex: 40 }}
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Menú flotante */}
           <div
             style={{
               position: 'fixed',
@@ -81,9 +80,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
               borderRadius: '0.375rem',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
               border: 'none',
-              width: menuRef.current?.offsetWidth,
-              left: menuRef.current?.getBoundingClientRect().left,
-              top: menuRef.current?.getBoundingClientRect().bottom,
+              width: menuRef.current?.offsetWidth ?? 'auto',
+              left: menuRef.current?.getBoundingClientRect()?.left ?? 0,
+              top: (menuRef.current?.getBoundingClientRect()?.bottom ?? 0) - 5,
               marginTop: '0.25rem',
               outline: 'none'
             }}

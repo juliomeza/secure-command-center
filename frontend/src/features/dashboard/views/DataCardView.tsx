@@ -170,9 +170,9 @@ const DataCardView: React.FC = () => {
 
   // Renderización basada en el estado
   return (
-    <div className="p-4">
+    <div className="p-2">
       {/* Filtros con CustomSelect */}
-      <div className="mb-6 flex flex-wrap gap-6">
+      <div className="flex items-center gap-6 mb-6 pl-4">
         <CustomSelect
           label="Year"
           value={year}

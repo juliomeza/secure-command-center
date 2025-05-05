@@ -135,7 +135,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
     <div className="bg-gray-50 p-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8 pt-2">
+        {/* Layout principal */}
+        <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <HamburgerMenu menuItems={companyMenuItems} position="left" />
             <h1 
@@ -149,7 +150,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </h1>
           </div>
           
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <PeriodMenu 
               periods={periods}
               selectedPeriod={selectedPeriod}
