@@ -13,6 +13,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.2",
     "axios": "^1.8.4",
     "lucide-react": "^0.487.0",
     "react": "^19.0.0",

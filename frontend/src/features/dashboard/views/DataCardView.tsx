@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { authService } from '../../../auth/services/authService';
 import { AxiosError } from 'axios';
 import CollapsibleSection from '../components/CollapsibleSection';
+import CustomSelect from '../components/CustomSelect';
 
 // Definición de la estructura de datos para DataCard
 interface DataCardItem {
@@ -170,61 +171,31 @@ const DataCardView: React.FC = () => {
   // Renderización basada en el estado
   return (
     <div className="p-4">
-      {/* Filtros con estilo mejorado */}
+      {/* Filtros con CustomSelect */}
       <div className="mb-6 flex flex-wrap gap-6">
-        <div className="bg-white border border-gray-100 shadow-sm py-2 px-4 rounded-lg flex flex-col min-w-[140px]">
-          <label className="text-xs font-medium text-gray-500 mb-1">Year</label>
-          <div className="flex items-center">
-            <select 
-              className="bg-transparent border-none text-sm font-medium focus:outline-none focus:ring-0 text-blue-600 pr-8 w-full appearance-none"
-              value={year}
-              onChange={(e) => setYear(parseInt(e.target.value))}
-            >
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-            <svg className="w-4 h-4 text-blue-600 ml-[-20px] pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </div>
-        </div>
+        <CustomSelect
+          label="Year"
+          value={year}
+          onChange={(value) => setYear(Number(value))}
+          options={yearOptions.map(y => ({ id: y, label: y.toString() }))}
+          minWidth="140px"
+        />
         
-        <div className="bg-white border border-gray-100 shadow-sm py-2 px-4 rounded-lg flex flex-col min-w-[140px]">
-          <label className="text-xs font-medium text-gray-500 mb-1">Week</label>
-          <div className="flex items-center">
-            <select 
-              className="bg-transparent border-none text-sm font-medium focus:outline-none focus:ring-0 text-blue-600 pr-8 w-full appearance-none"
-              value={week}
-              onChange={(e) => setWeek(parseInt(e.target.value))}
-            >
-              {weekOptions.map((w) => (
-                <option key={w} value={w}>{w}</option>
-              ))}
-            </select>
-            <svg className="w-4 h-4 text-blue-600 ml-[-20px] pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </div>
-        </div>
+        <CustomSelect
+          label="Week"
+          value={week}
+          onChange={(value) => setWeek(Number(value))}
+          options={weekOptions.map(w => ({ id: w, label: w.toString() }))}
+          minWidth="140px"
+        />
         
-        <div className="bg-white border border-gray-100 shadow-sm py-2 px-4 rounded-lg flex flex-col min-w-[240px]">
-          <label className="text-xs font-medium text-gray-500 mb-1">Warehouse</label>
-          <div className="flex items-center">
-            <select
-              className="bg-transparent border-none text-sm font-medium focus:outline-none focus:ring-0 text-blue-600 pr-8 w-full appearance-none"
-              value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-            >
-              {warehouseOptions.map((wh) => (
-                <option key={wh.id} value={wh.id}>{wh.name}</option>
-              ))}
-            </select>
-            <svg className="w-4 h-4 text-blue-600 ml-[-20px] pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </div>
-        </div>
+        <CustomSelect
+          label="Warehouse"
+          value={Number(warehouseId)}
+          onChange={(value) => setWarehouseId(value.toString())}
+          options={warehouseOptions.map(wh => ({ id: wh.id, label: wh.name }))}
+          minWidth="240px"
+        />
       </div>
 
       {/* Estados de carga y error */}
