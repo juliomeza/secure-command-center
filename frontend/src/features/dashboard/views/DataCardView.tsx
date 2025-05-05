@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../../../auth/services/authService';
 import { AxiosError } from 'axios';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 // Definición de la estructura de datos para DataCard
 interface DataCardItem {
@@ -32,11 +33,19 @@ interface WarehouseOption {
   name: string;
 }
 
+// Estructura para grupos de datos
+interface DataGroup {
+  name: string;
+  isOpen: boolean;
+  items: DataCardItem[];
+}
+
 const DataCardView: React.FC = () => {
   // Estado para los datos y UI
   const [data, setData] = useState<DataCardItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataGroups, setDataGroups] = useState<DataGroup[]>([]);
   
   // Estado para filtros
   const [year, setYear] = useState<number>(new Date().getFullYear());
@@ -47,7 +56,8 @@ const DataCardView: React.FC = () => {
         (24 * 60 * 60 * 1000));
     return Math.ceil(days / 7);
   });
-  const [warehouseId, setWarehouseId] = useState<string>('');
+  // Inicializar warehouseId con el primer elemento de la lista
+  const [warehouseId, setWarehouseId] = useState<string>('1');
 
   // Lista de warehouses disponibles con nombres descriptivos
   const warehouseOptions: WarehouseOption[] = [
@@ -58,9 +68,59 @@ const DataCardView: React.FC = () => {
     { id: 27, name: 'WH: 23 - Dayton - NJ' },
   ];
 
+  // Lista específica de items que deben estar en Held Orders
+  const heldOrderItems = [
+    'TOTAL HELD ORDERS',
+    'SHIPPED HELD ORDERS',
+    'OPEN AGED HELD ORDERS > 48 HRS',
+    'OPEN HELD ORDERS > 7 DAYS'
+  ];
+
+  // Lista específica de items que deben estar en Outbound
+  const outboundItems = [
+    'OUTBOUND FC',
+    'ORDERS SHIPPED',
+    'ORDERS SHIPPED', // Mantenemos duplicado como solicitado
+    'SHIPPED WT ORDERS'
+  ];
+
   useEffect(() => {
     fetchDataCard();
   }, [year, week, warehouseId]); // Recargar cuando cambien los filtros
+
+  // Organizar los datos en grupos después de obtenerlos
+  useEffect(() => {
+    if (data.length > 0) {
+      // Filtrado específico para Held Orders - solo incluir los 4 elementos especificados
+      const heldOrdersItems = data.filter(item => 
+        heldOrderItems.includes(item.description.toUpperCase())
+      );
+
+      // Filtrado específico para Outbound - solo incluir los elementos especificados
+      const outboundOrdersItems = data.filter(item => 
+        outboundItems.includes(item.description.toUpperCase())
+      );
+
+      // Otros items que no son parte de los grupos específicos
+      const otherItems = data.filter(item => 
+        !heldOrderItems.includes(item.description.toUpperCase()) &&
+        !outboundItems.includes(item.description.toUpperCase())
+      );
+
+      // Configurar grupos iniciales
+      const groups: DataGroup[] = [
+        { name: 'Held Orders', isOpen: true, items: heldOrdersItems },
+        { name: 'Outbound', isOpen: true, items: outboundOrdersItems },
+        // Más grupos aquí...
+      ];
+
+      if (otherItems.length > 0) {
+        groups.push({ name: 'Other Data', isOpen: true, items: otherItems });
+      }
+
+      setDataGroups(groups);
+    }
+  }, [data]);
 
   const fetchDataCard = async () => {
     setLoading(true);
@@ -68,10 +128,8 @@ const DataCardView: React.FC = () => {
     
     try {
       // Construir URL con parámetros de filtro
-      let url = `/data/datacard-reports/?year=${year}&week=${week}`;
-      if (warehouseId) {
-        url += `&warehouse_id=${warehouseId}`;
-      }
+      // Siempre incluir warehouse_id ya que ya no hay opción "All"
+      const url = `/data/datacard-reports/?year=${year}&week=${week}&warehouse_id=${warehouseId}`;
       
       const response = await authService.apiClient.get<DataCardItem[]>(url);
       setData(response.data);
@@ -105,6 +163,15 @@ const DataCardView: React.FC = () => {
     { length: 7 }, 
     (_, i) => currentYear - 5 + i
   );
+
+  // Manejar la apertura/cierre de un grupo
+  const toggleGroup = (index: number) => {
+    setDataGroups(prevGroups => 
+      prevGroups.map((group, i) => 
+        i === index ? { ...group, isOpen: !group.isOpen } : group
+      )
+    );
+  };
 
   // Renderización basada en el estado
   return (
@@ -144,7 +211,6 @@ const DataCardView: React.FC = () => {
             value={warehouseId}
             onChange={(e) => setWarehouseId(e.target.value)}
           >
-            <option value="">All</option>
             {warehouseOptions.map((wh) => (
               <option key={wh.id} value={wh.id}>{wh.name}</option>
             ))}
@@ -175,59 +241,92 @@ const DataCardView: React.FC = () => {
         </div>
       )}
 
-      {/* Tabla de datos */}
+      {/* Secciones de datos agrupadas (estilo acordeón) */}
       {!loading && !error && (
-        <div className="overflow-x-auto shadow-md sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monday</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tuesday</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wednesday</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thursday</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Friday</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saturday</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sunday</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.length > 0 ? (
-                data.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">{item.description}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day1_value, item.is_percentage, item.is_integer)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day2_value, item.is_percentage, item.is_integer)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day3_value, item.is_percentage, item.is_integer)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day4_value, item.is_percentage, item.is_integer)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day5_value, item.is_percentage, item.is_integer)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day6_value, item.is_percentage, item.is_integer)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {formatValue(item.day7_value, item.is_percentage, item.is_integer)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
-                    No data found for the selected filters.
-                  </td>
-                </tr>
+        <div className="space-y-4">
+          {dataGroups.map((group, groupIndex) => (
+            <div 
+              key={`group-${groupIndex}`} 
+              className="border border-gray-200 rounded-lg overflow-hidden"
+            >
+              {/* Encabezado del grupo con botón para expandir/contraer */}
+              <button 
+                onClick={() => toggleGroup(groupIndex)}
+                className="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center">
+                  {group.isOpen ? 
+                    <ChevronDown className="h-5 w-5 mr-2 text-blue-600" /> : 
+                    <ChevronRight className="h-5 w-5 mr-2 text-blue-600" />
+                  }
+                  <span className="font-medium text-gray-900">{group.name}</span>
+                </div>
+                <span className="text-sm text-gray-500">{group.items.length} items</span>
+              </button>
+
+              {/* Contenido del grupo (visible solo si está abierto) */}
+              {group.isOpen && (
+                <div className="border-t border-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monday</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tuesday</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wednesday</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thursday</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Friday</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saturday</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sunday</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {group.items.length > 0 ? (
+                        group.items.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">{item.description}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day1_value, item.is_percentage, item.is_integer)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day2_value, item.is_percentage, item.is_integer)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day3_value, item.is_percentage, item.is_integer)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day4_value, item.is_percentage, item.is_integer)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day5_value, item.is_percentage, item.is_integer)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day6_value, item.is_percentage, item.is_integer)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                              {formatValue(item.day7_value, item.is_percentage, item.is_integer)}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
+                            No data found for this group.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               )}
-            </tbody>
-          </table>
+            </div>
+          ))}
+
+          {dataGroups.length === 0 && !loading && (
+            <div className="text-center py-8 text-gray-500">
+              No data found for the selected filters.
+            </div>
+          )}
         </div>
       )}
     </div>
