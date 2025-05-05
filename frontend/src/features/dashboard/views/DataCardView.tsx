@@ -108,17 +108,11 @@ const DataCardView: React.FC = () => {
       );
 
       // Configurar grupos iniciales
-      const groups: DataGroup[] = [
-        { name: 'Held Orders', isOpen: true, items: heldOrdersItems },
-        { name: 'Outbound', isOpen: true, items: outboundOrdersItems },
-        // Más grupos aquí...
-      ];
-
-      if (otherItems.length > 0) {
-        groups.push({ name: 'Other Data', isOpen: true, items: otherItems });
-      }
-
-      setDataGroups(groups);
+      setDataGroups([
+        { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
+        { name: 'Outbound', isOpen: false, items: outboundOrdersItems },
+        { name: 'Other', isOpen: false, items: otherItems }
+      ]);
     }
   }, [data]);
 
