@@ -8,12 +8,13 @@ import COOView from './views/COOView';
 import CIOView from './views/CIOView';
 import LeadersView from './views/LeadersView';
 import TestingView from './views/TestingView'; // <<< Added import for TestingView
+import DataCardView from './views/DataCardView'; // <<< Added import for DataCardView
 import { useAuth } from '../../auth/components/AuthProvider';
 import {
-  BarChart2, DollarSign, Settings, Monitor, Users, TestTubeDiagonal
+  BarChart2, DollarSign, Settings, Monitor, Users, TestTubeDiagonal, FileSpreadsheet
 } from 'lucide-react';
 
-type DashboardTabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS' | 'TESTING'; // Added TESTING
+type DashboardTabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS' | 'TESTING' | 'DATACARD'; // Added DATACARD
 
 const iconProps = {
   size: 18,
@@ -27,6 +28,7 @@ const allDashboardTabs: Array<{ id: DashboardTabId; label: string; icon: React.R
   { id: 'CIO', label: 'CIO', icon: <Monitor {...iconProps} /> },
   { id: 'LEADERS', label: 'Leaders', icon: <Users {...iconProps} /> },
   { id: 'TESTING', label: 'Testing', icon: <TestTubeDiagonal {...iconProps} /> }, // Added TESTING tab
+  { id: 'DATACARD', label: 'DataCard', icon: <FileSpreadsheet {...iconProps} /> }, // Added DataCard tab
 ];
 
 const ExecutiveDashboard: React.FC = () => {
@@ -75,6 +77,7 @@ const ExecutiveDashboard: React.FC = () => {
       case 'CIO': return <CIOView />;
       case 'LEADERS': return <LeadersView />;
       case 'TESTING': return <TestingView />; // Added TESTING case
+      case 'DATACARD': return <DataCardView />; // Added DATACARD case
       default: return <div>Invalid tab selected.</div>;
     }
   };
