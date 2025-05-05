@@ -20,7 +20,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children
 }) => {
   return (
-    <Card className="mb-6">
+    <Card className="mb-4">
       {/* Header */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
