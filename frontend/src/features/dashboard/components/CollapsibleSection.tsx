@@ -24,7 +24,13 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
       {/* Header */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer -mt-6 -mx-6 px-6 py-4 hover:bg-gray-50 transition-all"
+        style={{
+          margin: `${isOpen ? '-2.5rem' : '-1.5rem'} -1.5rem -1.5rem -1.5rem`,
+          padding: `${isOpen ? '1.5rem' : '0.1rem'} 1.5rem`,
+          cursor: 'pointer',
+          transition: 'background-color 0.2s'
+        }}
+        className="hover:bg-gray-50"
       >
         <div className="flex justify-between items-center">
           <div>
@@ -51,7 +57,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
       <div 
         className={`
           transition-all duration-200 ease-in-out overflow-hidden
-          ${isOpen ? 'opacity-100 mt-4' : 'opacity-0 max-h-0'}
+          ${isOpen ? 'opacity-100' : 'opacity-0 max-h-0'}
         `}
       >
         {isOpen && children}
