@@ -173,13 +173,15 @@ const DataCardView: React.FC = () => {
     <div className="p-2">
       {/* Filtros con CustomSelect */}
       <div className="flex items-center gap-6 mb-6 pl-4">
-        <CustomSelect
-          label="Year"
-          value={year}
-          onChange={(value) => setYear(Number(value))}
-          options={yearOptions.map(y => ({ id: y, label: y.toString() }))}
-          minWidth="140px"
-        />
+        <div style={{ marginLeft: '32px' }}>  {/* Puedes ajustar este valor */}
+          <CustomSelect
+            label="Year"
+            value={year}
+            onChange={(value) => setYear(Number(value))}
+            options={yearOptions.map(y => ({ id: y, label: y.toString() }))}
+            minWidth="140px"
+          />
+        </div>
         
         <CustomSelect
           label="Week"
