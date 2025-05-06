@@ -85,6 +85,31 @@ const DataCardView: React.FC = () => {
     'SHIPPED WT ORDERS'
   ];
 
+  // Lista específica de items que deben estar en Open Order Summary
+  const openOrderSummaryItems = [
+    'OPEN ORDERS (CREATED)',
+    'ORDERS CREATED(>24HRS)',
+    'ORDERS CREATED(>48HRS)',
+    'OPEN ORDERS (CREATED/APPROVAL REQUIRED)',
+    'OPEN ORDERS (RELEASED/EXECUTING)',
+    'NEW ORDERS (BEFORE 3PM)',
+    'NEW ORDERS (AFTER 3PM)',
+    'WAVED ORDERS',
+    'SHIPPED ORDERS SAME DAY',
+    'CARRYOVER ORDERS',
+    'OPEN AGED ORDERS > 48 HRS (99.9 %)',
+    'OPEN ORDERS > 7 DAYS',
+    'OUT OF MKT (NEW)',
+    'OUT OF MKT (WAVED/SHIPPED)',
+    'OUT OF MKT (> 48 HRS)'
+  ];
+
+  // Lista específica de items que deben estar en Outbound Order Accuracy
+  const outboundAccuracyItems = [
+    'ORDERS AUDITED (*)',
+    'ERRORS (*)'
+  ];
+
   useEffect(() => {
     fetchDataCard();
   }, [year, week, warehouseId]); // Recargar cuando cambien los filtros
@@ -102,17 +127,22 @@ const DataCardView: React.FC = () => {
         outboundItems.includes(item.description.toUpperCase())
       );
 
-      // Otros items que no son parte de los grupos específicos
-      const otherItems = data.filter(item => 
-        !heldOrderItems.includes(item.description.toUpperCase()) &&
-        !outboundItems.includes(item.description.toUpperCase())
+      // Items para Open Order Summary
+      const openOrderItems = data.filter(item =>
+        openOrderSummaryItems.includes(item.description.toUpperCase())
+      );
+
+      // Items para Outbound Order Accuracy
+      const outboundAccuracyOrderItems = data.filter(item =>
+        outboundAccuracyItems.includes(item.description.toUpperCase())
       );
 
       // Configurar grupos iniciales
       setDataGroups([
         { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
         { name: 'Outbound', isOpen: false, items: outboundOrdersItems },
-        { name: 'Open Order Summary', isOpen: false, items: otherItems }
+        { name: 'Open Order Summary', isOpen: false, items: openOrderItems },
+        { name: 'Outbound Order Accuracy', isOpen: false, items: outboundAccuracyOrderItems }
       ]);
     }
   }, [data]);
