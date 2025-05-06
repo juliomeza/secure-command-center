@@ -151,6 +151,25 @@ const DataCardView: React.FC = () => {
     'PENDING DESTRUCTION ORDERS'
   ];
 
+  // Lista específica de items que deben estar en Outbound Serializado
+  const outboundSerializedItems = [
+    'OUTBOUND',
+    'SERIALIZED OUTBOUND ORDERS RECEIVED',
+    'SERIALIZED OUTBOUND ORDERS PROCESSED',
+    'SERIALIZED OUTBOUND ORDERS CANCELLED',
+    'SERIALIZED OUTBOUND ORDERS SCANNED',
+    'SERIALIZED OUTBOUND ORDERS NOT SCANNED',
+    '# SERIAL NUMBERS'
+  ];
+
+  // Lista específica de items que deben estar en Inbound Serializado
+  const inboundSerializedItems = [
+    'SERIALIZED INBOUND ORDERS RECEIVED',
+    'SERIALIZED INBOUND ORDERS CANCELLED',
+    'SERIALIZED INBOUND ORDERS SCANNED',
+    '# SERIAL NUMBERS'
+  ];
+
   useEffect(() => {
     fetchDataCard();
   }, [year, week, warehouseId]); // Recargar cuando cambien los filtros
@@ -203,6 +222,16 @@ const DataCardView: React.FC = () => {
         reverseLogisticsItems.includes(item.description.toUpperCase())
       );
 
+      // Items para Outbound Serializado
+      const outboundSerializedOrderItems = data.filter(item =>
+        outboundSerializedItems.includes(item.description.toUpperCase())
+      );
+
+      // Items para Inbound Serializado
+      const inboundSerializedOrderItems = data.filter(item =>
+        inboundSerializedItems.includes(item.description.toUpperCase())
+      );
+
       // Configurar grupos iniciales
       setDataGroups([
         { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
@@ -212,8 +241,10 @@ const DataCardView: React.FC = () => {
         { name: 'Inbound Ops', isOpen: false, items: inboundOpsOrderItems },
         { name: 'Inbound', isOpen: false, items: inboundOrderItems },
         { name: 'Over Short Damage', isOpen: false, items: overShortDamageOrderItems },
-        { name: 'Inv Accuracy', isOpen: false, items: invAccuracyOrderItems, isDSCSA: true },
-        { name: 'Reverse Logistics', isOpen: false, items: reverseLogisticsOrderItems, isDSCSA: true }
+        { name: 'Inv Accuracy', isOpen: false, items: invAccuracyOrderItems },
+        { name: 'Reverse Logistics', isOpen: false, items: reverseLogisticsOrderItems },
+        { name: 'Serialized Outbound', isOpen: false, items: outboundSerializedOrderItems, isDSCSA: true },
+        { name: 'Serialized Inbound', isOpen: false, items: inboundSerializedOrderItems, isDSCSA: true }
       ]);
     }
   }, [data]);

@@ -43,6 +43,10 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         return <Calculator className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       case 'reverse logistics':
         return <RotateCcw className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
+      case 'serialized outbound':
+        return <TruckIcon className="w-5 h-5 text-gray-600" style={{ marginRight: '10px', transform: 'scaleX(-1)' }} />;
+      case 'serialized inbound':
+        return <TruckIcon className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       default:
         return null;
     }
