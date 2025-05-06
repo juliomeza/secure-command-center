@@ -378,47 +378,47 @@ const DataCardView: React.FC = () => {
                             width: '250px',
                             minWidth: '250px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
-                          }}>Description</th>
+                            padding: '0.5rem 0.75rem'
+                          }}></th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Monday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Tuesday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Wednesday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Thursday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Friday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Saturday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Sunday</th>
                           <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
+                            padding: '0.5rem 0.75rem'
                           }}>Total</th>
                         </tr>
                       </thead>
