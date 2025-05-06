@@ -75,15 +75,15 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
           <div
             style={{
-              position: 'absolute',
+              position: 'fixed', // Cambiado de 'absolute' a 'fixed' para evitar superposición
               zIndex: 50,
               backgroundColor: 'white',
               borderRadius: '0.375rem',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
               border: 'none',
               width: menuRef.current?.offsetWidth ?? 'auto',
-              left: 0,
-              marginTop: '0.25rem',
+              top: menuRef.current ? menuRef.current.getBoundingClientRect().bottom + 4 : 0, // Posicionar debajo del botón
+              left: menuRef.current ? menuRef.current.getBoundingClientRect().left : 0, // Alinear con el borde izquierdo del botón
               outline: 'none'
             }}
           >
