@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Package, TruckIcon, ClipboardList, AlertCircle } from 'lucide-react';
+import { ChevronDown, TruckIcon, ClipboardList, AlertCircle } from 'lucide-react';
 import Card from '../cards/Card';
 
 interface CollapsibleSectionProps {
