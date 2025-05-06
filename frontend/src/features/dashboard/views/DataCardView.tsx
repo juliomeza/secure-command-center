@@ -378,31 +378,31 @@ const DataCardView: React.FC = () => {
                             minWidth: '250px',
                             backgroundColor: '#f9fafb'
                           }}>Description</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Monday</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Tuesday</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Wednesday</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Thursday</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Friday</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Saturday</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Sunday</th>
@@ -417,13 +417,13 @@ const DataCardView: React.FC = () => {
                                 minWidth: '250px',
                                 backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
                               }}>{item.description}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
-                              <td className="px-3 py-2 text-sm">{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
                             </tr>
                           ))
                         ) : (
