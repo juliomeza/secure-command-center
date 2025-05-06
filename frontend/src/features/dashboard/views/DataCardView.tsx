@@ -21,6 +21,7 @@ interface DataCardItem {
   day5_value: string;
   day6_value: string;
   day7_value: string;
+  total: string;
   is_integer: boolean;
   is_percentage: boolean;
   is_text: boolean;
@@ -406,6 +407,10 @@ const DataCardView: React.FC = () => {
                             minWidth: '100px',
                             backgroundColor: '#f9fafb'
                           }}>Sunday</th>
+                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Total</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -424,11 +429,12 @@ const DataCardView: React.FC = () => {
                               <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
                               <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
                               <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.total, item.is_percentage, item.is_integer)}</td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
+                            <td colSpan={9} className="px-3 py-2 text-center text-sm text-gray-500">
                               No data found for this group.
                             </td>
                           </tr>
