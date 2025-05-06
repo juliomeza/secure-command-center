@@ -106,8 +106,32 @@ const DataCardView: React.FC = () => {
 
   // Lista específica de items que deben estar en Outbound Order Accuracy
   const outboundAccuracyItems = [
+    'OUTBOUND ORDER ACCURACY ',  // Notese el espacio al final
     'ORDERS AUDITED (*)',
     'ERRORS (*)'
+  ];
+
+  // Lista específica de items que deben estar en Inbound Ops
+  const inboundOpsItems = [
+    'INBOUND OPS',
+    'INBOUND LPs',  // Pendiente por corregir
+    'INBOUND UNITS',
+    'INBOUND CASES'
+  ];
+
+  // Lista específica de items que deben estar en Inbound
+  const inboundItems = [
+    'ASN NOT RECEIVED',
+    'PALLETS IN RECEIVING AREA',
+    'ACTUAL INBOUND CONTAINERS (*)',
+    'ACTUAL LIVE LOAD TRLRS (*)'
+  ];
+
+  // Lista específica de items que deben estar en Over Short Damage
+  const overShortDamageItems = [
+    'TOTAL UNITS OVER',
+    'TOTAL UNITS SHORT',
+    'TOTAL UNITS DAMAGED'
   ];
 
   useEffect(() => {
@@ -137,12 +161,30 @@ const DataCardView: React.FC = () => {
         outboundAccuracyItems.includes(item.description.toUpperCase())
       );
 
+      // Items para Inbound Ops
+      const inboundOpsOrderItems = data.filter(item =>
+        inboundOpsItems.includes(item.description.toUpperCase())
+      );
+
+      // Items para Inbound
+      const inboundOrderItems = data.filter(item =>
+        inboundItems.includes(item.description.toUpperCase())
+      );
+
+      // Items para Over Short Damage
+      const overShortDamageOrderItems = data.filter(item =>
+        overShortDamageItems.includes(item.description.toUpperCase())
+      );
+
       // Configurar grupos iniciales
       setDataGroups([
         { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
         { name: 'Outbound', isOpen: false, items: outboundOrdersItems },
         { name: 'Open Order Summary', isOpen: false, items: openOrderItems },
-        { name: 'Outbound Order Accuracy', isOpen: false, items: outboundAccuracyOrderItems }
+        { name: 'Outbound Order Accuracy', isOpen: false, items: outboundAccuracyOrderItems },
+        { name: 'Inbound Ops', isOpen: false, items: inboundOpsOrderItems },
+        { name: 'Inbound', isOpen: false, items: inboundOrderItems },
+        { name: 'Over Short Damage', isOpen: false, items: overShortDamageOrderItems }
       ]);
     }
   }, [data]);
