@@ -368,54 +368,56 @@ const DataCardView: React.FC = () => {
                   }
                   isDSCSA={group.isDSCSA}
                 >
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0" style={{
-                            width: '250px',
-                            minWidth: '250px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}></th>
-                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Total'].map((day) => (
-                            <th key={day} scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                              width: 'calc((100% - 250px) / 8)',
-                              minWidth: '45px',
+                  <div style={{ position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="min-w-full border-collapse">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 z-10" style={{
+                              width: '250px',
+                              minWidth: '250px',
                               backgroundColor: '#f9fafb',
                               padding: '0.5rem 0.75rem'
-                            }}>{day}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {group.items.length > 0 ? (
-                          group.items.map((item, index) => (
-                            <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              <td className="px-3 py-2 text-sm sticky left-0" style={{
-                                width: '250px',
-                                minWidth: '250px',
-                                backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
-                              }}>{item.description}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
-                              <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.total, item.is_percentage, item.is_integer)}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={9} className="px-3 py-2 text-center text-sm text-gray-500">
-                              No data found for this group.
-                            </td>
+                            }}></th>
+                            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Total'].map((day) => (
+                              <th key={day} scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                                width: 'calc((100% - 250px) / 8)',
+                                minWidth: '45px',
+                                backgroundColor: '#f9fafb',
+                                padding: '0.5rem 0.75rem'
+                              }}>{day}</th>
+                            ))}
                           </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {group.items.length > 0 ? (
+                            group.items.map((item, index) => (
+                              <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                <td className="px-3 py-2 text-sm sticky left-0" style={{
+                                  width: '250px',
+                                  minWidth: '250px',
+                                  backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
+                                }}>{item.description}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.total, item.is_percentage, item.is_integer)}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={9} className="px-3 py-2 text-center text-sm text-gray-500">
+                                No data found for this group.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </CollapsibleSection>
               </React.Fragment>
