@@ -34,8 +34,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   }, []);
 
   return (
-    <div style={{ minWidth }} className="relative" ref={menuRef}>
-      <div className="flex items-center gap-3">
+    <div className="relative sm:flex-1" style={{ minWidth }} ref={menuRef}>
+      <div className="flex items-center gap-2 w-full">
         <label className="text-xs font-medium text-gray-500 whitespace-nowrap">
           {label}
         </label>
@@ -51,13 +51,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             color: '#1e293b',
             cursor: 'pointer',
             border: 'none',
-            background: 'transparent'
+            background: 'transparent',
+            minWidth: 0
           }}
         >
-          <span>{selectedOption?.label}</span>
+          <span className="truncate">{selectedOption?.label}</span>
           <ChevronDown
             size={16}
-            className={`text-gray-500 transition-transform duration-200 ${
+            className={`text-gray-500 transition-transform duration-200 flex-shrink-0 ${
               isOpen ? 'transform rotate-180' : ''
             }`}
           />
@@ -74,15 +75,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
           <div
             style={{
-              position: 'fixed',
+              position: 'absolute',
               zIndex: 50,
               backgroundColor: 'white',
               borderRadius: '0.375rem',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
               border: 'none',
               width: menuRef.current?.offsetWidth ?? 'auto',
-              left: menuRef.current?.getBoundingClientRect()?.left ?? 0,
-              top: (menuRef.current?.getBoundingClientRect()?.bottom ?? 0) - 5,
+              left: 0,
               marginTop: '0.25rem',
               outline: 'none'
             }}
