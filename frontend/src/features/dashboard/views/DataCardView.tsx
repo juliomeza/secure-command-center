@@ -457,10 +457,11 @@ const formatValue = (value: string | null, isPercentage: boolean, isInteger: boo
   if (!value) return '-';
   
   if (isPercentage) {
-    // Intentar formatear como porcentaje
     try {
       const numValue = parseFloat(value);
-      return `${numValue.toFixed(2)}%`;
+      const sign = numValue < 0 ? '-' : '';
+      const absValue = Math.abs(numValue * 100); // Multiplicar por 100 para convertir a porcentaje
+      return `${sign}${absValue.toFixed(0)}%`; // Mostrar sin decimales
     } catch {
       return value;
     }
