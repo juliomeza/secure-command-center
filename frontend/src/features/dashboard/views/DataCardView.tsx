@@ -4,6 +4,7 @@ import { authService } from '../../../auth/services/authService';
 import { AxiosError } from 'axios';
 import CollapsibleSection from '../components/CollapsibleSection';
 import CustomSelect from '../components/CustomSelect';
+import SuperGroupHeader from '../components/SuperGroupHeader';
 
 // Definición de la estructura de datos para DataCard
 interface DataCardItem {
@@ -39,6 +40,7 @@ interface DataGroup {
   name: string;
   isOpen: boolean;
   items: DataCardItem[];
+  isDSCSA?: boolean;
 }
 
 const DataCardView: React.FC = () => {
@@ -134,6 +136,21 @@ const DataCardView: React.FC = () => {
     'TOTAL UNITS DAMAGED'
   ];
 
+  // Lista específica de items que deben estar en Inv Accuracy
+  const invAccuracyItems = [
+    'INV ACCURACY',
+    'INVENTORY CYCLE COUNTS',
+    'INVENTORY ADJUSTMENT '  // Nótese el espacio al final
+  ];
+
+  // Lista específica de items que deben estar en Reverse Logistics
+  const reverseLogisticsItems = [
+    'RETURN AUTHORIZATION CREATED',
+    'RETURN UNITS RECEIVED',
+    'COMPLETED RETURNS',
+    'PENDING DESTRUCTION ORDERS'
+  ];
+
   useEffect(() => {
     fetchDataCard();
   }, [year, week, warehouseId]); // Recargar cuando cambien los filtros
@@ -176,6 +193,16 @@ const DataCardView: React.FC = () => {
         overShortDamageItems.includes(item.description.toUpperCase())
       );
 
+      // Items para Inv Accuracy
+      const invAccuracyOrderItems = data.filter(item =>
+        invAccuracyItems.includes(item.description.toUpperCase())
+      );
+
+      // Items para Reverse Logistics
+      const reverseLogisticsOrderItems = data.filter(item =>
+        reverseLogisticsItems.includes(item.description.toUpperCase())
+      );
+
       // Configurar grupos iniciales
       setDataGroups([
         { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
@@ -184,7 +211,9 @@ const DataCardView: React.FC = () => {
         { name: 'Outbound Order Accuracy', isOpen: false, items: outboundAccuracyOrderItems },
         { name: 'Inbound Ops', isOpen: false, items: inboundOpsOrderItems },
         { name: 'Inbound', isOpen: false, items: inboundOrderItems },
-        { name: 'Over Short Damage', isOpen: false, items: overShortDamageOrderItems }
+        { name: 'Over Short Damage', isOpen: false, items: overShortDamageOrderItems },
+        { name: 'Inv Accuracy', isOpen: false, items: invAccuracyOrderItems, isDSCSA: true },
+        { name: 'Reverse Logistics', isOpen: false, items: reverseLogisticsOrderItems, isDSCSA: true }
       ]);
     }
   }, [data]);
@@ -289,87 +318,97 @@ const DataCardView: React.FC = () => {
       {/* Secciones de datos */}
       {!loading && !error && (
         <div className="space-y-6">
-          {dataGroups.map((group, groupIndex) => (
-            <CollapsibleSection
-              key={`group-${groupIndex}`}
-              isOpen={group.isOpen}
-              setIsOpen={() => toggleGroup(groupIndex)}
-              title={group.name}
-              itemCount={group.items.length}
-              status={
-                group.name === 'Held Orders' ? 'critical' :
-                group.name === 'Outbound' ? 'review' : 'normal'
-              }
-            >
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase sticky left-0" style={{
-                        width: '250px',
-                        minWidth: '250px',
-                        backgroundColor: '#f9fafb'
-                      }}>Description</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Monday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Tuesday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Wednesday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Thursday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Friday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Saturday</th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
-                        minWidth: '100px',
-                        backgroundColor: '#f9fafb'
-                      }}>Sunday</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.items.length > 0 ? (
-                      group.items.map((item, index) => (
-                        <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-3 py-2 text-sm sticky left-0" style={{
+          {dataGroups.map((group, groupIndex) => {
+            // Si es el primer grupo DSCSA, mostrar el encabezado
+            const isFirstDSCSA = group.isDSCSA && !dataGroups[groupIndex - 1]?.isDSCSA;
+            
+            return (
+              <React.Fragment key={`group-${groupIndex}`}>
+                {isFirstDSCSA && (
+                  <SuperGroupHeader title="DSCSA ORDERS SUMMARY" />
+                )}
+                <CollapsibleSection
+                  isOpen={group.isOpen}
+                  setIsOpen={() => toggleGroup(groupIndex)}
+                  title={group.name}
+                  itemCount={group.items.length}
+                  status={
+                    group.name === 'Held Orders' ? 'critical' :
+                    group.name === 'Outbound' ? 'review' : 'normal'
+                  }
+                  isDSCSA={group.isDSCSA}
+                >
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border-collapse">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase sticky left-0" style={{
                             width: '250px',
                             minWidth: '250px',
-                            backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
-                          }}>{item.description}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
-                          <td className="px-3 py-2 text-sm">{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
+                            backgroundColor: '#f9fafb'
+                          }}>Description</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Monday</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Tuesday</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Wednesday</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Thursday</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Friday</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Saturday</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase" style={{ 
+                            minWidth: '100px',
+                            backgroundColor: '#f9fafb'
+                          }}>Sunday</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
-                          No data found for this group.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CollapsibleSection>
-          ))}
+                      </thead>
+                      <tbody>
+                        {group.items.length > 0 ? (
+                          group.items.map((item, index) => (
+                            <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="px-3 py-2 text-sm sticky left-0" style={{
+                                width: '250px',
+                                minWidth: '250px',
+                                backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
+                              }}>{item.description}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day3_value, item.is_percentage, item.is_integer)}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day4_value, item.is_percentage, item.is_integer)}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day5_value, item.is_percentage, item.is_integer)}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day6_value, item.is_percentage, item.is_integer)}</td>
+                              <td className="px-3 py-2 text-sm">{formatValue(item.day7_value, item.is_percentage, item.is_integer)}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={8} className="px-3 py-2 text-center text-sm text-gray-500">
+                              No data found for this group.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CollapsibleSection>
+              </React.Fragment>
+            );
+          })}
 
           {dataGroups.length === 0 && !loading && (
             <div className="text-center py-8 text-gray-500">

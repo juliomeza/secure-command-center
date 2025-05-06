@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, TruckIcon, ClipboardList, AlertCircle, CheckCircle2, Package } from 'lucide-react';
+import { ChevronDown, TruckIcon, ClipboardList, AlertCircle, CheckCircle2, Package, Calculator, RotateCcw } from 'lucide-react';
 import Card from '../cards/Card';
 
 interface CollapsibleSectionProps {
@@ -9,6 +9,7 @@ interface CollapsibleSectionProps {
   subtitle?: string;
   itemCount?: number;
   status?: 'critical' | 'review' | 'normal';
+  isDSCSA?: boolean;
   children: React.ReactNode;
 }
 
@@ -19,12 +20,13 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   subtitle,
   itemCount,
   status = 'normal',
+  isDSCSA = false,
   children
 }) => {
   const getIcon = () => {
     switch (title.toLowerCase()) {
       case 'held orders':
-        return <AlertCircle className="w-5 h-5 text-red-500" style={{ marginRight: '10px' }} />;
+        return <AlertCircle className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       case 'outbound':
         return <TruckIcon className="w-5 h-5 text-gray-600" style={{ marginRight: '10px', transform: 'scaleX(-1)' }} />;
       case 'open order summary':
@@ -36,7 +38,11 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
       case 'inbound ops':
         return <Package className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       case 'over short damage':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" style={{ marginRight: '10px' }} />;
+        return <AlertCircle className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
+      case 'inv accuracy':
+        return <Calculator className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
+      case 'reverse logistics':
+        return <RotateCcw className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />;
       default:
         return null;
     }
@@ -52,7 +58,14 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           '#10b981'
         }`,
         borderRadius: '8px',
-        position: 'relative'
+        position: 'relative',
+        ...(isDSCSA && {
+          backgroundColor: '#f8fafc',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+          borderRight: '1px solid #e2e8f0',
+          borderTop: '1px solid #e2e8f0',
+          borderBottom: '1px solid #e2e8f0'
+        })
       }}
     >
       {/* Header */}
