@@ -378,46 +378,14 @@ const DataCardView: React.FC = () => {
                             backgroundColor: '#f9fafb',
                             padding: '0.5rem 0.75rem'
                           }}></th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Monday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Tuesday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Wednesday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Thursday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Friday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Saturday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Sunday</th>
-                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
-                            minWidth: '100px',
-                            backgroundColor: '#f9fafb',
-                            padding: '0.5rem 0.75rem'
-                          }}>Total</th>
+                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Total'].map((day) => (
+                            <th key={day} scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                              width: 'calc((100% - 250px) / 8)',
+                              minWidth: '45px',
+                              backgroundColor: '#f9fafb',
+                              padding: '0.5rem 0.75rem'
+                            }}>{day}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
