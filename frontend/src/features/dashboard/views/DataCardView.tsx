@@ -374,42 +374,51 @@ const DataCardView: React.FC = () => {
                     <table className="min-w-full border-collapse">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase sticky left-0" style={{
+                          <th scope="col" className="px-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0" style={{
                             width: '250px',
                             minWidth: '250px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Description</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Monday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Tuesday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Wednesday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Thursday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Friday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Saturday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Sunday</th>
-                          <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
+                          <th scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
                             minWidth: '100px',
-                            backgroundColor: '#f9fafb'
+                            backgroundColor: '#f9fafb',
+                            padding: '0.5rem 0.75rem'  // Ajustado para coincidir con las filas
                           }}>Total</th>
                         </tr>
                       </thead>
