@@ -1,5 +1,5 @@
 // frontend/src/features/dashboard/views/DataCardView.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { authService } from '../../../auth/services/authService';
 import { AxiosError } from 'axios';
 import CollapsibleSection from '../components/CollapsibleSection';
@@ -306,15 +306,53 @@ const DataCardView: React.FC = () => {
     }
   };
 
-  // Generador de opciones para semanas (1-53)
-  const weekOptions = Array.from({ length: 53 }, (_, i) => i + 1);
+  // Función para obtener el rango de fechas de una semana
+  const getWeekDateRange = (yearParam: number, weekNumber: number): string => {
+    // Crear una fecha para el 1 de enero del año especificado.
+    const firstDayOfYear = new Date(yearParam, 0, 1);
+
+    // Obtener el día de la semana del 1 de enero (0=Domingo, 1=Lunes, ..., 6=Sábado).
+    const dayOfWeekJan1 = firstDayOfYear.getDay();
+
+    // Calcular el desplazamiento para llegar al Lunes de la semana que contiene el 1 de Enero.
+    // Si el 1 de Enero es Domingo (0), retrocedemos 6 días. Si es Lunes (1), 0 días. Si es Sábado (6), 5 días.
+    // La fórmula es (dayOfWeekJan1 === 0 ? -6 : 1 - dayOfWeekJan1)
+    const offsetToMonday = (dayOfWeekJan1 === 0) ? -6 : (1 - dayOfWeekJan1);
+    const firstMondayOfCalendar = new Date(firstDayOfYear);
+    firstMondayOfCalendar.setDate(firstDayOfYear.getDate() + offsetToMonday);
+
+    // Calcular el Lunes de la semana 'weekNumber'
+    const startDate = new Date(firstMondayOfCalendar);
+    startDate.setDate(firstMondayOfCalendar.getDate() + (weekNumber - 1) * 7);
+
+    // El Domingo de esa semana es 6 días después del Lunes.
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    return ` (${formatDate(startDate)} - ${formatDate(endDate)})`;
+  };
   
-  // Generador de opciones para años (actual -5 hasta actual +1)
+  // Generador de números de semana (1-53)
+  const weekNumbers = useMemo(() => Array.from({ length: 53 }, (_, i) => i + 1), []);
+  
+  // Generador de opciones para años (actual -5 hasta actual +1), memoizado
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from(
     { length: 7 }, 
     (_, i) => currentYear - 5 + i
   );
+
+  // Generar opciones para el selector de semanas con rango de fechas
+  const weekSelectOptions = useMemo(() => {
+    return weekNumbers.map((w: number) => ({
+      id: w,
+      label: `Week ${w}${getWeekDateRange(year, w)}`
+    }));
+  }, [year, weekNumbers]); // Depende del año seleccionado y de la lista de números de semana
 
   // Manejar la apertura/cierre de un grupo
   const toggleGroup = (index: number) => {
@@ -336,7 +374,7 @@ const DataCardView: React.FC = () => {
             value={year}
             onChange={(value) => setYear(Number(value))}
             options={yearOptions.map(y => ({ id: y, label: y.toString() }))}
-            minWidth="145px"
+            minWidth="140px"
             icon={<Calendar size={18} />}
           />
         </div>
@@ -345,8 +383,8 @@ const DataCardView: React.FC = () => {
             label="Week"
             value={week}
             onChange={(value) => setWeek(Number(value))}
-            options={weekOptions.map(w => ({ id: w, label: w.toString() }))}
-            minWidth="135px"
+            options={weekSelectOptions}
+            minWidth="285px"
             icon={<CalendarDays size={18} />}
           />
         </div>
