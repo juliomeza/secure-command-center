@@ -20,6 +20,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const optionsContainerRef = useRef<HTMLDivElement>(null); // Ref for the scrollable options container
   const selectedOption = options.find(opt => opt.id === value);
 
   useEffect(() => {
@@ -33,6 +34,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Scroll to selected option when dropdown opens
+  useEffect(() => {
+    if (isOpen && selectedOption && optionsContainerRef.current) {
+      // Query for the button element using the data-option-id attribute
+      const selectedOptionElement = optionsContainerRef.current.querySelector(
+        `button[data-option-id="${selectedOption.id}"]`
+      );
+
+      if (selectedOptionElement) {
+        // Scroll the element into view
+        selectedOptionElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [isOpen, selectedOption, options]); // options is included in case they change
 
   return (
     <div
@@ -90,6 +106,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
               outline: 'none',
               boxShadow: 'none'
             }}
+          // No ref here, ref is on the inner scrollable div
           >
             <div
               role="listbox"
@@ -98,6 +115,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 maxHeight: '15rem',
                 overflowY: 'auto'
               }}
+              ref={optionsContainerRef} // Assign ref to the scrollable container
             >
               {options.map((option) => (
                 <button
@@ -107,6 +125,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     setIsOpen(false);
                   }}
                   className="w-full text-left hover:bg-blue-50"
+                  data-option-id={option.id} // Add data attribute for easy selection
                   style={{
                     color: option.id === value ? '#1e3a8a' : '#4b5563',
                     backgroundColor: option.id === value ? '#e0f2fe' : 'transparent',
