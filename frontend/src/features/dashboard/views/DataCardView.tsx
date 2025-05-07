@@ -248,6 +248,10 @@ const DataCardView: React.FC = () => {
         { name: 'Serialized Outbound', isOpen: false, items: outboundSerializedOrderItems, isDSCSA: true },
         { name: 'Serialized Inbound', isOpen: false, items: inboundSerializedOrderItems, isDSCSA: true }
       ]);
+    } else {
+      // Si no hay datos (respuesta vacía de la API para los filtros seleccionados),
+      // limpiar los grupos para mostrar el mensaje "No data found".
+      setDataGroups([]);
     }
   }, [data]);
 
