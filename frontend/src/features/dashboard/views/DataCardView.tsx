@@ -178,6 +178,12 @@ const DataCardView: React.FC = () => {
 
   // Organizar los datos en grupos después de obtenerlos
   useEffect(() => {
+    // Guardar los estados actuales de isOpen por nombre de grupo
+    const currentOpenStates = dataGroups.reduce((acc, group) => {
+      acc[group.name] = group.isOpen;
+      return acc;
+    }, {} as Record<string, boolean>);
+
     if (data.length > 0) {
       // Filtrado específico para Held Orders - solo incluir los 4 elementos especificados
       const heldOrdersItems = data.filter(item => 
@@ -229,30 +235,43 @@ const DataCardView: React.FC = () => {
         outboundSerializedItems.includes(item.description.toUpperCase())
       );
 
-      // Items para Inbound Serializado
+      // Items para Inbound Serializado (corregido para que coincida con la definición de grupo)
       const inboundSerializedOrderItems = data.filter(item =>
         inboundSerializedItems.includes(item.description.toUpperCase())
       );
 
-      // Configurar grupos iniciales
-      setDataGroups([
-        { name: 'Held Orders', isOpen: false, items: heldOrdersItems },
-        { name: 'Outbound', isOpen: false, items: outboundOrdersItems },
-        { name: 'Open Order Summary', isOpen: false, items: openOrderItems },
-        { name: 'Outbound Order Accuracy', isOpen: false, items: outboundAccuracyOrderItems },
-        { name: 'Inbound Ops', isOpen: false, items: inboundOpsOrderItems },
-        { name: 'Inbound', isOpen: false, items: inboundOrderItems },
-        { name: 'Over Short Damage', isOpen: false, items: overShortDamageOrderItems },
-        { name: 'Inv Accuracy', isOpen: false, items: invAccuracyOrderItems },
-        { name: 'Reverse Logistics', isOpen: false, items: reverseLogisticsOrderItems },
-        { name: 'Serialized Outbound', isOpen: false, items: outboundSerializedOrderItems, isDSCSA: true },
-        { name: 'Serialized Inbound', isOpen: false, items: inboundSerializedOrderItems, isDSCSA: true }
-      ]);
+      // Definir la estructura de los grupos con sus items y propiedades isDSCSA
+      const groupDefinitions: Omit<DataGroup, 'isOpen'>[] = [
+        { name: 'Held Orders', items: heldOrdersItems, isDSCSA: false },
+        { name: 'Outbound', items: outboundOrdersItems, isDSCSA: false },
+        { name: 'Open Order Summary', items: openOrderItems, isDSCSA: false },
+        { name: 'Outbound Order Accuracy', items: outboundAccuracyOrderItems, isDSCSA: false },
+        { name: 'Inbound Ops', items: inboundOpsOrderItems, isDSCSA: false },
+        { name: 'Inbound', items: inboundOrderItems, isDSCSA: false },
+        { name: 'Over Short Damage', items: overShortDamageOrderItems, isDSCSA: false },
+        { name: 'Inv Accuracy', items: invAccuracyOrderItems, isDSCSA: false },
+        { name: 'Reverse Logistics', items: reverseLogisticsOrderItems, isDSCSA: false },
+        { name: 'Serialized Outbound', items: outboundSerializedOrderItems, isDSCSA: true },
+        { name: 'Serialized Inbound', items: inboundSerializedOrderItems, isDSCSA: true }
+      ];
+
+      // Mapear las definiciones a los grupos finales, preservando el estado isOpen
+      const newProcessedGroups = groupDefinitions.map(groupDef => ({
+        name: groupDef.name,
+        // Usar el estado isOpen guardado, o false si es un grupo nuevo o no se encontró estado previo
+        isOpen: currentOpenStates[groupDef.name] !== undefined ? currentOpenStates[groupDef.name] : false,
+        items: groupDef.items,
+        isDSCSA: groupDef.isDSCSA || false // Asegurar que isDSCSA tenga un valor booleano
+      }));
+
+      setDataGroups(newProcessedGroups);
+
     } else {
       // Si no hay datos (respuesta vacía de la API para los filtros seleccionados),
       // limpiar los grupos para mostrar el mensaje "No data found".
       setDataGroups([]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   const fetchDataCard = async () => {
