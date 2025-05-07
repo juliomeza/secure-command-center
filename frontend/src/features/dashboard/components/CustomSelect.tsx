@@ -58,9 +58,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             paddingBottom: '0.5rem'
           }}
         >
-          {icon && <span className="mr-2 flex-shrink-0 text-blue-500">{icon}</span>}
-          <span className="text-xs font-medium text-gray-500 mr-2 whitespace-nowrap flex-shrink-0">{label}</span>
-          <span className="truncate flex-1 text-left" style={{ minWidth: 0 }}>{selectedOption?.label}</span>
+          {icon && <span className="flex-shrink-0 text-blue-500">{icon}</span>}
+          <span style={{ width: '12px', display: 'inline-block' }} />
+          <span className="text-xs font-medium text-gray-500 whitespace-nowrap flex-shrink-0">{label}</span>
+          <span style={{ width: '12px', display: 'inline-block' }} />
+          <span className="text-left" style={{ minWidth: 0 }}>{selectedOption?.label}</span>
           <ChevronDown
             size={16}
             className={`text-gray-500 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}

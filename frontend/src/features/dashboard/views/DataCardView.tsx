@@ -312,7 +312,7 @@ const DataCardView: React.FC = () => {
           value={year}
           onChange={(value) => setYear(Number(value))}
           options={yearOptions.map(y => ({ id: y, label: y.toString() }))}
-          minWidth="130px"
+          minWidth="145px"
           icon={<Calendar size={18} />}
         />
         <CustomSelect
@@ -320,7 +320,7 @@ const DataCardView: React.FC = () => {
           value={week}
           onChange={(value) => setWeek(Number(value))}
           options={weekOptions.map(w => ({ id: w, label: w.toString() }))}
-          minWidth="120px"
+          minWidth="135px"
           icon={<CalendarDays size={18} />}
         />
         <CustomSelect
