@@ -45,6 +45,38 @@ interface DataGroup {
   isDSCSA?: boolean;
 }
 
+// Helper function to calculate the current week number based on a given date.
+// Assumes:
+// - Week starts on Monday.
+// - Week 1 is the week (Monday-Sunday) that contains January 1st of the year.
+const calculateCurrentWeekNumber = (date: Date): number => {
+  const year = date.getFullYear();
+  const firstDayOfYear = new Date(year, 0, 1); // January 1st of the current year
+  const dayOfWeekJan1 = firstDayOfYear.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+
+  // Calculate the date of the Monday of the week containing January 1st.
+  // If Jan 1st is Sunday (0), the Monday of that week is 6 days prior.
+  // If Jan 1st is Monday (1), the offset is 0.
+  // If Jan 1st is Tuesday (2), the offset is -1 day to get to Monday.
+  const offsetToMonday = (dayOfWeekJan1 === 0) ? -6 : (1 - dayOfWeekJan1);
+  
+  const firstMondayOfCalendar = new Date(firstDayOfYear);
+  firstMondayOfCalendar.setDate(firstDayOfYear.getDate() + offsetToMonday);
+  firstMondayOfCalendar.setHours(0, 0, 0, 0); // Normalize to the beginning of the day for accurate diff
+
+  const currentDate = new Date(date);
+  currentDate.setHours(0, 0, 0, 0); // Normalize current date as well
+
+  // Calculate the difference in days between the current date and the first Monday of the calendar year
+  const diffInMilliseconds = currentDate.getTime() - firstMondayOfCalendar.getTime();
+  const diffInDays = diffInMilliseconds / (1000 * 60 * 60 * 24);
+
+  // The week number is the number of full 7-day periods passed since that first Monday, plus one.
+  const weekNumber = Math.floor(diffInDays / 7) + 1;
+
+  return Math.max(1, weekNumber); // Ensure week number is at least 1
+};
+
 const DataCardView: React.FC = () => {
   // Estado para los datos y UI
   const [data, setData] = useState<DataCardItem[]>([]);
@@ -54,13 +86,7 @@ const DataCardView: React.FC = () => {
   
   // Estado para filtros
   const [year, setYear] = useState<number>(new Date().getFullYear());
-  const [week, setWeek] = useState<number>(() => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
-    const days = Math.floor((now.getTime() - start.getTime()) / 
-        (24 * 60 * 60 * 1000));
-    return Math.ceil(days / 7);
-  });
+  const [week, setWeek] = useState<number>(() => calculateCurrentWeekNumber(new Date()));
   // Inicializar warehouseId con el primer elemento de la lista
   const [warehouseId, setWarehouseId] = useState<string>('1');
 
