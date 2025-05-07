@@ -395,8 +395,8 @@ def get_current_year_week():
     return year, week
 
 # --- Main Execution ---
-def main(environment):
-    logging.info(f"Starting ETL process for environment: {environment}")
+def main(environment, query_target): # Añadimos query_target como parámetro
+    logging.info(f"Starting ETL process for environment: {environment}, target: {query_target}")
 
     # Construir la ruta al archivo .env basado en el argumento
     env_file = f".env.{environment}"
@@ -422,30 +422,28 @@ def main(environment):
         return
 
     try:
-        # Configurar qué procesos ejecutar
-        run_test_orders = True       # Proceso de prueba existente
-        run_datacard = True          # Nuevo proceso DataCard
-        
         # 1. Proceso de prueba (órdenes recientes)
-        if run_test_orders:
-            print("\n=== Iniciando proceso ETL de Test Orders ===")
+        if query_target == "testing" or query_target == "all":
+            print("\n=== Iniciando proceso ETL de Test Orders (testing) ===")
+            logging.info("Ejecutando proceso 'testing' (órdenes recientes).")
             recent_orders = extract_recent_orders(mssql_conn, limit=5)
             if recent_orders:
                 load_test_data(pg_conn, recent_orders)
             else:
-                logging.info("No recent orders found to load.")
-                print("No se encontraron órdenes recientes para cargar.")
+                logging.info("No recent orders found to load for 'testing' process.")
+                print("No se encontraron órdenes recientes para cargar (proceso 'testing').")
                 
-        # 2. Proceso DataCard
-        if run_datacard:
-            print("\n=== Iniciando proceso ETL de DataCard ===")
+        # 2. Proceso DataCard - "datacard"
+        if query_target == "datacard" or query_target == "all":
+            print("\n=== Iniciando proceso ETL de DataCard (datacard) ===")
+            logging.info("Ejecutando proceso 'datacard'.")
             # Obtener año y semana actual (o usar parámetros específicos)
             year, week = get_current_year_week()
             
             # Lista específica de warehouses IDs que funcionan
             warehouses = '1,12,20,23,27'  # Lista de warehouses específicos que funcionan
             
-            print(f"Extrayendo DataCard para año={year}, semana={week}, warehouses={warehouses}")
+            print(f"Extrayendo DataCard para año={year}, semana={week}, warehouses='{warehouses}'")
             logging.info(f"Iniciando extracción de DataCard para año={year}, semana={week}")
             try:
                 datacard_data = extract_datacard_reports(mssql_conn, year, week, warehouses)
@@ -454,15 +452,13 @@ def main(environment):
                     print(f"Se extrajeron {len(datacard_data)} registros de DataCard.")
                     load_datacard_data(pg_conn, datacard_data, year, week)
                 else:
-                    message = "No se encontraron datos de DataCard para cargar."
+                    message = f"No se encontraron datos de DataCard para cargar (año: {year}, semana: {week}, warehouses: '{warehouses}')."
                     logging.info(message)
                     print(f"⚠️ {message}")
             except Exception as e:
                 error_message = f"❌ Error procesando DataCard: {str(e)}"
                 logging.error(error_message)
                 print(error_message)
-            
-            print("=== Proceso ETL de DataCard finalizado ===\n")
 
     finally:
         # Ensure connections are closed
@@ -482,6 +478,12 @@ if __name__ == "__main__":
         choices=['dev', 'prod'],
         help="El entorno de ejecución ('dev' para desarrollo local, 'prod' para producción)."
     )
+    parser.add_argument(
+        "--query_target",
+        choices=['testing', 'datacard', 'all'],
+        default='all',
+        help="Especifica qué parte del ETL ejecutar: 'testing' para órdenes de prueba, 'datacard' para reportes DataCard, o 'all' para ambos (por defecto)."
+    )
     args = parser.parse_args()
 
-    main(args.environment)
+    main(args.environment, args.query_target)
