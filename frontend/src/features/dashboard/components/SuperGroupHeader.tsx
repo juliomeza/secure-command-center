@@ -16,7 +16,7 @@ const SuperGroupHeader: React.FC<SuperGroupHeaderProps> = ({ title }) => {
         }}
       >
         <QrCode className="w-5 h-5 text-gray-600" style={{ marginRight: '10px' }} />
-        <h2 className="text-lg font-semibold text-blue-900">
+        <h2 className="text-xlg font-semibold text-blue-800">
           {title}
         </h2>
       </div>
