@@ -53,7 +53,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            fontWeight: 500
+            fontWeight: 500,
+            paddingTop: '0.5rem',
+            paddingBottom: '0.5rem'
           }}
         >
           {icon && <span className="mr-2 flex-shrink-0 text-blue-500">{icon}</span>}
