@@ -59,7 +59,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             paddingBottom: '0.5rem'
           }}
         >
-          {icon && <span className="flex-shrink-0 text-blue-500">{icon}</span>}
+          {icon && <span className="flex-shrink-0 text-blue-600">{icon}</span>}
           <span style={{ width: '12px', display: 'inline-block' }} />
           <span className="text-xs font-medium text-gray-500 whitespace-nowrap flex-shrink-0">{label}</span>
           <span style={{ width: '12px', display: 'inline-block' }} />
