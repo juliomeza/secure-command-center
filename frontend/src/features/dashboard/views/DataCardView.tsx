@@ -373,11 +373,14 @@ const DataCardView: React.FC = () => {
                       <table className="min-w-full border-collapse">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th scope="col" className="px-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 z-10" style={{
+                            <th scope="col" className="px-3 text-left text-xs font-medium text-gray-500 uppercase" style={{
                               width: '250px',
                               minWidth: '250px',
                               backgroundColor: '#f9fafb',
-                              padding: '0.5rem 0.75rem'
+                              padding: '0.5rem 0.75rem',
+                              position: 'sticky',
+                              left: 0,
+                              zIndex: 20
                             }}></th>
                             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Total'].map((day) => (
                               <th key={day} scope="col" className="px-3 text-center text-xs font-medium text-gray-500 uppercase" style={{ 
@@ -393,10 +396,13 @@ const DataCardView: React.FC = () => {
                           {group.items.length > 0 ? (
                             group.items.map((item, index) => (
                               <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                <td className="px-3 py-2 text-sm sticky left-0" style={{
+                                <td className="px-3 py-2 text-sm" style={{
                                   width: '250px',
                                   minWidth: '250px',
-                                  backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb'
+                                  backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb',
+                                  position: 'sticky',
+                                  left: 0,
+                                  zIndex: 10
                                 }}>{item.description}</td>
                                 <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day1_value, item.is_percentage, item.is_integer)}</td>
                                 <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', textAlign: 'center', width: '100px' }}>{formatValue(item.day2_value, item.is_percentage, item.is_integer)}</td>
