@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 interface CustomSelectProps {
@@ -7,6 +7,7 @@ interface CustomSelectProps {
   options: { id: string | number; label: string }[];
   label: string;
   minWidth?: string;
+  icon?: ReactNode;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -14,7 +15,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange,
   options,
   label,
-  minWidth = '140px'
+  minWidth = '140px',
+  icon
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -26,7 +28,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -34,61 +35,59 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   }, []);
 
   return (
-    <div className="relative sm:flex-1" style={{ minWidth }} ref={menuRef}>
-      <div className="flex items-center gap-2 w-full">
-        <label className="text-xs font-medium text-gray-500 whitespace-nowrap">
-          {label}
-        </label>
+    <div
+      className="relative sm:flex-1"
+      style={{ minWidth, maxWidth: '320px' }}
+      ref={menuRef}
+    >
+      <div className="w-full">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex-1 text-left focus:outline-none"
+          className="flex items-center w-full px-3 py-2 border border-blue-400 rounded-lg bg-white focus:outline-none gap-2"
           type="button"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.875rem',
+            fontSize: '0.95rem',
             color: '#1e293b',
             cursor: 'pointer',
-            border: 'none',
-            background: 'transparent',
-            minWidth: 0
+            minWidth: 0,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            fontWeight: 500
           }}
         >
-          <span className="truncate">{selectedOption?.label}</span>
+          {icon && <span className="mr-2 flex-shrink-0 text-blue-500">{icon}</span>}
+          <span className="text-xs font-medium text-gray-500 mr-2 whitespace-nowrap flex-shrink-0">{label}</span>
+          <span className="truncate flex-1 text-left" style={{ minWidth: 0 }}>{selectedOption?.label}</span>
           <ChevronDown
             size={16}
-            className={`text-gray-500 transition-transform duration-200 flex-shrink-0 ${
-              isOpen ? 'transform rotate-180' : ''
-            }`}
+            className={`text-gray-500 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
           />
         </button>
       </div>
-
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0" 
+          <div
+            className="fixed inset-0"
             style={{ zIndex: 40 }}
             onClick={() => setIsOpen(false)}
           />
-
           <div
             style={{
-              position: 'fixed', // Cambiado de 'absolute' a 'fixed' para evitar superposición
+              position: 'fixed',
               zIndex: 50,
               backgroundColor: 'white',
-              borderRadius: '0.375rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              border: 'none',
+              borderRadius: '0.5rem',
+              border: '1.5px solid #60a5fa', // azul-400
               width: menuRef.current?.offsetWidth ?? 'auto',
-              top: menuRef.current ? menuRef.current.getBoundingClientRect().bottom + 4 : 0, // Posicionar debajo del botón
-              left: menuRef.current ? menuRef.current.getBoundingClientRect().left : 0, // Alinear con el borde izquierdo del botón
-              outline: 'none'
+              top: menuRef.current ? menuRef.current.getBoundingClientRect().bottom + 4 : 0,
+              left: menuRef.current ? menuRef.current.getBoundingClientRect().left : 0,
+              outline: 'none',
+              boxShadow: 'none'
             }}
           >
-            <div 
-              role="listbox" 
+            <div
+              role="listbox"
               className="py-1"
               style={{
                 maxHeight: '15rem',
@@ -102,11 +101,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     onChange(option.id);
                     setIsOpen(false);
                   }}
-                  className="w-full text-left hover:bg-gray-50"
+                  className="w-full text-left hover:bg-blue-50"
                   style={{
                     color: option.id === value ? '#1e3a8a' : '#4b5563',
-                    backgroundColor: option.id === value ? '#f0f7ff' : 'transparent',
-                    fontSize: '0.875rem',
+                    backgroundColor: option.id === value ? '#e0f2fe' : 'transparent',
+                    fontSize: '0.95rem',
                     cursor: 'pointer',
                     border: 'none',
                     display: 'block',
@@ -114,7 +113,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     textAlign: 'left',
                     paddingLeft: '1rem',
                     paddingTop: '0.75rem',
-                    paddingBottom: '0.75rem'
+                    paddingBottom: '0.75rem',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
                   }}
                   role="option"
                   aria-selected={option.id === value}

@@ -5,6 +5,7 @@ import { AxiosError } from 'axios';
 import CollapsibleSection from '../components/CollapsibleSection';
 import CustomSelect from '../components/CustomSelect';
 import SuperGroupHeader from '../components/SuperGroupHeader';
+import { Calendar, CalendarDays, Building2 } from 'lucide-react';
 
 // Definición de la estructura de datos para DataCard
 interface DataCardItem {
@@ -305,29 +306,30 @@ const DataCardView: React.FC = () => {
   return (
     <div className="p-2">
       {/* Filtros con CustomSelect */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6 w-full max-w-3xl">
         <CustomSelect
           label="Year"
           value={year}
           onChange={(value) => setYear(Number(value))}
           options={yearOptions.map(y => ({ id: y, label: y.toString() }))}
-          minWidth="100px"
+          minWidth="110px"
+          icon={<Calendar size={18} />}
         />
-        
         <CustomSelect
           label="Week"
           value={week}
           onChange={(value) => setWeek(Number(value))}
           options={weekOptions.map(w => ({ id: w, label: w.toString() }))}
-          minWidth="100px"
+          minWidth="110px"
+          icon={<CalendarDays size={18} />}
         />
-        
         <CustomSelect
           label="Warehouse"
           value={Number(warehouseId)}
           onChange={(value) => setWarehouseId(value.toString())}
           options={warehouseOptions.map(wh => ({ id: wh.id, label: wh.name }))}
-          minWidth="100px"
+          minWidth="220px"
+          icon={<Building2 size={18} />}
         />
       </div>
 
