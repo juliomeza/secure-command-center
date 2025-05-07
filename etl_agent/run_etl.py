@@ -395,9 +395,10 @@ def get_current_year_week():
     return year, week
 
 # --- Main Execution ---
-def main(environment, query_target): # Añadimos query_target como parámetro
+def main(args): # Cambiamos para aceptar el objeto args completo
+    environment = args.environment
+    query_target = args.query_target
     logging.info(f"Starting ETL process for environment: {environment}, target: {query_target}")
-
     # Construir la ruta al archivo .env basado en el argumento
     env_file = f".env.{environment}"
     # __file__ da la ruta del script actual (run_etl.py)
@@ -437,9 +438,19 @@ def main(environment, query_target): # Añadimos query_target como parámetro
         if query_target == "datacard" or query_target == "all":
             print("\n=== Iniciando proceso ETL de DataCard (datacard) ===")
             logging.info("Ejecutando proceso 'datacard'.")
-            # Obtener año y semana actual (o usar parámetros específicos)
-            year, week = get_current_year_week()
-            
+
+            # Determinar año y semana para DataCard
+            current_dt = datetime.now()
+            if args.week is not None:
+                week = args.week
+                year = args.year if args.year is not None else current_dt.year
+                logging.info(f"DataCard: Usando año={year}, semana={week} (especificados por argumentos CLI o año actual por defecto para semana especificada).")
+            else:
+                # Si la semana no se especifica, el argumento de año se ignora y usamos el año/semana actuales.
+                if args.year is not None:
+                    logging.warning("DataCard: El argumento --year se ignora cuando --week no está especificado. Usando año y semana actuales.")
+                year, week = get_current_year_week() # Esta función ya registra "Usando año=Y, semana=W (semana actual)"
+
             # Lista específica de warehouses IDs que funcionan
             warehouses = '1,12,20,23,27'  # Lista de warehouses específicos que funcionan
             
@@ -484,6 +495,19 @@ if __name__ == "__main__":
         default='all',
         help="Especifica qué parte del ETL ejecutar: 'testing' para órdenes de prueba, 'datacard' para reportes DataCard, o 'all' para ambos (por defecto)."
     )
+    parser.add_argument(
+        "--year",
+        type=int,
+        default=None,
+        help="Especifica el año para el reporte DataCard (opcional). Si se provee --week y no --year, se usa el año actual. Si no se provee --week, este argumento se ignora."
+    )
+    parser.add_argument(
+        "--week",
+        type=int,
+        default=None,
+        help="Especifica la semana para el reporte DataCard (opcional, por defecto la semana actual)."
+    )
+
     args = parser.parse_args()
 
-    main(args.environment, args.query_target)
+    main(args)
