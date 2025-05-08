@@ -25,7 +25,7 @@ export const revenueGrowthData: DataPoint[] = [
   { name: 'May', value: 320000 },
 ];
 
-export const salesByRegionData: DataPoint[] = [
+export const revenueByRegionData: DataPoint[] = [
   { name: 'Florida - Boca', value: 1200000 },
   { name: 'Florida - Pompano', value: 1500000 },
   { name: 'Texas', value: 980000 },

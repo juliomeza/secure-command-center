@@ -7,7 +7,7 @@ import PieChart from '../charts/PieChart';
 import BarChart from '../charts/BarChart';
 import DashboardGrid from '../layouts/DashboardGrid';
 import { formatCurrency, formatK, formatM } from '../utils/formatters';
-import { revenueGrowthData, salesByRegionData, expenseData } from '../data/mockData';
+import { revenueGrowthData, revenueByRegionData, expenseData } from '../data/mockData';
 
 // Define Tooltip formatters with explicit types
 const currencyTooltipFormatter = (value: number): [string, string] => [formatCurrency(value), "Revenue"];
@@ -112,9 +112,9 @@ const CEOView: React.FC = () => {
           />
         </Card>
 
-        <Card title="Sales by Region" className="md:col-span-2">
+        <Card title="Revenue by Region" className="md:col-span-2">
           <BarChart
-            data={salesByRegionData}
+            data={revenueByRegionData}
             bars={[{ dataKey: 'value', fill: '#3b82f6', radius: [4, 4, 0, 0] }]}
             xAxisProps={{ dataKey: 'name' }}
             yAxisProps={{ tickFormatter: formatM }}
