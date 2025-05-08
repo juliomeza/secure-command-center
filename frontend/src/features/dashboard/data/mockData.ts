@@ -37,7 +37,6 @@ export const expenseData: DataPoint[] = [
   { name: 'Personnel', value: 450000, color: '#1e3a8a' },
   { name: 'Marketing', value: 200000, color: '#3b82f6' },
   { name: 'Operations', value: 120000, color: '#93c5fd' },
-  { name: 'R&D', value: 100000, color: '#bfdbfe' },
 ];
 
 export const projectStatusData: DataPoint[] = [

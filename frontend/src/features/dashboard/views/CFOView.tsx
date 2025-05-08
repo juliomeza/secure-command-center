@@ -109,7 +109,7 @@ const CFOView: React.FC = () => {
             data={expenseData}
             tooltipProps={{ formatter: currencyTooltipFormatter }}
             height={180} // Adjust height slightly
-            centerLabel={formatCurrency(870000)}
+            centerLabel={formatCurrency(770000)}
             showLegend={false}
           />
         </Card>        
