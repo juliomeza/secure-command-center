@@ -26,13 +26,11 @@ export const revenueGrowthData: DataPoint[] = [
 ];
 
 export const salesByRegionData: DataPoint[] = [
-  { name: 'Europe', value: 1200000 },
-  { name: 'Americas', value: 1500000 },
-  { name: 'Asia', value: 980000 },
-  { name: 'EMEA', value: 1350000 },
-  { name: 'LATAM', value: 800000 },
-  { name: 'Pacific', value: 650000 },
-  { name: 'Africa', value: 700000 },
+  { name: 'Florida - Boca', value: 1200000 },
+  { name: 'Florida - Pompano', value: 1500000 },
+  { name: 'Texas', value: 980000 },
+  { name: 'New Jersey', value: 1350000 },
+  { name: 'Ohio', value: 800000 },
 ];
 
 export const expenseData: DataPoint[] = [
