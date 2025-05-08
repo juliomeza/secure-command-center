@@ -137,6 +137,8 @@ const LeadersView: React.FC = () => {
             }}
             showLegend={false}
             height={200}
+            centerLabel={(82) + "%"}
+            centerLabelFontSize="38px"
           />
           <div className="mt-2 text-sm text-gray-500 text-center">
             <p>Total capacity: 125,000 sq. ft.</p>

@@ -31,6 +31,7 @@ interface CustomPieChartProps {
   outerRadius?: number | string;
   legendItems?: Array<{ name: string, color: string }>; // Optional separate legend items
   centerLabel?: string; // New prop for showing a value in the center
+  centerLabelFontSize?: string | number; // New prop for center label font size
 }
 
 const PieChart: React.FC<CustomPieChartProps> = ({
@@ -42,7 +43,8 @@ const PieChart: React.FC<CustomPieChartProps> = ({
   innerRadius = 60,
   outerRadius = 90,
   legendItems, // Allow passing legend items explicitly if needed
-  centerLabel // New prop for center text
+  centerLabel, // New prop for center text
+  centerLabelFontSize = '20px' // Default font size for center label
 }) => {
 
   const defaultPieProps: PieConfig = {
@@ -68,7 +70,7 @@ const PieChart: React.FC<CustomPieChartProps> = ({
         textAnchor="middle"
         dominantBaseline="middle"
         className="text-lg font-bold text-gray-900"
-        style={{ fontSize: '20px', fontWeight: 'bold' }}
+        style={{ fontSize: centerLabelFontSize, fontWeight: 'bold' }}
       >
         {centerLabel}
       </text>
