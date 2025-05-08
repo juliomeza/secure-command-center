@@ -50,7 +50,7 @@ class HasDataCardAccess(permissions.BasePermission):
     Permiso personalizado para permitir solo usuarios con acceso a la pestaña 'DataCard'.
     Por ahora utilizamos la misma pestaña 'testing' mientras se desarrolla.
     """
-    message = 'No tienes permiso para acceder a estos datos.'
+    message = 'You do not have permission to access this data.'
     # Cambiar esto al ID/nombre real de la pestaña DataCard cuando esté creada
     REQUIRED_TAB_ID_NAME = 'testing'  
 
