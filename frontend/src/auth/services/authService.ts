@@ -64,63 +64,101 @@ export class AuthService {
             (response) => response,
             async (error: AxiosError) => {
                 const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+                // Enhanced logging for the raw error
+                console.debug("[AuthService Interceptor] Raw error object:", error);
+                if (error.response) {
+                    console.debug("[AuthService Interceptor] Error response status:", error.response.status);
+                    console.debug("[AuthService Interceptor] Error response data:", error.response.data);
+                }
+
+                // If the failed request was ALREADY the token refresh endpoint, then it's a final failure.
+                if (originalRequest.url === '/auth/token/refresh/') {
+                    console.error('[AuthService Interceptor] Token refresh request itself failed with status', error.response?.status, '. Clearing tokens and redirecting.');
+                    this.isRefreshing = false; // Reset the main flag
+                    this.onRefreshed('');      // Notify subscribers that refresh failed (empty token)
+                    this.refreshSubscribers = []; // Clear subscribers
+                    this.clearTokens();
+                    
+                    if (window.location.pathname !== '/login') { // Avoid redirect loop if already on login page
+                        console.log("[AuthService Interceptor] Redirecting to /login due to refresh token failure.");
+                        window.location.href = '/login';
+                    }
+                    return Promise.reject(error); // Reject the promise for the refresh call itself
+                }
+
+                // If it's a 401 on a regular request, and we haven't retried this specific originalRequest yet
                 if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true; // Mark as retried
+                    originalRequest._retry = true;
 
                     if (!this.isRefreshing) {
                         this.isRefreshing = true;
                         const refreshToken = this.getStoredRefreshToken();
+                        console.debug("[AuthService Interceptor] Current refresh token before attempting refresh:", refreshToken ? refreshToken.substring(0, 10) + "..." : "null");
 
                         if (!refreshToken) {
-                            console.error("[AuthService] No refresh token available for refresh.");
-                            this.clearTokens(); // Clear tokens if refresh fails
-                            // Optionally redirect to login or notify the app
-                            window.location.href = '/login'; // Simple redirect
+                            console.error("[AuthService Interceptor] No refresh token available. Clearing tokens and redirecting.");
+                            this.clearTokens();
+                            this.isRefreshing = false; // Reset flag
+                            if (window.location.pathname !== '/login') {
+                                console.log("[AuthService Interceptor] Redirecting to /login due to no refresh token.");
+                                window.location.href = '/login';
+                            }
                             return Promise.reject(error);
                         }
 
                         try {
+                            console.debug("[AuthService Interceptor] Attempting token refresh.");
                             const { access: newAccessToken, refresh: newRefreshToken } = await this.performTokenRefresh(refreshToken);
+                            
+                            console.debug("[AuthService Interceptor] Token refresh successful. New access token:", newAccessToken ? newAccessToken.substring(0,10) + "..." : "null");
                             this.storeTokens({ access: newAccessToken, refresh: newRefreshToken || refreshToken });
                             this.isRefreshing = false;
 
-                            // Notify queued requests
-                            this.onRefreshed(newAccessToken);
-                            this.refreshSubscribers = []; // Clear queue
-
-                            // Retry the original request with the new token
+                            this.onRefreshed(newAccessToken); 
+                            this.refreshSubscribers = []; 
+                            
                             if (originalRequest.headers) {
                                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                             }
-                            return this.apiClient(originalRequest);
+                            console.debug("[AuthService Interceptor] Retrying original request with new token:", originalRequest.url);
+                            return this.apiClient(originalRequest); // Retry original request
 
-                        } catch (refreshError) {
+                        } catch (refreshCallError: any) {
+                            // This catch is for errors during performTokenRefresh that are NOT 401s from /auth/token/refresh/ itself
+                            // (since those are handled by the new 'if' block above for originalRequest.url === '/auth/token/refresh/').
+                            // Example: a network error when trying to POST to /auth/token/refresh/.
+                            console.error('[AuthService Interceptor] Error during token refresh process (e.g., network issue, or non-401 error from refresh endpoint):', refreshCallError);
                             this.isRefreshing = false;
-                            this.clearTokens(); // Clear tokens on refresh failure
-                            this.refreshSubscribers = []; // Clear queue
-                            // Optionally redirect or notify
-                            window.location.href = '/login'; // Simple redirect
-                            return Promise.reject(refreshError);
+                            this.onRefreshed(''); // Signal failure to any subscribers
+                            this.refreshSubscribers = []; // Clear subscribers
+                            this.clearTokens();
+                            if (window.location.pathname !== '/login') {
+                                console.log("[AuthService Interceptor] Redirecting to /login due to an error in refresh process.");
+                                window.location.href = '/login';
+                            }
+                            return Promise.reject(refreshCallError); 
                         }
                     } else {
-                        // Queue the original request until the token is refreshed
-                        return new Promise((resolve) => {
+                        // Already refreshing, queue the original request
+                        console.debug("[AuthService Interceptor] Another request came while token was refreshing. Queuing request:", originalRequest.url);
+                        return new Promise((resolve, reject) => {
                             this.subscribeTokenRefresh((newToken: string) => {
-                                if (originalRequest.headers) {
-                                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                                if (newToken) { // If refresh was successful
+                                    console.debug("[AuthService Interceptor] Refresh successful, replaying queued request:", originalRequest.url);
+                                    if (originalRequest.headers) {
+                                        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                                    }
+                                    resolve(this.apiClient(originalRequest));
+                                } else { // If refresh failed (signaled by onRefreshed(''))
+                                    console.warn("[AuthService Interceptor] Refresh failed, rejecting queued request:", originalRequest.url);
+                                    reject(error); // Reject the original request that was queued
                                 }
-                                resolve(this.apiClient(originalRequest));
                             });
                         });
                     }
                 }
-
-                // Handle other errors (like 429 Rate Limit)
-                if (error.response?.status === 429) {
-                    console.warn("[AuthService] Rate limit exceeded.");
-                    // Potentially implement retry logic or notify user
-                }
-
+                // For errors other than 401, or for 401s that have already been retried
                 return Promise.reject(error);
             }
         );
@@ -147,8 +185,16 @@ export class AuthService {
     }
 
     public clearTokens(): void {
+        console.debug("[AuthService] clearTokens called. Current tokens before removal:", 
+            `Access: ${sessionStorage.getItem(ACCESS_TOKEN_KEY)}`, 
+            `Refresh: ${sessionStorage.getItem(REFRESH_TOKEN_KEY)}`
+        );
         sessionStorage.removeItem(ACCESS_TOKEN_KEY);
         sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+        console.debug("[AuthService] clearTokens finished. Current tokens after removal:", 
+            `Access: ${sessionStorage.getItem(ACCESS_TOKEN_KEY)}`, 
+            `Refresh: ${sessionStorage.getItem(REFRESH_TOKEN_KEY)}`
+        );
     }
 
     public getStoredAccessToken(): string | null {
@@ -161,13 +207,15 @@ export class AuthService {
 
     private async performTokenRefresh(refreshToken: string): Promise<JWTTokens> {
         try {
+            console.debug("[AuthService performTokenRefresh] Attempting POST /auth/token/refresh/");
             const response = await this.apiClient.post<JWTTokens>('/auth/token/refresh/', {
                 refresh: refreshToken,
             });
+            console.debug("[AuthService performTokenRefresh] Refresh POST successful.");
             return response.data;
         } catch (error) {
-            console.error("[AuthService] Token refresh failed:", error);
-            throw error; // Rethrow to be caught by the interceptor
+            console.error("[AuthService performTokenRefresh] Token refresh POST failed:", error);
+            throw error; 
         }
     }
 
@@ -182,19 +230,20 @@ export class AuthService {
     // Método para verificar si el usuario está autenticado (ejemplo)
     public async checkAuthentication(): Promise<User | null> {
         const token = this.getStoredAccessToken();
+        console.debug("[AuthService checkAuthentication] Token at start:", token ? token.substring(0,10) + "..." : "null");
         if (!token) {
+            console.debug("[AuthService checkAuthentication] No token found, returning null.");
             return null;
         }
-        // Intenta obtener datos del usuario para validar el token
         try {
-            // <<< Use the correct endpoint from authentication/urls.py
-            // Changed '/auth/user/' to '/auth/profile/'
+            console.debug("[AuthService checkAuthentication] Attempting GET /auth/profile/");
             const response = await this.apiClient.get<User>('/auth/profile/');
+            console.debug("[AuthService checkAuthentication] GET /auth/profile/ successful.");
             return response.data;
         } catch (error) {
-            console.error("[AuthService] Failed to fetch user data:", error);
-            // Si falla (ej. token expirado y refresh falló), considera limpiar tokens
-            // this.clearTokens(); // Opcional: limpiar si la verificación falla
+            console.error("[AuthService checkAuthentication] Failed to fetch user data (this is after interceptor's attempt to refresh if it was a 401):", error);
+            // The interceptor should have already cleared tokens if refresh failed.
+            // Returning null signifies to AuthProvider that authentication failed.
             return null;
         }
     }
