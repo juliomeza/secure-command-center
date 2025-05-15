@@ -67,3 +67,24 @@ class DataCardReport(models.Model):
 
     def __str__(self):
         return f"DataCard - {self.warehouse} - {self.description}"
+
+
+class Orders(models.Model):
+    customer = models.CharField(max_length=255)
+    warehouse = models.CharField(max_length=255)
+    warehouse_city_state = models.CharField(max_length=255)
+    order_number = models.CharField(max_length=100)
+    shipment_number = models.CharField(max_length=100)
+    inbound_or_outbound = models.CharField(max_length=20)
+    date = models.DateField()
+    order_or_shipment_class_type = models.CharField(max_length=100)
+    fetched_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'data_orders'
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+        unique_together = ('order_number', 'shipment_number')
+
+    def __str__(self):
+        return f"Order {self.order_number} - {self.customer} - {self.inbound_or_outbound}"

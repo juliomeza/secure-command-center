@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TestData, DataCardReport
+from .models import TestData, DataCardReport, Orders
 
 @admin.register(TestData)
 class TestDataAdmin(admin.ModelAdmin):
@@ -132,3 +132,22 @@ class DataCardReportAdmin(admin.ModelAdmin):
             return "-"
         return ", ".join(indicators)
     display_type_indicators.short_description = 'Tipo'
+
+@admin.register(Orders)
+class OrdersAdmin(admin.ModelAdmin):
+    list_display = (
+        'customer', 'warehouse', 'warehouse_city_state', 'order_number', 'shipment_number',
+        'inbound_or_outbound', 'date', 'order_or_shipment_class_type', 'fetched_at'
+    )
+    list_filter = ('warehouse', 'inbound_or_outbound', 'date')
+    search_fields = ('customer', 'order_number', 'shipment_number', 'warehouse')
+    ordering = ('-date', '-fetched_at')
+    readonly_fields = ('fetched_at',)
+    fieldsets = [
+        ('Order Info', {
+            'fields': [
+                'customer', 'warehouse', 'warehouse_city_state', 'order_number', 'shipment_number',
+                'inbound_or_outbound', 'date', 'order_or_shipment_class_type', 'fetched_at'
+            ]
+        }),
+    ]

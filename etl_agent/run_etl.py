@@ -163,6 +163,95 @@ def load_test_data(pg_conn, data):
     finally:
         cursor.close()
 
+def extract_orders(mssql_conn, start_date='2024-01-01', warehouse_ids=(1,12,20,23,27), excluded_owner_id=701):
+    """
+    Extracts order and shipment data from MSSQL for the Orders table.
+    """
+    cursor = mssql_conn.cursor()
+    warehouse_ids_str = ','.join(str(w) for w in warehouse_ids)
+    query = f'''
+        SELECT DISTINCT
+            p.name AS customer,
+            w.name AS warehouse,
+            w.notes AS warehouse_city_state,
+            o.lookupCode AS order_number,
+            s.lookupCode AS shipment_number,
+            CASE 
+                WHEN s.typeId = 1 THEN 'Inbound'
+                WHEN s.typeId = 2 THEN 'Outbound'
+                ELSE 'Other'
+            END AS inbound_or_outbound,
+            o.fulfillmentDate AS date,
+            oc.name AS order_or_shipment_class_type
+        FROM datex_footprint.Orders o
+            JOIN datex_footprint.Projects p ON p.id = o.projectId
+            JOIN datex_footprint.Owners ow ON ow.id = p.ownerId
+            JOIN datex_footprint.ShipmentOrderLookup sol ON sol.orderId = o.id
+            JOIN datex_footprint.Shipments s ON s.id = sol.shipmentId
+            JOIN datex_footprint.Warehouses w ON w.id = COALESCE(s.actualWarehouseId, s.expectedWarehouseId)
+            JOIN datex_footprint.OrderClasses oc ON oc.id = o.orderClassId
+        WHERE s.statusId = 8
+            AND o.fulfillmentDate >= ?
+            AND w.id IN ({warehouse_ids_str})
+            AND ow.id NOT IN (?)
+    '''
+    try:
+        cursor.execute(query, (start_date, excluded_owner_id))
+        columns = [col[0] for col in cursor.description]
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return results
+    except Exception as ex:
+        # Handle/log error as needed
+        return []
+    finally:
+        cursor.close()
+
+def load_orders(pg_conn, data):
+    """
+    Loads extracted order data into the Orders table in PostgreSQL.
+    """
+    cursor = pg_conn.cursor()
+    insert_query = """
+        INSERT INTO data_orders (
+            customer, warehouse, warehouse_city_state, order_number, shipment_number,
+            inbound_or_outbound, date, order_or_shipment_class_type, fetched_at
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+        ON CONFLICT (order_number, shipment_number) DO UPDATE SET
+            customer = EXCLUDED.customer,
+            warehouse = EXCLUDED.warehouse,
+            warehouse_city_state = EXCLUDED.warehouse_city_state,
+            inbound_or_outbound = EXCLUDED.inbound_or_outbound,
+            date = EXCLUDED.date,
+            order_or_shipment_class_type = EXCLUDED.order_or_shipment_class_type,
+            fetched_at = EXCLUDED.fetched_at
+        RETURNING (xmax = 0) as inserted;
+    """
+    try:
+        inserted = 0
+        updated = 0
+        for row in data:
+            cursor.execute(insert_query, (
+                row['customer'], row['warehouse'], row['warehouse_city_state'],
+                row['order_number'], row['shipment_number'], row['inbound_or_outbound'],
+                row['date'], row['order_or_shipment_class_type']
+             ))
+            result = cursor.fetchone()
+            if result and result[0]:
+                inserted += 1
+            else:
+                updated += 1
+        pg_conn.commit()
+        print("\n=== Orders ETL Summary ===")
+        print(f"Total records processed: {len(data)}")
+        print(f"New records inserted: {inserted}")
+        print(f"Existing records updated: {updated}")
+        print("==========================\n")
+    except Exception as e:
+        pg_conn.rollback()
+        print(f"Error loading Orders data: {e}")
+    finally:
+        cursor.close()
+
 def extract_datacard_reports(mssql_conn, year, week, warehouses=None):
     """
     Extrae los datos de DataCard Reports desde MSSQL usando la función KPower_BI.RHL_DataCard_Reports,
@@ -471,6 +560,23 @@ def main(args): # Cambiamos para aceptar el objeto args completo
                 logging.error(error_message)
                 print(error_message)
 
+        # 3. Proceso Orders - "orders"
+        if query_target == "orders" or query_target == "all":
+            print("\n=== Iniciando proceso ETL de Orders (orders) ===")
+            logging.info("Ejecutando proceso 'orders'.")
+            try:
+                orders_data = extract_orders(mssql_conn)
+                if orders_data:
+                    print(f"Se extrajeron {len(orders_data)} registros de Orders.")
+                    load_orders(pg_conn, orders_data)
+                else:
+                    logging.info("No se encontraron datos de Orders para cargar.")
+                    print("⚠️ No se encontraron datos de Orders para cargar.")
+            except Exception as e:
+                error_message = f"❌ Error procesando Orders: {str(e)}"
+                logging.error(error_message)
+                print(error_message)
+
     finally:
         # Ensure connections are closed
         if mssql_conn:
@@ -491,9 +597,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--query_target",
-        choices=['testing', 'datacard', 'all'],
+        choices=['testing', 'datacard', 'orders', 'all'],
         default='all',
-        help="Especifica qué parte del ETL ejecutar: 'testing' para órdenes de prueba, 'datacard' para reportes DataCard, o 'all' para ambos (por defecto)."
+        help="Especifica qué parte del ETL ejecutar: 'testing' para órdenes de prueba, 'datacard' para reportes DataCard, 'orders' para datos de Orders, o 'all' para todos (por defecto)."
     )
     parser.add_argument(
         "--year",
