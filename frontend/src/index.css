@@ -632,3 +632,42 @@ pre {
 .chat-scroll-area:hover {
   scrollbar-width: thin;
 }
+
+/* Table scroll area - hide scrollbar by default, show on hover */
+.custom-scroll-area {
+  scrollbar-width: none;
+}
+.custom-scroll-area:hover {
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue-primary) var(--gray-100);
+}
+.custom-scroll-area::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+  opacity: 0 !important;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.custom-scroll-area:hover::-webkit-scrollbar {
+  opacity: 1 !important;
+  background: var(--gray-100);
+  pointer-events: auto;
+}
+.custom-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--blue-primary);
+  border-radius: 8px;
+  opacity: 0 !important;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.custom-scroll-area:hover::-webkit-scrollbar-thumb {
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+.custom-scroll-area tbody tr:nth-child(even) {
+  background: var(--gray-50);
+}
+.custom-scroll-area tbody tr:nth-child(odd) {
+  background: transparent;
+}

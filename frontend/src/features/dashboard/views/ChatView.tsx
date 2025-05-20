@@ -9,7 +9,10 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
   }
   const columns = Object.keys(data[0]);
   return (
-    <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+    <div
+      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
+      className="custom-scroll-area"
+    >
       <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
         <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--gray-50)' }}>
           <tr>
@@ -28,6 +31,31 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
           ))}
         </tbody>
       </table>
+      <style>{`
+.custom-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue-primary) var(--gray-100);
+}
+.custom-scroll-area::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.custom-scroll-area:hover::-webkit-scrollbar {
+  opacity: 1;
+  pointer-events: auto;
+}
+.custom-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--blue-primary);
+  border-radius: 8px;
+}
+.custom-scroll-area::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 8px;
+}
+`}</style>
     </div>
   );
 };
