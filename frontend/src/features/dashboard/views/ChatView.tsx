@@ -70,6 +70,13 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
+const VIEW_OPTIONS = [
+  { label: 'Table', value: 'table' },
+  { label: 'Bar', value: 'bar' },
+  { label: 'Pie', value: 'pie' },
+  { label: 'Line', value: 'line' },
+];
+
 const ChatView: React.FC = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([]);
@@ -77,6 +84,7 @@ const ChatView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any>(null);
+  const [viewType, setViewType] = useState<'table' | 'bar' | 'pie' | 'line'>('table');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -108,9 +116,43 @@ const ChatView: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'row', height: '75vh', background: 'transparent', justifyContent: 'center', alignItems: 'center' }}>
       {/* Left area for tables or charts */}
       <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 24 }}>
+        {/* Toggle button group for view selection */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16, justifyContent: 'flex-start', width: '100%' }}>
+          {VIEW_OPTIONS.map(option => (
+            <button
+              key={option.value}
+              onClick={() => setViewType(option.value as any)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: 9999,
+                border: viewType === option.value ? '2px solid var(--blue-primary)' : '1px solid var(--gray-200)',
+                background: viewType === option.value ? 'var(--blue-primary)' : 'var(--gray-50)',
+                color: viewType === option.value ? 'white' : 'var(--blue-dark)',
+                fontWeight: 600,
+                fontSize: 15,
+                cursor: 'pointer',
+                outline: 'none',
+                transition: 'background 0.2s, border 0.2s',
+                boxShadow: viewType === option.value ? '0 2px 8px rgba(30,58,138,0.08)' : 'none',
+                minWidth: 80
+              }}
+              disabled={option.value !== 'table' && option.value !== 'bar'} // Only Table and Bar enabled for now
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {/* Dynamic content (tables/charts) */}
         <div style={{ width: '100%', height: '90%', background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
-          {resultData ? <JsonTable data={resultData} /> : 'Result area (tables or charts)'}
+          {resultData ? (
+            viewType === 'table' ? (
+              <JsonTable data={resultData} />
+            ) : viewType === 'bar' ? (
+              <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Bar chart coming soon...</div>
+            ) : (
+              <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Not implemented yet.</div>
+            )
+          ) : 'Result area (tables or charts)'}
         </div>
       </div>
       {/* Chat on the right */}
