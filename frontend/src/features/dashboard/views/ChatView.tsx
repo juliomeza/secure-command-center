@@ -16,9 +16,13 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
       <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
         <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--gray-50)' }}>
           <tr>
-            {columns.map(col => (
-              <th key={col} style={{ padding: 8, color: 'var(--blue-dark)', fontWeight: 400, borderBottom: '1px solid var(--gray-200)', background: 'transparent', textAlign: 'left', fontSize: 15 }}>{col}</th>
-            ))}
+            {columns.map(col => {
+              // Format column name: remove underscores and capitalize each word
+              const formattedCol = col.replace(/_/g, ' ').replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+              return (
+                <th key={col} style={{ padding: 8, color: 'var(--blue-dark)', fontWeight: 500, borderBottom: '1px solid var(--gray-200)', background: 'transparent', textAlign: 'left', fontSize: 16 }}>{formattedCol}</th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
