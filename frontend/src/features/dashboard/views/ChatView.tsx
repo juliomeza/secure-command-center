@@ -32,7 +32,7 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f5f6fa' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#ffe066' /* High contrast yellow for demonstration */ }}>
       {/* Chat only, centered */}
       <div style={{ width: 420, minWidth: 320, maxWidth: 480, background: '#22223b', /* High contrast for development */ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100vh', boxShadow: '0 0 24px #22223b55', borderRadius: 16, border: '2px solid #4a4e69' }}>
         <div style={{ padding: '2rem 0 2rem 2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'transparent' }}>
