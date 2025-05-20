@@ -7,8 +7,8 @@ import CFOView from './views/CFOView';
 import COOView from './views/COOView';
 import CIOView from './views/CIOView';
 import LeadersView from './views/LeadersView';
-import TestingView from './views/TestingView'; // <<< Added import for TestingView
-import DataCardView from './views/DataCardView'; // <<< Added import for DataCardView
+import TestingView from './views/TestingView';
+import DataCardView from './views/DataCardView';
 import ChatView from './views/ChatView';
 import { useAuth } from '../../auth/components/AuthProvider';
 import {
@@ -32,7 +32,7 @@ const allDashboardTabs: Array<{ id: DashboardTabId; label: string; icon: React.R
   { id: 'LEADERS', label: 'Leaders', icon: <Users {...iconProps} /> },
   { id: 'TESTING', label: 'Testing', icon: <TestTubeDiagonal {...iconProps} /> },
   { id: 'DATACARD', label: 'DataCard', icon: <FileSpreadsheet {...iconProps} /> },
-  { id: 'CHAT', label: 'Chat', icon: <MessageCircle {...iconProps} /> }, // Added Chat tab
+  { id: 'CHAT', label: 'Chat', icon: <MessageCircle {...iconProps} /> },
 ];
 
 const ExecutiveDashboard: React.FC = () => {
