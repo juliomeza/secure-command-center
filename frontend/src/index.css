@@ -591,3 +591,44 @@ pre {
     padding: 0.75rem 1rem;
   }
 }
+
+/* Chat scroll area - hide scrollbar by default, show on hover */
+.chat-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) var(--gray-50);
+}
+
+.chat-scroll-area::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+  opacity: 0 !important;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.chat-scroll-area:hover::-webkit-scrollbar {
+  opacity: 1 !important;
+  background: var(--gray-50);
+  pointer-events: auto;
+}
+
+.chat-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 4px;
+  opacity: 0 !important;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.chat-scroll-area:hover::-webkit-scrollbar-thumb {
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+/* For Firefox: hide scrollbar by default, show on hover */
+.chat-scroll-area {
+  scrollbar-width: none;
+}
+.chat-scroll-area:hover {
+  scrollbar-width: thin;
+}

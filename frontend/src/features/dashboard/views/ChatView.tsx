@@ -76,21 +76,25 @@ const ChatView: React.FC = () => {
       {/* Chat on the right */}
       <div style={{ width: 420, minWidth: 320, maxWidth: 480, background: 'transparent', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '75vh', boxShadow: 'none', borderRadius: 0, border: 'none' }}>
         <div style={{ padding: '2rem 0 2rem 2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'transparent' }}>
-          <div style={{
-            border: 'none',
-            borderRadius: 0,
-            padding: 0,
-            minHeight: 300,
-            maxHeight: 500,
-            overflowY: 'auto',
-            background: 'transparent',
-            marginBottom: 16,
-            flex: 1,
-            boxShadow: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 18 // more space between bubbles
-          }}>
+          <div
+            style={{
+              border: 'none',
+              borderRadius: 0,
+              padding: 0,
+              minHeight: 300,
+              maxHeight: 500,
+              overflowY: 'auto',
+              background: 'transparent',
+              marginBottom: 16,
+              flex: 1,
+              boxShadow: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 18, // more space between bubbles
+              position: 'relative'
+            }}
+            className="chat-scroll-area"
+          >
             {messages.map((msg, idx) => (
               <div key={idx} style={{
                 display: 'flex',
