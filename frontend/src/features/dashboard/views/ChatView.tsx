@@ -32,17 +32,16 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '75vh', background: '#ffe066' /* High contrast yellow for demonstration */ }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '75vh', background: '#ffe066' }}>
       {/* Chat only, centered */}
-      <div style={{ width: 420, minWidth: 320, maxWidth: 480, background: '#22223b', /* High contrast for development */ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '75vh', boxShadow: '0 0 24px #22223b55', borderRadius: 16, border: '2px solid #4a4e69' }}>
+      <div style={{ width: 420, minWidth: 320, maxWidth: 480, background: '#22223b', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '75vh', boxShadow: '0 0 24px #22223b55', borderRadius: 16, border: '2px solid #4a4e69' }}>
         <div style={{ padding: '2rem 0 2rem 2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'transparent' }}>
-          <h2 style={{ marginBottom: 16, color: '#f2e9e4', fontWeight: 700 }}>Chat</h2>
           <div style={{
             border: 'none',
             borderRadius: 12,
             padding: 0,
             minHeight: 300,
-            maxHeight: 400,
+            maxHeight: 500,
             overflowY: 'auto',
             background: 'transparent',
             marginBottom: 16,
@@ -52,7 +51,6 @@ const ChatView: React.FC = () => {
             flexDirection: 'column',
             gap: 8
           }}>
-            {messages.length === 0 && <div style={{ color: '#c9ada7', padding: 24, background: '#4a4e69', borderRadius: 10 }}>Start the conversation...</div>}
             {messages.map((msg, idx) => (
               <div key={idx} style={{
                 display: 'flex',
