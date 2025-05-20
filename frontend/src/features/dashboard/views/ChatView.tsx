@@ -11,10 +11,10 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
-        <thead>
+        <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--gray-50)' }}>
           <tr>
             {columns.map(col => (
-              <th key={col} style={{ padding: 8, color: 'var(--blue-dark)', fontWeight: 600, borderBottom: '1px solid var(--gray-200)', background: 'transparent', textAlign: 'left', fontSize: 15 }}>{col}</th>
+              <th key={col} style={{ padding: 8, color: 'var(--blue-dark)', fontWeight: 400, borderBottom: '1px solid var(--gray-200)', background: 'transparent', textAlign: 'left', fontSize: 15 }}>{col}</th>
             ))}
           </tr>
         </thead>
@@ -22,7 +22,7 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
           {data.map((row: any, idx: number) => (
             <tr key={idx} style={{ background: 'transparent' }}>
               {columns.map(col => (
-                <td key={col} style={{ padding: 8, borderBottom: '1px solid var(--gray-100)', color: 'var(--gray-800)', background: 'transparent', fontSize: 15 }}>{row[col]}</td>
+                <td key={col} style={{ padding: 8, borderBottom: '1px solid var(--gray-100)', color: 'var(--gray-800)', background: 'transparent', fontSize: 15, fontWeight: 400 }}>{row[col]}</td>
               ))}
             </tr>
           ))}
