@@ -2,12 +2,43 @@ import React, { useState, useRef } from 'react';
 import { sendChatMessage, ChatResponse } from './ChatApi';
 import { useAuth } from '../../../auth/components/AuthProvider';
 
+// Simple table component for displaying JSON data as a table
+const JsonTable: React.FC<{ data: any }> = ({ data }) => {
+  if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
+    return <div style={{ color: '#4a4e69', fontSize: 18, opacity: 0.7 }}>No table data available.</div>;
+  }
+  const columns = Object.keys(data[0]);
+  return (
+    <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #c9ada755' }}>
+        <thead>
+          <tr>
+            {columns.map(col => (
+              <th key={col} style={{ padding: 8, background: '#c9ada7', color: '#22223b', fontWeight: 700, border: '1px solid #c9ada7' }}>{col}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row: any, idx: number) => (
+            <tr key={idx}>
+              {columns.map(col => (
+                <td key={col} style={{ padding: 8, border: '1px solid #c9ada7', color: '#4a4e69', background: idx % 2 === 0 ? '#f2e9e4' : '#fff' }}>{row[col]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 const ChatView: React.FC = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resultData, setResultData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleSend = async (e?: React.FormEvent) => {
@@ -21,8 +52,10 @@ const ChatView: React.FC = () => {
     try {
       const response: ChatResponse = await sendChatMessage(userMessage, user?.id?.toString() || 'anonymous');
       setMessages((msgs) => [...msgs, { sender: 'bot', text: response.answer }]); // Use 'answer' field
+      setResultData(response.json_data || null); // Store json_data for table/chart
     } catch (err) {
       setError('Failed to get response from chat service.');
+      setResultData(null);
     } finally {
       setLoading(false);
       setTimeout(() => {
@@ -35,10 +68,9 @@ const ChatView: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'row', height: '75vh', background: '#ffe066', justifyContent: 'center', alignItems: 'center' }}>
       {/* Left area for tables or charts */}
       <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 24 }}>
-        {/* Placeholder for dynamic content (tables/charts) */}
-        <div style={{ width: '100%', height: '90%', background: '#f2e9e4', borderRadius: 16, border: '2px dashed #c9ada7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a4e69', fontSize: 20, fontWeight: 500, opacity: 0.7 }}>
-          {/* Replace this with table/chart component as needed */}
-          Result area (tables or charts)
+        {/* Dynamic content (tables/charts) */}
+        <div style={{ width: '100%', height: '90%', background: '#f2e9e4', borderRadius: 16, border: '2px dashed #c9ada7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a4e69', fontSize: 20, fontWeight: 500, opacity: 0.7, overflow: 'auto' }}>
+          {resultData ? <JsonTable data={resultData} /> : 'Result area (tables or charts)'}
         </div>
       </div>
       {/* Chat on the right */}
