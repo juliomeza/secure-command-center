@@ -666,8 +666,8 @@ pre {
 }
 
 .custom-scroll-area tbody tr:nth-child(even) {
-  background: var(--gray-50);
+  background: #e0e7ff; /* Light blue for even rows */
 }
 .custom-scroll-area tbody tr:nth-child(odd) {
-  background: transparent;
+  background: #fff; /* White for odd rows */
 }

@@ -23,7 +23,7 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
         </thead>
         <tbody>
           {data.map((row: any, idx: number) => (
-            <tr key={idx} style={{ background: 'transparent' }}>
+            <tr key={idx} className={idx % 2 === 0 ? 'table-row-striped' : ''}>
               {columns.map(col => (
                 <td key={col} style={{ padding: 8, borderBottom: '1px solid var(--gray-100)', color: 'var(--gray-800)', background: 'transparent', fontSize: 15, fontWeight: 400 }}>{row[col]}</td>
               ))}
@@ -54,6 +54,9 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
 .custom-scroll-area::-webkit-scrollbar-track {
   background: var(--gray-100);
   border-radius: 8px;
+}
+.table-row-striped {
+  background: #f7f8fa !important;
 }
 `}</style>
     </div>
