@@ -40,6 +40,7 @@ const ChatView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -60,6 +61,7 @@ const ChatView: React.FC = () => {
       setLoading(false);
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        inputRef.current?.focus(); // Focus the input after sending
       }, 100);
     }
   };
@@ -139,6 +141,7 @@ const ChatView: React.FC = () => {
             minHeight: 48
           }}>
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={e => setInput(e.target.value)}
