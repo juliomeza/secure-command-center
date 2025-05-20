@@ -9,26 +9,30 @@ import CIOView from './views/CIOView';
 import LeadersView from './views/LeadersView';
 import TestingView from './views/TestingView'; // <<< Added import for TestingView
 import DataCardView from './views/DataCardView'; // <<< Added import for DataCardView
+import ChatView from './views/ChatView';
 import { useAuth } from '../../auth/components/AuthProvider';
 import {
-  BarChart2, DollarSign, Settings, Monitor, Users, TestTubeDiagonal, FileSpreadsheet
+  BarChart2, DollarSign, Settings, Monitor, Users, TestTubeDiagonal, FileSpreadsheet, MessageCircle
 } from 'lucide-react';
 
-type DashboardTabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS' | 'TESTING' | 'DATACARD'; // Added DATACARD
+// Add 'CHAT' to DashboardTabId type
+type DashboardTabId = 'CEO' | 'CFO' | 'COO' | 'CIO' | 'LEADERS' | 'TESTING' | 'DATACARD' | 'CHAT';
 
 const iconProps = {
   size: 18,
   strokeWidth: 1.5
 };
 
+// Add Chat tab to allDashboardTabs
 const allDashboardTabs: Array<{ id: DashboardTabId; label: string; icon: React.ReactNode }> = [
   { id: 'CEO', label: 'CEO', icon: <BarChart2 {...iconProps} /> },
   { id: 'CFO', label: 'CFO', icon: <DollarSign {...iconProps} /> },
   { id: 'COO', label: 'COO', icon: <Settings {...iconProps} /> },
   { id: 'CIO', label: 'CIO', icon: <Monitor {...iconProps} /> },
   { id: 'LEADERS', label: 'Leaders', icon: <Users {...iconProps} /> },
-  { id: 'TESTING', label: 'Testing', icon: <TestTubeDiagonal {...iconProps} /> }, // Added TESTING tab
-  { id: 'DATACARD', label: 'DataCard', icon: <FileSpreadsheet {...iconProps} /> }, // Added DataCard tab
+  { id: 'TESTING', label: 'Testing', icon: <TestTubeDiagonal {...iconProps} /> },
+  { id: 'DATACARD', label: 'DataCard', icon: <FileSpreadsheet {...iconProps} /> },
+  { id: 'CHAT', label: 'Chat', icon: <MessageCircle {...iconProps} /> }, // Added Chat tab
 ];
 
 const ExecutiveDashboard: React.FC = () => {
@@ -76,8 +80,9 @@ const ExecutiveDashboard: React.FC = () => {
       case 'COO': return <COOView />;
       case 'CIO': return <CIOView />;
       case 'LEADERS': return <LeadersView />;
-      case 'TESTING': return <TestingView />; // Added TESTING case
-      case 'DATACARD': return <DataCardView />; // Added DATACARD case
+      case 'TESTING': return <TestingView />;
+      case 'DATACARD': return <DataCardView />;
+      case 'CHAT': return <ChatView />; // Added Chat case
       default: return <div>Invalid tab selected.</div>;
     }
   };
