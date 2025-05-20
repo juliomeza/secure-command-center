@@ -32,8 +32,16 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '75vh', background: '#ffe066' }}>
-      {/* Chat only, centered */}
+    <div style={{ display: 'flex', flexDirection: 'row', height: '75vh', background: '#ffe066', justifyContent: 'center', alignItems: 'center' }}>
+      {/* Left area for tables or charts */}
+      <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 24 }}>
+        {/* Placeholder for dynamic content (tables/charts) */}
+        <div style={{ width: '100%', height: '90%', background: '#f2e9e4', borderRadius: 16, border: '2px dashed #c9ada7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a4e69', fontSize: 20, fontWeight: 500, opacity: 0.7 }}>
+          {/* Replace this with table/chart component as needed */}
+          Result area (tables or charts)
+        </div>
+      </div>
+      {/* Chat on the right */}
       <div style={{ width: 420, minWidth: 320, maxWidth: 480, background: '#22223b', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '75vh', boxShadow: '0 0 24px #22223b55', borderRadius: 16, border: '2px solid #4a4e69' }}>
         <div style={{ padding: '2rem 0 2rem 2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'transparent' }}>
           <div style={{
