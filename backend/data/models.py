@@ -75,9 +75,9 @@ class Orders(models.Model):
     warehouse_city_state = models.CharField(max_length=255)
     order_number = models.CharField(max_length=100)
     shipment_number = models.CharField(max_length=100)
-    inbound_or_outbound = models.CharField(max_length=20)
+    order_type = models.CharField(max_length=20)  # Changed from inbound_or_outbound
     date = models.DateField()
-    order_or_shipment_class_type = models.CharField(max_length=100)
+    order_class = models.CharField(max_length=100)  # Changed from order_or_shipment_class_type
     fetched_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -87,4 +87,4 @@ class Orders(models.Model):
         unique_together = ('order_number', 'shipment_number')
 
     def __str__(self):
-        return f"Order {self.order_number} - {self.customer} - {self.inbound_or_outbound}"
+        return f"Order {self.order_number} - {self.customer} - {self.order_type}"

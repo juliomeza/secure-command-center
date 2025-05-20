@@ -137,9 +137,9 @@ class DataCardReportAdmin(admin.ModelAdmin):
 class OrdersAdmin(admin.ModelAdmin):
     list_display = (
         'customer', 'warehouse', 'warehouse_city_state', 'order_number', 'shipment_number',
-        'inbound_or_outbound', 'date', 'order_or_shipment_class_type', 'fetched_at'
+        'order_type', 'date', 'order_class', 'fetched_at'
     )
-    list_filter = ('warehouse', 'inbound_or_outbound', 'date')
+    list_filter = ('warehouse', 'order_type', 'date')
     search_fields = ('customer', 'order_number', 'shipment_number', 'warehouse')
     ordering = ('-date', '-fetched_at')
     readonly_fields = ('fetched_at',)
@@ -147,7 +147,7 @@ class OrdersAdmin(admin.ModelAdmin):
         ('Order Info', {
             'fields': [
                 'customer', 'warehouse', 'warehouse_city_state', 'order_number', 'shipment_number',
-                'inbound_or_outbound', 'date', 'order_or_shipment_class_type', 'fetched_at'
+                'order_type', 'date', 'order_class', 'fetched_at'
             ]
         }),
     ]
