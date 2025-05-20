@@ -100,9 +100,10 @@ const ChatView: React.FC = () => {
                 <span style={{
                   background: msg.sender === 'user' ? 'var(--blue-primary)' : 'transparent',
                   color: msg.sender === 'user' ? 'white' : 'var(--blue-dark)',
-                  borderRadius: msg.sender === 'user' ? 9999 : 0,
+                  borderRadius: msg.sender === 'user' ? '10px 10px 2px 10px' : 0, // less rounded for user bubble
                   padding: msg.sender === 'user' ? '12px 22px' : 0,
-                  maxWidth: '70%',
+                  maxWidth: msg.sender === 'user' ? '70%' : '100%', // bot responses use full width
+                  minWidth: msg.sender === 'user' ? 0 : '90%', // bot responses use more width
                   wordBreak: 'break-word',
                   fontSize: 16,
                   boxShadow: msg.sender === 'user' ? '0 2px 8px rgba(30,58,138,0.08)' : 'none',
