@@ -7,7 +7,7 @@ def extract_orders(mssql_conn, start_date='2024-01-01', warehouse_ids=(1,12,20,2
     cursor = mssql_conn.cursor()
     warehouse_ids_str = ','.join(str(w) for w in warehouse_ids)
     query = f'''
-        SELECT DISTINCT --TOP 500
+        SELECT DISTINCT --TOP 1000
             p.name AS customer,
             w.name AS warehouse,
             w.notes AS warehouse_city_state,
@@ -17,9 +17,9 @@ def extract_orders(mssql_conn, start_date='2024-01-01', warehouse_ids=(1,12,20,2
                 WHEN s.typeId = 1 THEN 'Inbound'
                 WHEN s.typeId = 2 THEN 'Outbound'
                 ELSE 'Other'
-            END AS inbound_or_outbound,
+            END AS order_type,
             o.fulfillmentDate AS date,
-            oc.name AS order_or_shipment_class_type
+            oc.name AS order_class
         FROM datex_footprint.Orders o
             JOIN datex_footprint.Projects p ON p.id = o.projectId
             JOIN datex_footprint.Owners ow ON ow.id = p.ownerId

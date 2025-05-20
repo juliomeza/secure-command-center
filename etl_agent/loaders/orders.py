@@ -8,15 +8,15 @@ def load_orders(pg_conn, data):
     insert_query = """
         INSERT INTO data_orders (
             customer, warehouse, warehouse_city_state, order_number, shipment_number,
-            inbound_or_outbound, date, order_or_shipment_class_type, fetched_at
+            order_type, date, order_class, fetched_at
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
         ON CONFLICT (order_number, shipment_number) DO UPDATE SET
             customer = EXCLUDED.customer,
             warehouse = EXCLUDED.warehouse,
             warehouse_city_state = EXCLUDED.warehouse_city_state,
-            inbound_or_outbound = EXCLUDED.inbound_or_outbound,
+            order_type = EXCLUDED.order_type,
             date = EXCLUDED.date,
-            order_or_shipment_class_type = EXCLUDED.order_or_shipment_class_type,
+            order_class = EXCLUDED.order_class,
             fetched_at = EXCLUDED.fetched_at
         RETURNING (xmax = 0) as inserted;
     """
@@ -26,9 +26,9 @@ def load_orders(pg_conn, data):
         for row in data:
             cursor.execute(insert_query, (
                 row['customer'], row['warehouse'], row['warehouse_city_state'],
-                row['order_number'], row['shipment_number'], row['inbound_or_outbound'],
-                row['date'], row['order_or_shipment_class_type']
-             ))
+                row['order_number'], row['shipment_number'], row['order_type'],
+                row['date'], row['order_class']
+            ))
             result = cursor.fetchone()
             if result and result[0]:
                 inserted += 1
