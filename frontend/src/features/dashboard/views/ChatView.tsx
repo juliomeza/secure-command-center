@@ -109,7 +109,7 @@ const ChatView: React.FC = () => {
       {/* Left area for tables or charts */}
       <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 24 }}>
         {/* Dynamic content (tables/charts) */}
-        <div style={{ width: '100%', height: '90%', background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
+        <div style={{ width: '100%', height: '90%', background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-300)', fontSize: 24, fontWeight: 400, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
           {resultData ? <JsonTable data={resultData} /> : 'Result area (tables or charts)'}
         </div>
       </div>
