@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { sendChatMessage, ChatResponse } from './ChatApi';
 import { useAuth } from '../../../auth/components/AuthProvider';
 import { Bar, Pie, Line } from 'react-chartjs-2';
@@ -471,8 +471,18 @@ const ChatView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any>(null);
   const [viewType, setViewType] = useState<'table' | 'bar' | 'pie' | 'line'>('table');
+  const [isMobile, setIsMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -501,52 +511,54 @@ const ChatView: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'row', height: '75vh', background: 'transparent', justifyContent: 'center', alignItems: 'center' }}>
       {/* Left area for tables or charts */}
-      <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingRight: 24 }}>
-        {/* Toggle button group for view selection */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16, justifyContent: 'flex-start', width: '100%' }}>
-          {VIEW_OPTIONS.map(option => (
-            <button
-              key={option.value}
-              onClick={() => setViewType(option.value as any)}
-              style={{
-                padding: '8px 20px',
-                borderRadius: 9999,
-                border: viewType === option.value ? '2px solid var(--blue-primary)' : '1px solid var(--gray-200)',
-                background: viewType === option.value ? 'var(--blue-primary)' : 'var(--gray-50)',
-                color: viewType === option.value ? 'white' : 'var(--blue-dark)',
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: 'pointer',
-                outline: 'none',
-                transition: 'background 0.2s, border 0.2s',
-                boxShadow: viewType === option.value ? '0 2px 8px rgba(30,58,138,0.08)' : 'none',
-                minWidth: 80
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
+      {!isMobile && (
+        <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingRight: 24 }}>
+          {/* Toggle button group for view selection */}
+          <div style={{ display: 'flex', gap: 12, marginBottom: 16, justifyContent: 'flex-start', width: '100%' }}>
+            {VIEW_OPTIONS.map(option => (
+              <button
+                key={option.value}
+                onClick={() => setViewType(option.value as any)}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: 9999,
+                  border: viewType === option.value ? '2px solid var(--blue-primary)' : '1px solid var(--gray-200)',
+                  background: viewType === option.value ? 'var(--blue-primary)' : 'var(--gray-50)',
+                  color: viewType === option.value ? 'white' : 'var(--blue-dark)',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'background 0.2s, border 0.2s',
+                  boxShadow: viewType === option.value ? '0 2px 8px rgba(30,58,138,0.08)' : 'none',
+                  minWidth: 80
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {/* Dynamic content (tables/charts) */}
+          <div style={{ width: '100%', flex: 1, minHeight: 0, background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
+            {resultData ? (
+              viewType === 'table' ? (
+                <JsonTable data={resultData} />
+              ) : viewType === 'bar' ? (
+                <JsonBarChart data={resultData} />
+              ) : viewType === 'pie' ? (
+                <JsonPieChart data={resultData} />
+              ) : viewType === 'line' ? (
+                <JsonLineChart data={resultData} />
+              ) : (
+                <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Not implemented yet.</div>
+              )
+            ) : 'Result area (tables or charts)'}
+          </div>
         </div>
-        {/* Dynamic content (tables/charts) */}
-        <div style={{ width: '100%', flex: 1, minHeight: 0, background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
-          {resultData ? (
-            viewType === 'table' ? (
-              <JsonTable data={resultData} />
-            ) : viewType === 'bar' ? (
-              <JsonBarChart data={resultData} />
-            ) : viewType === 'pie' ? (
-              <JsonPieChart data={resultData} />
-            ) : viewType === 'line' ? (
-              <JsonLineChart data={resultData} />
-            ) : (
-              <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Not implemented yet.</div>
-            )
-          ) : 'Result area (tables or charts)'}
-        </div>
-      </div>
+      )}
       {/* Chat on the right */}
-      <div style={{ width: 420, minWidth: 320, maxWidth: 480, background: 'transparent', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '75vh', boxShadow: 'none', borderRadius: 0, border: 'none' }}>
-        <div style={{ padding: '2rem 0 2rem 2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'transparent' }}>
+      <div style={{ width: isMobile ? '100%' : 420, minWidth: isMobile ? '100%' : 320, maxWidth: isMobile ? '100%' : 480, background: 'transparent', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '75vh', boxShadow: 'none', borderRadius: 0, border: 'none' }}>
+        <div style={{ padding: isMobile ? '1rem' : '2rem 0 2rem 2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'transparent' }}>
           <div
             style={{
               border: 'none',
