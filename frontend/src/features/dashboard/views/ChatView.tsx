@@ -129,7 +129,7 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
       labels,
       datasets: [
         {
-          label: columns[1] || 'Value',
+          label: toTitleCase(columns[1]) || 'Value',
           data: values,
           backgroundColor: [
             'rgba(255, 99, 132, 0.3)',
@@ -153,9 +153,9 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
         },
       ],
     };
-    options.plugins.title.text = `${columns[1] || 'Value'} per ${columns[0] || 'Label'}`;
-    options.scales.x.title.text = columns[0] || 'Label';
-    options.scales.y.title.text = columns[1] || 'Value';
+    options.plugins.title.text = `${toTitleCase(columns[1]) || 'Value'} per ${toTitleCase(columns[0]) || 'Label'}`;
+    options.scales.x.title.text = toTitleCase(columns[0]) || 'Label';
+    options.scales.y.title.text = toTitleCase(columns[1]) || 'Value';
 
   } else if (columns.length === 3) {
     // Assuming structure like [Category, Label, Value]
@@ -169,7 +169,7 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
     chartData = {
       labels,
       datasets: categories.map((category, index) => ({
-        label: category,
+        label: toTitleCase(category),
         data: labels.map(label => {
           const row = data.find(item => item[categoryColumn] === category && item[labelColumn] === label);
           return row ? row[valueColumn] : 0;
@@ -178,9 +178,9 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
       })),
     };
 
-    options.plugins.title.text = `${valueColumn} per ${labelColumn} grouped by ${categoryColumn}`;
-    options.scales.x.title.text = labelColumn;
-    options.scales.y.title.text = valueColumn;
+    options.plugins.title.text = `${toTitleCase(valueColumn)} per ${toTitleCase(labelColumn)} grouped by ${toTitleCase(categoryColumn)}`;
+    options.scales.x.title.text = toTitleCase(labelColumn);
+    options.scales.y.title.text = toTitleCase(valueColumn);
     options.scales.x.stacked = false; // Ensure bars are grouped, not stacked by default
     options.scales.y.stacked = false;
 
@@ -202,7 +202,7 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
       labels: warehouses,
       datasets: years.flatMap(year =>
         orderTypes.map((orderType, _index) => ({
-          label: `${year} - ${orderType}`,
+          label: `${toTitleCase(year.toString())} - ${toTitleCase(orderType.toString())}`,
           data: warehouses.map(warehouse => {
             const row = data.find(item =>
               item[yearColumn] === year &&
@@ -218,9 +218,9 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
       ),
     };
 
-    options.plugins.title.text = `${countColumn} by ${warehouseColumn}, ${orderTypeColumn}, and ${yearColumn}`;
-    options.scales.x.title.text = warehouseColumn;
-    options.scales.y.title.text = countColumn;
+    options.plugins.title.text = `${toTitleCase(countColumn)} by ${toTitleCase(warehouseColumn)}, ${toTitleCase(orderTypeColumn)}, and ${toTitleCase(yearColumn)}`;
+    options.scales.x.title.text = toTitleCase(warehouseColumn);
+    options.scales.y.title.text = toTitleCase(countColumn);
     options.scales.x.stacked = false; // Ensure bars are grouped
     options.scales.y.stacked = false;
 
@@ -287,7 +287,7 @@ const JsonPieChart: React.FC<{ data: any }> = ({ data }) => {
         labels,
         datasets: [
           {
-            label: valueColumn,
+            label: toTitleCase(valueColumn),
             data: values,
             backgroundColor: [
               'rgba(255, 99, 132, 0.3)',
@@ -312,7 +312,7 @@ const JsonPieChart: React.FC<{ data: any }> = ({ data }) => {
         ],
       };
 
-      options.plugins.title.text = `${valueColumn} Distribution by ${labelColumn}`;
+      options.plugins.title.text = `${toTitleCase(valueColumn)} Distribution by ${toTitleCase(labelColumn)}`;
 
     } else {
       return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>Could not identify suitable columns for a pie chart.</div>;
@@ -374,7 +374,7 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
       labels,
       datasets: [
         {
-          label: columns[1] || 'Value',
+          label: toTitleCase(columns[1]) || 'Value',
           data: values,
           backgroundColor: [
               'rgba(255, 99, 132, 0.3)',
@@ -399,9 +399,9 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
         },
       ],
     };
-    options.plugins.title.text = `${columns[1] || 'Value'} over ${columns[0] || 'Label'}`;
-    options.scales.x.title.text = columns[0] || 'Label';
-    options.scales.y.title.text = columns[1] || 'Value';
+    options.plugins.title.text = `${toTitleCase(columns[1]) || 'Value'} over ${toTitleCase(columns[0]) || 'Label'}`;
+    options.scales.x.title.text = toTitleCase(columns[0]) || 'Label';
+    options.scales.y.title.text = toTitleCase(columns[1]) || 'Value';
 
   } else if (columns.length === 3) {
     // Assuming structure like [Category, OrderedLabel, Value]
@@ -428,7 +428,7 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
     chartData = {
       labels,
       datasets: categories.map((category, index) => ({
-        label: category,
+        label: toTitleCase(category),
         data: labels.map(label => {
           const row = sortedData.find(item => item[categoryColumn] === category && item[orderedLabelColumn] === label);
           return row ? row[valueColumn] : 0;
@@ -440,9 +440,9 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
       })),
     };
 
-    options.plugins.title.text = `${valueColumn} trend over ${orderedLabelColumn} by ${categoryColumn}`;
-    options.scales.x.title.text = orderedLabelColumn;
-    options.scales.y.title.text = valueColumn;
+    options.plugins.title.text = `${toTitleCase(valueColumn)} trend over ${toTitleCase(orderedLabelColumn)} by ${toTitleCase(categoryColumn)}`;
+    options.scales.x.title.text = toTitleCase(orderedLabelColumn);
+    options.scales.y.title.text = toTitleCase(valueColumn);
 
   } else {
     // Default for more than 3 columns or unexpected structure
@@ -455,6 +455,17 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
     </div>
   );
 };
+
+// Utility function to convert snake_case or camelCase to Title Case
+function toTitleCase(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+    .replace(/[_\-]+/g, ' ') // Replace underscores and dashes with space
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim()
+    .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
 
 const VIEW_OPTIONS = [
   { label: 'Table', value: 'table' },
