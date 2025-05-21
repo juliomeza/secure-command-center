@@ -495,6 +495,22 @@ const ChatView: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Ensure input is visible on mobile when focused (avoid keyboard covering input)
+  useEffect(() => {
+    if (!isMobile) return;
+    const inputElem = inputRef.current;
+    if (!inputElem) return;
+    const handleFocus = () => {
+      setTimeout(() => {
+        inputElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200); // Wait for keyboard to open
+    };
+    inputElem.addEventListener('focus', handleFocus);
+    return () => {
+      inputElem.removeEventListener('focus', handleFocus);
+    };
+  }, [isMobile]);
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!input.trim() || loading) return;
@@ -652,6 +668,7 @@ const ChatView: React.FC = () => {
                 borderRadius: 9999
               }}
               disabled={loading}
+              // Ensure input scrolls into view on focus (for mobile)
             />
             <button type="submit" disabled={loading || !input.trim()} style={{
               padding: '10px 28px',
