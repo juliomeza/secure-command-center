@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { sendChatMessage, ChatResponse } from './ChatApi';
 import { useAuth } from '../../../auth/components/AuthProvider';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js/auto';
+import { Bar, Pie, Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js/auto';
 
 // Register Chart.js components
 ChartJS.register(
@@ -11,7 +11,10 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement
 );
 
 // Simple table component for displaying JSON data as a table
@@ -137,6 +140,120 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
+// Component for displaying JSON data as a Pie Chart
+const JsonPieChart: React.FC<{ data: any }> = ({ data }) => {
+  if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
+    return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No pie chart data available.</div>;
+  }
+
+  const labels = data.map(row => Object.values(row)[0]);
+  const orderCounts = data.map(row => Object.values(row)[1]);
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Order Count',
+        data: orderCounts,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.5)',
+          'rgba(54, 162, 235, 0.5)',
+          'rgba(255, 206, 86, 0.5)',
+          'rgba(75, 192, 192, 0.5)',
+          'rgba(153, 102, 255, 0.5)',
+          'rgba(255, 159, 64, 0.5)',
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Order Count Distribution per Warehouse',
+      },
+    },
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <Pie data={chartData} options={options} />
+    </div>
+  );
+};
+
+// Component for displaying JSON data as a Line Chart
+const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
+  if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
+    return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No line chart data available.</div>;
+  }
+
+  const labels = data.map(row => Object.values(row)[0]);
+  const orderCounts = data.map(row => Object.values(row)[1]);
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Order Count',
+        data: orderCounts,
+        borderColor: 'rgb(53, 162, 235)',
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        fill: false,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Order Count Trend per Warehouse',
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Warehouse',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Order Count',
+        },
+      },
+    },
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <Line data={chartData} options={options} />
+    </div>
+  );
+};
+
 const VIEW_OPTIONS = [
   { label: 'Table', value: 'table' },
   { label: 'Bar', value: 'bar' },
@@ -215,6 +332,10 @@ const ChatView: React.FC = () => {
               <JsonTable data={resultData} />
             ) : viewType === 'bar' ? (
               <JsonBarChart data={resultData} />
+            ) : viewType === 'pie' ? (
+              <JsonPieChart data={resultData} />
+            ) : viewType === 'line' ? (
+              <JsonLineChart data={resultData} />
             ) : (
               <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Not implemented yet.</div>
             )
