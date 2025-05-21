@@ -563,7 +563,7 @@ const ChatView: React.FC = () => {
               ) : (
                 <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Not implemented yet.</div>
               )
-            ) : 'Result area (tables or charts)'}
+            ) : <span style={{ color: '#b0b3b8', fontWeight: 400, fontSize: 18, opacity: 0.85 }}>Result area (tables or charts)</span>}
           </div>
         </div>
       )}
