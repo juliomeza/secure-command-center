@@ -75,7 +75,7 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
   border-radius: 8px;
 }
 .table-row-striped {
-  background: var(--gray-100, #d1d5db) !important;
+  background: var(--gray-50, #d1d5db) !important;
 }
 .table-row-alt {
   background: var(--gray-200, #eff6ff) !important;
