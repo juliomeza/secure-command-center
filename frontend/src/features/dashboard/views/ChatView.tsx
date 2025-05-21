@@ -539,7 +539,7 @@ const ChatView: React.FC = () => {
             ))}
           </div>
           {/* Dynamic content (tables/charts) */}
-          <div style={{ width: '100%', flex: 1, minHeight: 0, background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
+          <div style={{ width: '100%', flex: 1, minHeight: 0, background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: viewType === 'table' ? 'auto' : 'hidden' }}>
             {resultData ? (
               viewType === 'table' ? (
                 <JsonTable data={resultData} />
