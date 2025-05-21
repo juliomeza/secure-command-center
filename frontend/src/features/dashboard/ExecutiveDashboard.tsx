@@ -38,40 +38,53 @@ const allDashboardTabs: Array<{ id: DashboardTabId; label: string; icon: React.R
 const ExecutiveDashboard: React.FC = () => {
   const { allowedTabs, isLoading: isLoadingAuth, isAuthorized } = useAuth();
   const [activeTab, setActiveTab] = useState<DashboardTabId | null>(null);
+  const [chatResetKey, setChatResetKey] = useState(0);
 
+  // Compute permittedTabs and dynamically change Chat label if active
   const permittedTabs = useMemo(() => {
     if (!allowedTabs) {
       return [];
     }
-    // Ensure comparison is case-insensitive and matches backend id_name
     const allowedIds = new Set(allowedTabs.map(tab => tab.id_name.toUpperCase()));
-    return allDashboardTabs.filter(tab => allowedIds.has(tab.id));
-  }, [allowedTabs]);
+    return allDashboardTabs
+      .filter(tab => allowedIds.has(tab.id))
+      .map(tab =>
+        tab.id === 'CHAT' && activeTab === 'CHAT'
+          ? { ...tab, label: '+ New Chat' }
+          : tab
+      );
+  }, [allowedTabs, activeTab]);
 
   useEffect(() => {
-    // Only set active tab if it hasn't been set yet and permissions are loaded
     if (!isLoadingAuth && permittedTabs.length > 0 && activeTab === null) {
       setActiveTab(permittedTabs[0].id);
     }
-    // If the current activeTab is no longer permitted (e.g., permissions changed), reset
     if (!isLoadingAuth && activeTab !== null && !permittedTabs.some(tab => tab.id === activeTab)) {
-        setActiveTab(permittedTabs.length > 0 ? permittedTabs[0].id : null);
+      setActiveTab(permittedTabs.length > 0 ? permittedTabs[0].id : null);
     }
   }, [isLoadingAuth, permittedTabs, activeTab]);
+
+  // Custom tab change handler to support chat reset
+  const handleTabChange = (tabId: DashboardTabId) => {
+    if (tabId === 'CHAT' && activeTab === 'CHAT') {
+      setChatResetKey(prev => prev + 1); // Reset chat
+    } else {
+      setActiveTab(tabId);
+    }
+  };
 
   const renderContent = () => {
     if (isLoadingAuth) {
       return <div>Loading dashboard...</div>;
     }
     if (!isAuthorized) {
-        return <div>You are not authorized to view this application.</div>;
+      return <div>You are not authorized to view this application.</div>;
     }
     if (permittedTabs.length === 0) {
       return <div>You do not have access to any dashboard views.</div>;
     }
     if (activeTab === null) {
-        // This state should ideally be brief or indicate no permitted tabs
-        return <div>Loading view or no view selected...</div>;
+      return <div>Loading view or no view selected...</div>;
     }
 
     switch (activeTab) {
@@ -82,7 +95,7 @@ const ExecutiveDashboard: React.FC = () => {
       case 'LEADERS': return <LeadersView />;
       case 'TESTING': return <TestingView />;
       case 'DATACARD': return <DataCardView />;
-      case 'CHAT': return <ChatView />; // Added Chat case
+      case 'CHAT': return <ChatView key={chatResetKey} />; // Pass key to force remount
       default: return <div>Invalid tab selected.</div>;
     }
   };
@@ -93,8 +106,8 @@ const ExecutiveDashboard: React.FC = () => {
       {!isLoadingAuth && isAuthorized && activeTab !== null && permittedTabs.length > 0 && (
         <TabsNavigation<DashboardTabId>
           tabs={permittedTabs}
-          activeTab={activeTab} // Now guaranteed to be non-null here
-          onTabChange={setActiveTab} // Direct assignment is fine now
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
           showIcons={true}
         />
       )}
