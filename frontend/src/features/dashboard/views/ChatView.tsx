@@ -1,6 +1,18 @@
 import React, { useState, useRef } from 'react';
 import { sendChatMessage, ChatResponse } from './ChatApi';
 import { useAuth } from '../../../auth/components/AuthProvider';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js/auto';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Simple table component for displaying JSON data as a table
 const JsonTable: React.FC<{ data: any }> = ({ data }) => {
@@ -66,6 +78,61 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
   background: var(--gray-200, #eff6ff) !important;
 }
 `}</style>
+    </div>
+  );
+};
+
+// Component for displaying JSON data as a Bar Chart
+const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
+  if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
+    return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No bar chart data available.</div>;
+  }
+
+  const labels = data.map(row => Object.values(row)[0]);
+  const orderCounts = data.map(row => Object.values(row)[1]);
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Order Count',
+        data: orderCounts,
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Order Count per Warehouse',
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Warehouse',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Order Count',
+        },
+      },
+    },
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <Bar data={chartData} options={options} />
     </div>
   );
 };
@@ -148,7 +215,7 @@ const ChatView: React.FC = () => {
             viewType === 'table' ? (
               <JsonTable data={resultData} />
             ) : viewType === 'bar' ? (
-              <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Bar chart coming soon...</div>
+              <JsonBarChart data={resultData} />
             ) : (
               <div style={{ color: 'var(--blue-dark)', fontSize: 18, opacity: 0.7 }}>Not implemented yet.</div>
             )
