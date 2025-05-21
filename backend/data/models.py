@@ -78,6 +78,13 @@ class Orders(models.Model):
     order_type = models.CharField(max_length=20)  # Changed from inbound_or_outbound
     date = models.DateField()
     order_class = models.CharField(max_length=100)  # Changed from order_or_shipment_class_type
+    source_state = models.CharField(max_length=100, null=True, blank=True)
+    destination_state = models.CharField(max_length=100, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+    month = models.IntegerField(null=True, blank=True)
+    quarter = models.IntegerField(null=True, blank=True)
+    week = models.IntegerField(null=True, blank=True)
+    day = models.IntegerField(null=True, blank=True)
     fetched_at = models.DateTimeField(auto_now=True)
 
     class Meta:

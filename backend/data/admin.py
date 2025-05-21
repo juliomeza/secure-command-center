@@ -137,17 +137,17 @@ class DataCardReportAdmin(admin.ModelAdmin):
 class OrdersAdmin(admin.ModelAdmin):
     list_display = (
         'customer', 'warehouse', 'warehouse_city_state', 'order_number', 'shipment_number',
-        'order_type', 'date', 'order_class', 'fetched_at'
+        'order_type', 'date', 'order_class', 'source_state', 'destination_state', 'year', 'month', 'quarter', 'week', 'day', 'fetched_at'
     )
-    list_filter = ('warehouse', 'order_type', 'date')
-    search_fields = ('customer', 'order_number', 'shipment_number', 'warehouse')
+    list_filter = ('warehouse', 'order_type', 'date', 'source_state', 'destination_state', 'year', 'month', 'quarter', 'week', 'day')
+    search_fields = ('customer', 'order_number', 'shipment_number', 'warehouse', 'source_state', 'destination_state')
     ordering = ('-date', '-fetched_at')
     readonly_fields = ('fetched_at',)
     fieldsets = [
         ('Order Info', {
             'fields': [
                 'customer', 'warehouse', 'warehouse_city_state', 'order_number', 'shipment_number',
-                'order_type', 'date', 'order_class', 'fetched_at'
+                'order_type', 'date', 'order_class', 'source_state', 'destination_state', 'year', 'month', 'quarter', 'week', 'day', 'fetched_at'
             ]
         }),
     ]
