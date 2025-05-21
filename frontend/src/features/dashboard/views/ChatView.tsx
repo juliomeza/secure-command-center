@@ -203,7 +203,6 @@ const ChatView: React.FC = () => {
                 boxShadow: viewType === option.value ? '0 2px 8px rgba(30,58,138,0.08)' : 'none',
                 minWidth: 80
               }}
-              disabled={option.value !== 'table' && option.value !== 'bar'} // Only Table and Bar enabled for now
             >
               {option.label}
             </button>
