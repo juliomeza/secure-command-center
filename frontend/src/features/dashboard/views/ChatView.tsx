@@ -540,12 +540,12 @@ const ChatView: React.FC = () => {
                 <span style={{
                   background: msg.sender === 'user' ? 'var(--blue-primary)' : 'transparent',
                   color: msg.sender === 'user' ? 'white' : 'var(--blue-dark)',
-                  borderRadius: msg.sender === 'user' ? '10px 10px 2px 10px' : 0, // less rounded for user bubble
+                  borderRadius: msg.sender === 'user' ? '20px 20px 20px 20px' : 0, // less rounded for user bubble
                   padding: msg.sender === 'user' ? '12px 22px' : 0,
                   maxWidth: msg.sender === 'user' ? '70%' : '100%', // bot responses use full width
                   minWidth: msg.sender === 'user' ? 0 : '90%', // bot responses use more width
                   wordBreak: 'break-word',
-                  fontSize: 16,
+                  fontSize: 15,
                   boxShadow: msg.sender === 'user' ? '0 2px 8px rgba(30,58,138,0.08)' : 'none',
                   border: 'none',
                   margin: msg.sender === 'user' ? '0 0 0 40px' : '0 40px 0 0',
@@ -586,7 +586,7 @@ const ChatView: React.FC = () => {
                 border: 'none',
                 background: 'transparent',
                 outline: 'none',
-                fontSize: 16,
+                fontSize: 15,
                 color: 'var(--blue-dark)',
                 borderRadius: 9999
               }}
@@ -599,7 +599,7 @@ const ChatView: React.FC = () => {
               color: loading || !input.trim() ? 'var(--gray-500)' : 'white',
               border: 'none',
               fontWeight: 600,
-              fontSize: 16,
+              fontSize: 15,
               marginLeft: 8,
               transition: 'background 0.2s',
               boxShadow: 'none',
@@ -611,7 +611,7 @@ const ChatView: React.FC = () => {
           </form>
           <div style={{
             textAlign: 'center',
-            fontSize: 13,
+            fontSize: 12,
             color: 'var(--gray-400)',
             marginTop: 8,
             fontStyle: 'italic'
