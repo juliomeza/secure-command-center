@@ -609,6 +609,15 @@ const ChatView: React.FC = () => {
               {loading ? '...' : 'Send'}
             </button>
           </form>
+          <div style={{
+            textAlign: 'center',
+            fontSize: 13,
+            color: 'var(--gray-400)',
+            marginTop: 8,
+            fontStyle: 'italic'
+          }}>
+            Chat can make mistakes. Check important info.
+          </div>
           {error && <div className="error" style={{ marginTop: 8 }}>{error}</div>}
         </div>
       </div>
