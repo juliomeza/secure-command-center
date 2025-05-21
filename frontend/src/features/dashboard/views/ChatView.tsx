@@ -110,13 +110,11 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
       x: {
         title: {
           display: true,
-          text: 'X-axis',
         },
       },
       y: {
         title: {
           display: true,
-          text: 'Y-axis',
         },
       },
     },
@@ -166,6 +164,46 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
     options.scales.x.title.text = labelColumn;
     options.scales.y.title.text = valueColumn;
     options.scales.x.stacked = false; // Ensure bars are grouped, not stacked by default
+    options.scales.y.stacked = false;
+
+  } else if (columns.length === 4) {
+    // Assuming structure like [Year, Order Type, Warehouse, Count]
+    const yearColumn = columns[0];
+    const orderTypeColumn = columns[1];
+    const warehouseColumn = columns[2];
+    const countColumn = columns[3];
+
+    const years = Array.from(new Set(data.map(row => row[yearColumn])));
+    const orderTypes = Array.from(new Set(data.map(row => row[orderTypeColumn])));
+    const warehouses = Array.from(new Set(data.map(row => row[warehouseColumn])));
+
+    // Sort warehouses numerically if they are numbers
+    warehouses.sort((a, b) => (typeof a === 'number' && typeof b === 'number') ? a - b : String(a).localeCompare(String(b)));
+
+    chartData = {
+      labels: warehouses,
+      datasets: years.flatMap(year =>
+        orderTypes.map((orderType, index) => ({
+          label: `${year} - ${orderType}`,
+          data: warehouses.map(warehouse => {
+            const row = data.find(item =>
+              item[yearColumn] === year &&
+              item[orderTypeColumn] === orderType &&
+              item[warehouseColumn] === warehouse
+            );
+            return row ? row[countColumn] : 0;
+          }),
+          backgroundColor: `hsla(${(years.indexOf(year) * 120 + orderTypes.indexOf(orderType) * 60) % 360}, 70%, 50%, 0.7)`,
+          borderColor: `hsl(${(years.indexOf(year) * 120 + orderTypes.indexOf(orderType) * 60) % 360}, 70%, 50%)`,
+          borderWidth: 1,
+        }))
+      ),
+    };
+
+    options.plugins.title.text = `${countColumn} by ${warehouseColumn}, ${orderTypeColumn}, and ${yearColumn}`;
+    options.scales.x.title.text = warehouseColumn;
+    options.scales.y.title.text = countColumn;
+    options.scales.x.stacked = false; // Ensure bars are grouped
     options.scales.y.stacked = false;
 
   } else {
@@ -278,23 +316,10 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
     return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No line chart data available.</div>;
   }
 
-  const labels = data.map(row => Object.values(row)[0]);
-  const orderCounts = data.map(row => Object.values(row)[1]);
+  const columns = Object.keys(data[0]);
 
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: 'Order Count',
-        data: orderCounts,
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        fill: false,
-      },
-    ],
-  };
-
-  const options = {
+  let chartData;
+  let options: any = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -303,28 +328,95 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Order Count Trend per Warehouse',
+        text: 'Chart Title',
       },
     },
     scales: {
       x: {
         title: {
           display: true,
-          text: 'Warehouse',
+          text: 'X-axis',
         },
       },
       y: {
         title: {
           display: true,
-          text: 'Order Count',
+          text: 'Y-axis',
         },
       },
     },
   };
 
+  if (columns.length === 2) {
+    // Simple label-value case
+    const labels = data.map(row => Object.values(row)[0]);
+    const values = data.map(row => Object.values(row)[1]);
+
+    chartData = {
+      labels,
+      datasets: [
+        {
+          label: columns[1] || 'Value',
+          data: values,
+          borderColor: 'rgb(53, 162, 235)',
+          backgroundColor: 'rgba(53, 162, 235, 0.5)',
+          fill: false,
+        },
+      ],
+    };
+    options.plugins.title.text = `${columns[1] || 'Value'} over ${columns[0] || 'Label'}`;
+    options.scales.x.title.text = columns[0] || 'Label';
+    options.scales.y.title.text = columns[1] || 'Value';
+
+  } else if (columns.length === 3) {
+    // Assuming structure like [Category, OrderedLabel, Value]
+    const categoryColumn = columns[0];
+    const orderedLabelColumn = columns[1];
+    const valueColumn = columns[2];
+
+    // Sort data by the ordered label column
+    const sortedData = [...data].sort((a, b) => {
+      const labelA = a[orderedLabelColumn];
+      const labelB = b[orderedLabelColumn];
+      if (typeof labelA === 'number' && typeof labelB === 'number') {
+        return labelA - labelB;
+      } else if (typeof labelA === 'string' && typeof labelB === 'string') {
+        return labelA.localeCompare(labelB);
+      } else {
+        return 0; // Cannot sort mixed types
+      }
+    });
+
+    const categories = Array.from(new Set(sortedData.map(row => row[categoryColumn])));
+    const labels = Array.from(new Set(sortedData.map(row => row[orderedLabelColumn])));
+
+    chartData = {
+      labels,
+      datasets: categories.map((category, index) => ({
+        label: category,
+        data: labels.map(label => {
+          const row = sortedData.find(item => item[categoryColumn] === category && item[orderedLabelColumn] === label);
+          return row ? row[valueColumn] : 0;
+        }),
+        borderColor: `hsl(${(index * 100) % 360}, 70%, 50%)`, // Use HSL for better color variation
+        backgroundColor: `hsla(${(index * 100) % 360}, 70%, 50%, 0.5)`,
+        fill: false,
+        tension: 0.1, // Add some tension for smoother lines
+      })),
+    };
+
+    options.plugins.title.text = `${valueColumn} trend over ${orderedLabelColumn} by ${categoryColumn}`;
+    options.scales.x.title.text = orderedLabelColumn;
+    options.scales.y.title.text = valueColumn;
+
+  } else {
+    // Default for more than 3 columns or unexpected structure
+    return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>Unsupported data structure for line chart.</div>;
+  }
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <Line data={chartData} options={options} />
+      {chartData ? <Line data={chartData} options={options} /> : null}
     </div>
   );
 };
