@@ -31,11 +31,11 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
       <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
         <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--gray-50)' }}>
           <tr>
-            {columns.map(col => {
+            {columns.map(_col => {
               // Format column name: remove underscores and capitalize each word
-              const formattedCol = col.replace(/_/g, ' ').replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+              const formattedCol = _col.replace(/_/g, ' ').replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
               return (
-                <th key={col} style={{ padding: 8, color: 'var(--blue-dark)', fontWeight: 500, borderBottom: '1px solid var(--gray-200)', background: 'transparent', textAlign: 'left', fontSize: 16 }}>{formattedCol}</th>
+                <th key={_col} style={{ padding: 8, color: 'var(--blue-dark)', fontWeight: 500, borderBottom: '1px solid var(--gray-200)', background: 'transparent', textAlign: 'left', fontSize: 16 }}>{formattedCol}</th>
               );
             })}
           </tr>
@@ -43,8 +43,8 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
         <tbody>
           {data.map((row: any, idx: number) => (
             <tr key={idx} className={idx % 2 === 0 ? 'table-row-striped' : 'table-row-alt'}>
-              {columns.map(col => (
-                <td key={col} style={{ padding: 8, borderBottom: '1px solid var(--gray-100)', color: 'var(--gray-800)', background: 'transparent', fontSize: 15, fontWeight: 400 }}>{row[col]}</td>
+              {columns.map(_col => (
+                <td key={_col} style={{ padding: 8, borderBottom: '1px solid var(--gray-100)', color: 'var(--gray-800)', background: 'transparent', fontSize: 15, fontWeight: 400 }}>{row[_col]}</td>
               ))}
             </tr>
           ))}
@@ -183,7 +183,7 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
     chartData = {
       labels: warehouses,
       datasets: years.flatMap(year =>
-        orderTypes.map((orderType, index) => ({
+        orderTypes.map((orderType, _index) => ({
           label: `${year} - ${orderType}`,
           data: warehouses.map(warehouse => {
             const row = data.find(item =>
@@ -193,8 +193,8 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
             );
             return row ? row[countColumn] : 0;
           }),
-          backgroundColor: `hsla(${(years.indexOf(year) * 120 + orderTypes.indexOf(orderType) * 60) % 360}, 70%, 50%, 0.7)`,
-          borderColor: `hsl(${(years.indexOf(year) * 120 + orderTypes.indexOf(orderType) * 60) % 360}, 70%, 50%)`,
+          backgroundColor: `hsla(${(years.indexOf(year) * 120 + _index * 60) % 360}, 70%, 50%, 0.7)`,
+          borderColor: `hsl(${(years.indexOf(year) * 120 + _index * 60) % 360}, 70%, 50%)`,
           borderWidth: 1,
         }))
       ),
@@ -243,8 +243,8 @@ const JsonPieChart: React.FC<{ data: any }> = ({ data }) => {
 
   if (columns.length >= 2) {
     // Attempt to find a value column (number) and a label column (string/number)
-    const valueColumnIndex = columns.findIndex(col => typeof data[0][col] === 'number');
-    const labelColumnIndex = columns.findIndex((col, index) => index !== valueColumnIndex);
+    const valueColumnIndex = columns.findIndex(_col => typeof data[0][_col] === 'number');
+    const labelColumnIndex = columns.findIndex((_, index) => index !== valueColumnIndex);
 
     if (valueColumnIndex !== -1 && labelColumnIndex !== -1) {
       const valueColumn = columns[valueColumnIndex];
