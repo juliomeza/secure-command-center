@@ -91,21 +91,10 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
     return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No bar chart data available.</div>;
   }
 
-  const labels = data.map(row => Object.values(row)[0]);
-  const orderCounts = data.map(row => Object.values(row)[1]);
+  const columns = Object.keys(data[0]);
 
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: 'Order Count',
-        data: orderCounts,
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-      },
-    ],
-  };
-
-  const options = {
+  let chartData;
+  let options: any = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -114,28 +103,79 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Order Count per Warehouse',
+        text: 'Chart Title',
       },
     },
     scales: {
       x: {
         title: {
           display: true,
-          text: 'Warehouse',
+          text: 'X-axis',
         },
       },
       y: {
         title: {
           display: true,
-          text: 'Order Count',
+          text: 'Y-axis',
         },
       },
     },
   };
 
+  if (columns.length === 2) {
+    // Simple label-value case
+    const labels = data.map(row => Object.values(row)[0]);
+    const values = data.map(row => Object.values(row)[1]);
+
+    chartData = {
+      labels,
+      datasets: [
+        {
+          label: columns[1] || 'Value',
+          data: values,
+          backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        },
+      ],
+    };
+    options.plugins.title.text = `${columns[1] || 'Value'} per ${columns[0] || 'Label'}`;
+    options.scales.x.title.text = columns[0] || 'Label';
+    options.scales.y.title.text = columns[1] || 'Value';
+
+  } else if (columns.length === 3) {
+    // Assuming structure like [Category, Label, Value]
+    const categoryColumn = columns[0];
+    const labelColumn = columns[1];
+    const valueColumn = columns[2];
+
+    const categories = Array.from(new Set(data.map(row => row[categoryColumn])));
+    const labels = Array.from(new Set(data.map(row => row[labelColumn])));
+
+    chartData = {
+      labels,
+      datasets: categories.map((category, index) => ({
+        label: category,
+        data: labels.map(label => {
+          const row = data.find(item => item[categoryColumn] === category && item[labelColumn] === label);
+          return row ? row[valueColumn] : 0;
+        }),
+        backgroundColor: `rgba(${(index * 80) % 255}, ${(index * 150) % 255}, ${(index * 200) % 255}, 0.5)`,
+      })),
+    };
+
+    options.plugins.title.text = `${valueColumn} per ${labelColumn} grouped by ${categoryColumn}`;
+    options.scales.x.title.text = labelColumn;
+    options.scales.y.title.text = valueColumn;
+    options.scales.x.stacked = false; // Ensure bars are grouped, not stacked by default
+    options.scales.y.stacked = false;
+
+  } else {
+    // Default for more than 3 columns or unexpected structure
+    return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>Unsupported data structure for bar chart.</div>;
+  }
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <Bar data={chartData} options={options} />
+      {chartData ? <Bar data={chartData} options={options} /> : null}
     </div>
   );
 };
@@ -146,37 +186,10 @@ const JsonPieChart: React.FC<{ data: any }> = ({ data }) => {
     return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No pie chart data available.</div>;
   }
 
-  const labels = data.map(row => Object.values(row)[0]);
-  const orderCounts = data.map(row => Object.values(row)[1]);
+  const columns = Object.keys(data[0]);
 
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: 'Order Count',
-        data: orderCounts,
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.5)',
-          'rgba(54, 162, 235, 0.5)',
-          'rgba(255, 206, 86, 0.5)',
-          'rgba(75, 192, 192, 0.5)',
-          'rgba(153, 102, 255, 0.5)',
-          'rgba(255, 159, 64, 0.5)',
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const options = {
+  let chartData;
+  let options: any = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -185,14 +198,76 @@ const JsonPieChart: React.FC<{ data: any }> = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Order Count Distribution per Warehouse',
+        text: 'Chart Title',
       },
     },
   };
 
+  if (columns.length >= 2) {
+    // Attempt to find a value column (number) and a label column (string/number)
+    const valueColumnIndex = columns.findIndex(col => typeof data[0][col] === 'number');
+    const labelColumnIndex = columns.findIndex((col, index) => index !== valueColumnIndex);
+
+    if (valueColumnIndex !== -1 && labelColumnIndex !== -1) {
+      const valueColumn = columns[valueColumnIndex];
+      const labelColumn = columns[labelColumnIndex];
+
+      // Aggregate data by the label column
+      const aggregatedData = data.reduce((acc, row) => {
+        const label = row[labelColumn];
+        const value = row[valueColumn];
+        if (acc[label]) {
+          acc[label] += value;
+        } else {
+          acc[label] = value;
+        }
+        return acc;
+      }, {});
+
+      const labels = Object.keys(aggregatedData);
+      const values = Object.values(aggregatedData);
+
+      chartData = {
+        labels,
+        datasets: [
+          {
+            label: valueColumn,
+            data: values,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 206, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(153, 102, 255, 0.7)',
+              'rgba(255, 159, 64, 0.7)',
+              'rgba(201, 203, 207, 0.7)',
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(75, 192, 192, 1)',
+              'rgba(153, 102, 255, 1)',
+              'rgba(255, 159, 64, 1)',
+              'rgba(201, 203, 207, 1)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      options.plugins.title.text = `${valueColumn} Distribution by ${labelColumn}`;
+
+    } else {
+      return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>Could not identify suitable columns for a pie chart.</div>;
+    }
+  } else {
+     return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>Unsupported data structure for pie chart. Requires at least two columns.</div>;
+  }
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <Pie data={chartData} options={options} />
+      {chartData ? <Pie data={chartData} options={options} /> : null}
     </div>
   );
 };
