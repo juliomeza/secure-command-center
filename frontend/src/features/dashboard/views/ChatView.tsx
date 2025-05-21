@@ -619,7 +619,9 @@ const ChatView: React.FC = () => {
             marginTop: 12,
             marginBottom: 0,
             position: 'relative',
-            minHeight: 48
+            minHeight: 48,
+            width: isMobile ? '100%' : undefined,
+            maxWidth: isMobile ? '100%' : undefined,
           }}>
             <input
               ref={inputRef}
@@ -629,6 +631,7 @@ const ChatView: React.FC = () => {
               placeholder="Type your message..."
               style={{
                 flex: 1,
+                minWidth: 0,
                 padding: '12px 16px',
                 border: 'none',
                 background: 'transparent',
@@ -651,11 +654,32 @@ const ChatView: React.FC = () => {
               transition: 'background 0.2s',
               boxShadow: 'none',
               cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
-              minWidth: 80
+              minWidth: 80,
+              maxWidth: isMobile ? '40%' : undefined,
+              width: isMobile ? 'auto' : undefined,
+              flexShrink: 0
             }}>
               {loading ? '...' : 'Send'}
             </button>
           </form>
+          {/* Responsive fix for mobile input form */}
+          <style>{`
+            @media (max-width: 600px) {
+              .chat-scroll-area + form {
+                width: 100% !important;
+                max-width: 100% !important;
+              }
+              .chat-scroll-area + form input[type="text"] {
+                min-width: 0 !important;
+                width: 1% !important;
+              }
+              .chat-scroll-area + form button[type="submit"] {
+                min-width: 70px !important;
+                max-width: 40vw !important;
+                width: auto !important;
+              }
+            }
+          `}</style>
           <div style={{
             textAlign: 'center',
             fontSize: 12,
