@@ -14,6 +14,7 @@ from extracts.datacard import extract_datacard_reports
 from loaders.testing import load_test_data
 from loaders.orders import load_orders
 from loaders.datacard import load_datacard_data
+from transformers.orders import transform_orders
 
 # --- Configuration ---
 # --- Database Connection Functions ---
@@ -128,6 +129,10 @@ def main(args): # Cambiamos para aceptar el objeto args completo
                 orders_data = extract_orders(mssql_conn)
                 if orders_data:
                     print(f"Se extrajeron {len(orders_data)} registros de Orders.")
+                    # Add transformation step
+                    print("Transforming Orders data (adding year, month, quarter, week, day fields)...")
+                    logging.info("Transforming Orders data (adding year, month, quarter, week, day fields).")
+                    orders_data = transform_orders(orders_data)
                     load_orders(pg_conn, orders_data)
                 else:
                     logging.info("No se encontraron datos de Orders para cargar.")
