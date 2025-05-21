@@ -115,7 +115,7 @@ const ChatView: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'row', height: '75vh', background: 'transparent', justifyContent: 'center', alignItems: 'center' }}>
       {/* Left area for tables or charts */}
-      <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 24 }}>
+      <div style={{ flex: 1, minWidth: 0, maxWidth: '60%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingRight: 24 }}>
         {/* Toggle button group for view selection */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, justifyContent: 'flex-start', width: '100%' }}>
           {VIEW_OPTIONS.map(option => (
@@ -143,7 +143,7 @@ const ChatView: React.FC = () => {
           ))}
         </div>
         {/* Dynamic content (tables/charts) */}
-        <div style={{ width: '100%', height: '90%', background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
+        <div style={{ width: '100%', flex: 1, minHeight: 0, background: 'transparent', borderRadius: 0, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-800)', fontSize: 20, fontWeight: 500, opacity: 1, boxShadow: 'none', overflow: 'auto' }}>
           {resultData ? (
             viewType === 'table' ? (
               <JsonTable data={resultData} />
