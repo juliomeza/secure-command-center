@@ -82,6 +82,7 @@ class Orders(models.Model):
     destination_state = models.CharField(max_length=100, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
     month = models.IntegerField(null=True, blank=True)
+    month_name = models.CharField(max_length=20, null=True, blank=True)  # Added month_name
     quarter = models.IntegerField(null=True, blank=True)
     week = models.IntegerField(null=True, blank=True)
     day = models.IntegerField(null=True, blank=True)

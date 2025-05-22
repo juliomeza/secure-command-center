@@ -26,12 +26,13 @@ def _get_source_state_from_warehouse(warehouse_value):
 
 def extract_date_fields(order):
     """
-    Given an order dict with a 'date' key (YYYY-MM-DD or datetime/date), extract year, month, quarter, week, and day.
+    Given an order dict with a 'date' key (YYYY-MM-DD or datetime/date), extract year, month, quarter, week, day, and month_name.
     """
     date_val = order.get('date')
     if not date_val:
         order['year'] = None
         order['month'] = None
+        order['month_name'] = None
         order['quarter'] = None
         order['week'] = None
         order['day'] = None
@@ -46,18 +47,21 @@ def extract_date_fields(order):
         else:
             order['year'] = None
             order['month'] = None
+            order['month_name'] = None
             order['quarter'] = None
             order['week'] = None
             order['day'] = None
             return order
         order['year'] = date_obj.year
         order['month'] = date_obj.month
+        order['month_name'] = date_obj.strftime('%B')
         order['day'] = date_obj.day
         order['week'] = date_obj.isocalendar()[1]
         order['quarter'] = (date_obj.month - 1) // 3 + 1
     except Exception:
         order['year'] = None
         order['month'] = None
+        order['month_name'] = None
         order['quarter'] = None
         order['week'] = None
         order['day'] = None
@@ -74,7 +78,7 @@ def add_source_state(order):
 
 def transform_orders(data):
     """
-    Transform a list of order dicts, adding year, month, quarter, week, day, and source_state fields.
+    Transform a list of order dicts, adding year, month, month_name, quarter, week, day, and source_state fields.
     """
     transformed_data = []
     for order_item in data:
