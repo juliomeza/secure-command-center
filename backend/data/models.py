@@ -75,14 +75,14 @@ class Orders(models.Model):
     warehouse_city_state = models.CharField(max_length=255)
     order_number = models.CharField(max_length=100)
     shipment_number = models.CharField(max_length=100)
-    order_type = models.CharField(max_length=20)  # Changed from inbound_or_outbound
+    order_type = models.CharField(max_length=20)
     date = models.DateField()
-    order_class = models.CharField(max_length=100)  # Changed from order_or_shipment_class_type
+    order_class = models.CharField(max_length=100)
     source_state = models.CharField(max_length=100, null=True, blank=True)
     destination_state = models.CharField(max_length=100, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
     month = models.IntegerField(null=True, blank=True)
-    month_name = models.CharField(max_length=20, null=True, blank=True)  # Added month_name
+    month_name = models.CharField(max_length=20, null=True, blank=True)
     quarter = models.IntegerField(null=True, blank=True)
     week = models.IntegerField(null=True, blank=True)
     day = models.IntegerField(null=True, blank=True)
