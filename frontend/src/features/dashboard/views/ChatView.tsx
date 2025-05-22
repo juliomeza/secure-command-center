@@ -166,6 +166,26 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
     const categories = Array.from(new Set(data.map(row => row[categoryColumn])));
     const labels = Array.from(new Set(data.map(row => row[labelColumn])));
 
+    // Define your custom color palette
+    const customBackgroundColors = [
+      'rgba(255, 99, 132, 0.3)',
+      'rgba(255, 159, 64, 0.3)',
+      'rgba(255, 205, 86, 0.3)',
+      'rgba(75, 192, 192, 0.3)',
+      'rgba(54, 162, 235, 0.3)',
+      'rgba(153, 102, 255, 0.3)',
+      'rgba(201, 203, 207, 0.3)',
+    ];
+    const customBorderColors = [
+      'rgb(255, 99, 132)',
+      'rgb(255, 159, 64)',
+      'rgb(255, 205, 86)',
+      'rgb(75, 192, 192)',
+      'rgb(54, 162, 235)',
+      'rgb(153, 102, 255)',
+      'rgb(201, 203, 207)'
+    ];
+
     chartData = {
       labels,
       datasets: categories.map((category, index) => ({
@@ -174,7 +194,9 @@ const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
           const row = data.find(item => item[categoryColumn] === category && item[labelColumn] === label);
           return row ? row[valueColumn] : 0;
         }),
-        backgroundColor: `rgba(${(index * 80) % 255}, ${(index * 150) % 255}, ${(index * 200) % 255}, 0.5)`,
+        backgroundColor: customBackgroundColors[index % customBackgroundColors.length],
+        borderColor: customBorderColors[index % customBorderColors.length],
+        borderWidth: 1,
       })),
     };
 
@@ -425,6 +447,26 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
     const categories = Array.from(new Set(sortedData.map(row => row[categoryColumn])));
     const labels = Array.from(new Set(sortedData.map(row => row[orderedLabelColumn])));
 
+    // Use the same custom color palette as in the bar chart
+    const customBackgroundColors = [
+      'rgba(255, 99, 132, 0.3)',
+      'rgba(255, 159, 64, 0.3)',
+      'rgba(255, 205, 86, 0.3)',
+      'rgba(75, 192, 192, 0.3)',
+      'rgba(54, 162, 235, 0.3)',
+      'rgba(153, 102, 255, 0.3)',
+      'rgba(201, 203, 207, 0.3)',
+    ];
+    const customBorderColors = [
+      'rgb(255, 99, 132)',
+      'rgb(255, 159, 64)',
+      'rgb(255, 205, 86)',
+      'rgb(75, 192, 192)',
+      'rgb(54, 162, 235)',
+      'rgb(153, 102, 255)',
+      'rgb(201, 203, 207)'
+    ];
+
     chartData = {
       labels,
       datasets: categories.map((category, index) => ({
@@ -433,8 +475,8 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
           const row = sortedData.find(item => item[categoryColumn] === category && item[orderedLabelColumn] === label);
           return row ? row[valueColumn] : 0;
         }),
-        borderColor: `hsl(${(index * 100) % 360}, 70%, 50%)`, // Use HSL for better color variation
-        backgroundColor: `hsla(${(index * 100) % 360}, 70%, 50%, 0.5)`,
+        borderColor: customBorderColors[index % customBorderColors.length],
+        backgroundColor: customBackgroundColors[index % customBackgroundColors.length],
         fill: false,
         tension: 0.1, // Add some tension for smoother lines
       })),
