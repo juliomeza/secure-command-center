@@ -458,8 +458,10 @@ const JsonLineChart: React.FC<{ data: any }> = ({ data }) => {
 
 // Utility function to convert snake_case or camelCase to Title Case
 function toTitleCase(str: string): string {
-  if (!str) return '';
-  return str
+  if (str === undefined || str === null) return '';
+  // Always convert to string to avoid errors with numbers
+  const safeStr = String(str);
+  return safeStr
     .replace(/([A-Z])/g, ' $1') // Add space before capital letters
     .replace(/[_\-]+/g, ' ') // Replace underscores and dashes with space
     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
