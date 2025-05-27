@@ -7,7 +7,7 @@ def extract_orders(mssql_conn, start_date='2024-01-01', warehouse_ids=(1,12,20,2
     cursor = mssql_conn.cursor()
     warehouse_ids_str = ','.join(str(w) for w in warehouse_ids)
     query = f'''
-        SELECT DISTINCT --TOP 1000
+        SELECT DISTINCT --TOP 4000
             p.name AS customer,
             w.name AS warehouse,
             w.notes AS warehouse_city_state,
