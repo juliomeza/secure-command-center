@@ -73,7 +73,7 @@ def oauth_success_redirect(request):
         # 1. Verificar si el usuario está autenticado en el request
         if hasattr(request, 'user') and request.user.is_authenticated:
             user = request.user
-            print(f"[Auth] OAuth success for authenticated user: {user.username}")
+            print("[Auth] OAuth success for authenticated user")
 
         # 2. Verificar si hubo un cambio de usuario durante la autenticación OAuth
         elif hasattr(request, 'session') and 'auth_switched_user_id' in request.session:
@@ -83,7 +83,7 @@ def oauth_success_redirect(request):
                 # Recuperar el usuario cambiado desde la sesión
                 switched_user_id = request.session['auth_switched_user_id']
                 user = User.objects.get(id=switched_user_id)
-                print(f"Cambio de usuario detectado: {request.session.get('auth_switched_from_user', 'desconocido')} → {user.username}")
+                print("Cambio de usuario detectado durante OAuth")
                 
                 # No hacemos login aquí para evitar crear sesiones
                 
@@ -93,7 +93,7 @@ def oauth_success_redirect(request):
                         del request.session[key]
                 request.session.save()
             except User.DoesNotExist:
-                print(f"No se encontró usuario con ID {request.session.get('auth_switched_user_id')}")
+                print("No se encontró usuario con ID especificado")
             except Exception as e:
                 print(f"Error procesando cambio de usuario: {str(e)}")
         
@@ -104,12 +104,12 @@ def oauth_success_redirect(request):
             try:
                 user_id = request.session['user_id']
                 user = User.objects.get(id=user_id)
-                print(f"Usuario recuperado de la sesión: {user.username}")
+                print("Usuario recuperado de la sesión")
                 
                 # No hacemos login aquí para evitar crear sesiones
                 
             except User.DoesNotExist:
-                print(f"No se encontró usuario con ID {request.session.get('user_id')}")
+                print("No se encontró usuario con ID de sesión")
             except Exception as e:
                 print(f"Error recuperando usuario de sesión: {str(e)}")
         
@@ -122,7 +122,7 @@ def oauth_success_redirect(request):
             partial = load_partial(strategy, request.session['partial_pipeline_token'])
             if partial and 'kwargs' in partial and 'user' in partial['kwargs']:
                 user = partial['kwargs']['user']
-                print(f"Usuario recuperado del pipeline parcial: {user.username}")
+                print("Usuario recuperado del pipeline parcial")
         
         # Si después de todo no hay usuario autenticado, redirigir a login
         if not user:
@@ -130,7 +130,7 @@ def oauth_success_redirect(request):
             return HttpResponseRedirect(f"{settings.FRONTEND_BASE_URL}/login?error=auth_failed")
 
         # El usuario está autenticado, procedemos a generar tokens JWT
-        print(f"OAuth success for user {user.username}")
+        print("OAuth success for user")
         
         # Generar CSRF token y tokens JWT
         csrf_token = get_token(request)
@@ -194,7 +194,7 @@ def oauth_success_redirect(request):
         )
         
         if settings.DEBUG:
-            print(f"Redirecting authenticated user {user.username} to dashboard with JWT only (no session)")
+            print("Redirecting authenticated user to dashboard with JWT only (no session)")
             print(f"JWT cookies set with domain={cookie_domain}, path={cookie_path}, samesite={cookie_samesite}")
             print("Eliminada cookie sessionid explícitamente")
 
@@ -217,7 +217,7 @@ class LogoutAPIView(APIView):
     def get(self, request):
         try:
             if request.user.is_authenticated:
-                print(f"[Auth] Logging out user: {request.user.username}")
+                print("[Auth] Logging out user")
 
             refresh_token = None
             for cookie_name in ['refresh_token', 'refreshToken', 'jwt_refresh']:
@@ -256,11 +256,11 @@ class LogoutAPIView(APIView):
                                 if not BlacklistedToken.objects.filter(token=token).exists():
                                     BlacklistedToken.objects.create(token=token)
                                     blacklisted_count += 1
-                                    print(f"✅ Token JTI {token.jti} blacklisteado exitosamente (creado: {token.created_at})")
+                                    print("✅ Token blacklisteado exitosamente")
                                 else:
-                                    print(f"⚠️ Token JTI {token.jti} ya estaba blacklisteado")
+                                    print("⚠️ Token ya estaba blacklisteado")
                             except Exception as e:
-                                print(f"Error al blacklistear token {token.jti}: {str(e)}")
+                                print(f"Error al blacklistear token: {str(e)}")
                         
                         if blacklisted_count > 0:
                             print(f"[Auth] Blacklisted {blacklisted_count} recent tokens")
@@ -276,9 +276,7 @@ class LogoutAPIView(APIView):
             blacklisted = False
             if refresh_token:
                 try:
-                    # Imprimir información parcial del token para diagnóstico (evitar exponer todo el token)
-                    token_prefix = refresh_token[:10] if len(refresh_token) > 10 else "token_corto"
-                    print(f"Intentando blacklist para token: {token_prefix}...")
+                    print("Intentando blacklist para refresh token...")
                     
                     # Verificar que sea un refresh token antes de intentar parsearlo
                     import jwt
@@ -294,11 +292,11 @@ class LogoutAPIView(APIView):
                     
                     if refresh_token:  # Solo continuar si aún tenemos un token válido
                         token = RefreshToken(refresh_token)
-                        print(f"Token parseado correctamente, JTI: {token['jti']}")
+                        print("Token parseado correctamente")
                         
                         # Forzar que la operación sea explícita y completa
                         token.blacklist()
-                        print(f"Blacklist realizado para token con JTI: {token['jti']}")
+                        print("Blacklist realizado para token")
                         blacklisted = True
                 except TokenError as te:
                     print(f"Error TokenError al procesar el refresh token: {str(te)}")
@@ -332,7 +330,7 @@ class LogoutAPIView(APIView):
             print("Procesando logout general (posiblemente desde admin)")
             # Si no es específicamente una petición con JWT, limpiar la sesión
             if request.user.is_authenticated:
-                print(f"Ejecutando Django logout para usuario {request.user.username}")
+                print("Ejecutando Django logout para usuario")
                 
                 # Limpiar la sesión antes de hacer logout
                 if hasattr(request, 'session'):
@@ -464,7 +462,7 @@ class LogoutAPIView(APIView):
         response['Expires'] = '0'
         
         if settings.DEBUG:
-            print(f"Logout completado para usuario ID: {request.user.id if hasattr(request, 'user') and request.user.is_authenticated else 'anónimo'}")
+            print("Logout completado para usuario")
             print(f"Token blacklisted: {blacklisted}")
             print(f"Tipo de solicitud: {'API (JWT)' if is_api_request else 'Admin/Genérico'}")
             print(f"Cookies eliminadas en dominios: {', '.join(str(d) for d in domains if d)}")
