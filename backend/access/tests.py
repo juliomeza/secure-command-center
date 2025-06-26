@@ -1,13 +1,11 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
-from django.urls import reverse, re_path, path # Added path, include
+from django.urls import reverse, re_path, path
 from django.http import HttpResponse
 from django.conf import settings
-from django.contrib import admin # Added admin import
-# <<< Import Tab model
+from django.contrib import admin
 from .models import UserProfile, Tab
-import factory # Add factory import
-# <<< Import UserFactory from authentication tests
+import factory
 from authentication.tests import UserFactory
 
 User = get_user_model()
@@ -20,19 +18,18 @@ def dummy_protected_view(request):
 # Include the dummy view AND the admin URLs so reverse() works
 urlpatterns = [
     re_path(r'^_test/protected-path/$', dummy_protected_view, name='test_protected_path'),
-    path('admin/', admin.site.urls), # Add admin URLs here
+    path('admin/', admin.site.urls),
 ]
 
 # --- Factories ---
-# <<< ADDED UserProfileFactory (moved from authentication/tests.py)
+
 class UserProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = UserProfile # Use the UserProfile model from this app
-        skip_postgeneration_save = True  # Corrige el warning de DeprecationWarning
+        model = UserProfile
+        skip_postgeneration_save = True
 
     user = factory.SubFactory(UserFactory)
     is_authorized = factory.Faker('boolean')
-    # Add other fields from access.UserProfile if needed by tests
     # allowed_tabs_list = factory.LazyFunction(lambda: \",\".join(random.sample(UserProfile.VALID_TABS, k=random.randint(0, len(UserProfile.VALID_TABS)))))
     
     @factory.post_generation

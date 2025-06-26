@@ -85,7 +85,7 @@ const JsonTable: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-// Component for displaying JSON data as a Bar Chart
+// Component for displaying JSON data as a Bar Chart  
 const JsonBarChart: React.FC<{ data: any }> = ({ data }) => {
   if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
     return <div className="text-muted" style={{ fontSize: 18, opacity: 0.7 }}>No bar chart data available.</div>;
@@ -512,10 +512,10 @@ function toTitleCase(str: string): string {
 }
 
 const VIEW_OPTIONS = [
-  { label: 'Table', value: 'table' },
-  { label: 'Bar', value: 'bar' },
-  { label: 'Pie', value: 'pie' },
-  { label: 'Line', value: 'line' },
+  { label: 'Table', value: 'table' as const },
+  { label: 'Bar', value: 'bar' as const },
+  { label: 'Pie', value: 'pie' as const },
+  { label: 'Line', value: 'line' as const },
 ];
 
 const ChatView: React.FC = () => {
@@ -589,7 +589,7 @@ const ChatView: React.FC = () => {
             {VIEW_OPTIONS.map(option => (
               <button
                 key={option.value}
-                onClick={() => setViewType(option.value as any)}
+                onClick={() => setViewType(option.value)}
                 style={{
                   padding: '8px 20px',
                   borderRadius: 9999,

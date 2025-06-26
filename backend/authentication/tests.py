@@ -2,12 +2,10 @@ import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken # Added import
-import factory # Asegúrate de tener factory-boy instalado
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+import factory
 
-# <<< Import UserProfile from access.models
 from .models import AuthUser
-# <<< REMOVED UserProfileSerializer from import
 from .serializers import UserSerializer, TokenResponseSerializer
 
 # --- Factories para crear datos de prueba ---
@@ -23,17 +21,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker('last_name')
     password = factory.PostGenerationMethodCall('set_password', 'defaultpassword')
 
-# <<< REMOVED UserProfileFactory (moved to access/tests.py)
-# class UserProfileFactory(factory.django.DjangoModelFactory):
-#     ...
-
-
 # --- Pruebas para Modelos ---
-
-# <<< REMOVED test_user_profile_creation (moved to access/tests.py)
-# @pytest.mark.django_db
-# def test_user_profile_creation():
-#    ...
 
 @pytest.mark.django_db
 def test_auth_user_proxy():
@@ -76,7 +64,6 @@ def test_user_serializer_without_profile():
 @pytest.mark.django_db
 def test_user_serializer_with_profile():
     """Prueba la serialización de User con perfil de acceso."""
-    # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     profile = UserProfileFactory(is_authorized=True)
     user = profile.user
@@ -84,14 +71,12 @@ def test_user_serializer_with_profile():
     data = serializer.data
     assert data['id'] == user.id
     assert data['username'] == user.username
-    # <<< Updated assertion: check for is_app_authorized, expect True
     assert 'is_app_authorized' in data
     assert data['is_app_authorized'] is True
 
 @pytest.mark.django_db
 def test_token_response_serializer():
     """Prueba la serialización de la respuesta de token."""
-    # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     user = UserFactory()
     UserProfileFactory(user=user, is_authorized=True)
@@ -137,7 +122,6 @@ def test_user_profile_api_view_unauthenticated():
 @pytest.mark.django_db
 def test_user_profile_api_view_authenticated_jwt():
     """Prueba UserProfileAPIView con autenticación JWT."""
-    # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     user = UserFactory()
     UserProfileFactory(user=user, is_authorized=True)
@@ -184,7 +168,6 @@ def test_logout_api_view_authenticated_jwt():
 @pytest.mark.django_db
 def test_token_obtain_api_view_authenticated():
     """Prueba TokenObtainAPIView con un usuario ya autenticado."""
-    # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     user = UserFactory()
     UserProfileFactory(user=user, is_authorized=False)
