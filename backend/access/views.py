@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -45,7 +44,7 @@ class UserPermissionsView(APIView):
                 {'detail': 'User profile not found. Authorization pending.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        except Exception as e:
+        except Exception:
             # Log the exception e
             return Response(
                 {'detail': 'An error occurred while retrieving permissions.'},

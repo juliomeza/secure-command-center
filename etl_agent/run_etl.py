@@ -1,10 +1,8 @@
 # etl_agent/run_etl.py
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import os
-import pyodbc
-import psycopg2
 import argparse
 from database.mssql import get_mssql_connection
 from database.postgres import get_postgres_connection

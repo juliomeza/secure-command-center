@@ -1,8 +1,7 @@
-from django.shortcuts import render
 from rest_framework import generics, permissions
 from .models import TestData, DataCardReport
 from .serializers import TestDataSerializer, DataCardReportSerializer
-from access.models import UserProfile, Tab # <--- Añadir esta línea
+from access.models import UserProfile # <--- Añadir esta línea
 
 
 # Create your views here.

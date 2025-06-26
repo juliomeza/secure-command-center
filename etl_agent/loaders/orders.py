@@ -1,4 +1,3 @@
-import logging
 
 def load_orders(pg_conn, data):
     """

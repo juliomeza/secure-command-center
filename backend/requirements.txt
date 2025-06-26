@@ -34,3 +34,4 @@ whitenoise==6.9.0
 pytest
 pytest-django
 factory-boy
+ruff

@@ -1,4 +1,3 @@
-import logging
 
 def extract_orders(mssql_conn, start_date='2024-01-01', warehouse_ids=(1,12,20,23,27), excluded_owner_id=701):
     """
@@ -37,7 +36,7 @@ def extract_orders(mssql_conn, start_date='2024-01-01', warehouse_ids=(1,12,20,2
         columns = [col[0] for col in cursor.description]
         results = [dict(zip(columns, row)) for row in cursor.fetchall()]
         return results
-    except Exception as ex:
+    except Exception:
         # Handle/log error as needed
         return []
     finally:

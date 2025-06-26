@@ -1,9 +1,7 @@
 # backend/authentication/pipelines.py
 from django.contrib.auth.models import User
-from social_core.exceptions import AuthAlreadyAssociated
 from social_django.models import UserSocialAuth
 from django.contrib.auth import login
-from rest_framework_simplejwt.tokens import RefreshToken
 from .models import UserProfile
 
 def clean_session(strategy, *args, **kwargs):

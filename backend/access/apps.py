@@ -7,4 +7,4 @@ class AccessConfig(AppConfig):
 
     def ready(self):
         # Import signals here to ensure they are connected when the app is ready.
-        import access.signals
+        pass

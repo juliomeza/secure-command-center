@@ -1,16 +1,19 @@
+
 """
 Production-specific settings (for render.com deployment).
 """
 import os
 
 # Import base settings
-from .base import *
+from .base import *  # noqa: F403
 
 # Import components
-from .components.auth import *
-from .components.database import *
-from .components.rest import *
-from .components.security import *
+from .components.auth import *  # noqa: F403
+from .components.database import *  # noqa: F403
+from .components.rest import *  # noqa: F403
+from .components.security import *  # noqa: F403
+
+from .base import ALLOWED_HOSTS
 
 # Override settings for production environment
 DEBUG = False

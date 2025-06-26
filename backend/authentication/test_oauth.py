@@ -1,15 +1,11 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from django.test import RequestFactory, override_settings
-from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken
 from social_django.models import UserSocialAuth
 from .views import oauth_success_redirect
 from access.models import UserProfile
 from .tests import UserFactory
-from access.tests import UserProfileFactory
 
 class TestOAuthFlows:
     """
@@ -160,7 +156,6 @@ class TestOAuthFlows:
         
         # También configuramos cualquier módulo que importe load_partial
         # Para garantizar que esto funcione sin importar de dónde se importe load_partial
-        from unittest.mock import DEFAULT
         import sys
         
         # Configurar patch dinámicamente

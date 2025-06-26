@@ -1,11 +1,11 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
-from django.urls import reverse, re_path, path, include # Added path, include
+from django.urls import reverse, re_path, path # Added path, include
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib import admin # Added admin import
 # <<< Import Tab model
-from .models import UserProfile, Company, Warehouse, Tab
+from .models import UserProfile, Tab
 import factory # Add factory import
 # <<< Import UserFactory from authentication tests
 from authentication.tests import UserFactory

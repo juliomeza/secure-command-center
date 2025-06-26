@@ -6,7 +6,6 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken # A
 import factory # Asegúrate de tener factory-boy instalado
 
 # <<< Import UserProfile from access.models
-from access.models import UserProfile
 from .models import AuthUser
 # <<< REMOVED UserProfileSerializer from import
 from .serializers import UserSerializer, TokenResponseSerializer
@@ -95,7 +94,7 @@ def test_token_response_serializer():
     # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     user = UserFactory()
-    profile = UserProfileFactory(user=user, is_authorized=True)
+    UserProfileFactory(user=user, is_authorized=True)
     refresh = RefreshToken.for_user(user)
     token_data = {
         'access': str(refresh.access_token),
@@ -141,7 +140,7 @@ def test_user_profile_api_view_authenticated_jwt():
     # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     user = UserFactory()
-    profile = UserProfileFactory(user=user, is_authorized=True)
+    UserProfileFactory(user=user, is_authorized=True)
     client = APIClient()
     refresh = RefreshToken.for_user(user)
     client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}')
@@ -188,7 +187,7 @@ def test_token_obtain_api_view_authenticated():
     # <<< Need UserProfileFactory from access.tests
     from access.tests import UserProfileFactory
     user = UserFactory()
-    profile = UserProfileFactory(user=user, is_authorized=False)
+    UserProfileFactory(user=user, is_authorized=False)
     client = APIClient()
     refresh = RefreshToken.for_user(user)
     client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(refresh.access_token)}')

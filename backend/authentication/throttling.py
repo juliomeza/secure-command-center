@@ -1,5 +1,5 @@
 # backend/authentication/throttling.py
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle
 
 class LoginRateThrottle(AnonRateThrottle):
     """

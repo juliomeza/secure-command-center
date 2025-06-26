@@ -1,10 +1,6 @@
-import time
-from django.db import transaction
-from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from .serializers import UserSerializer, TokenResponseSerializer
 from django.middleware.csrf import get_token
@@ -13,9 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .throttling import LoginRateThrottle
-from django.contrib.auth import login, logout as auth_logout
-from social_django.utils import load_strategy, load_backend
-from social_core.exceptions import AuthAlreadyAssociated
+from django.contrib.auth import logout as auth_logout
 
 # --- Views ---
 class UserProfileAPIView(APIView):
@@ -343,7 +337,6 @@ class LogoutAPIView(APIView):
                 # Limpiar la sesión antes de hacer logout
                 if hasattr(request, 'session'):
                     # Guardar el session_key actual para eliminarlo correctamente
-                    session_key = request.session.session_key
                     
                     # Eliminar claves de OAuth específicas
                     oauth_keys = [

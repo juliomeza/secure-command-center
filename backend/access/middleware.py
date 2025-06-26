@@ -1,6 +1,5 @@
 from django.http import JsonResponse
 from django.urls import reverse
-from django.shortcuts import redirect
 from django.conf import settings
 from .models import UserProfile
 

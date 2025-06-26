@@ -1,19 +1,13 @@
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import timedelta
-from django.test import RequestFactory, override_settings
+from unittest.mock import patch
+from django.test import override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.utils import timezone
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.urls import reverse
-import jwt
 
 from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
-from .models import AuthUser
 from .views import LogoutAPIView
 from .tests import UserFactory
 from access.tests import UserProfileFactory
@@ -122,7 +116,6 @@ class TestAdvancedLogout:
     @pytest.mark.django_db
     def test_logout_blacklists_multiple_recent_tokens(self, api_client, authenticated_user, create_tokens_for_user):
         """Prueba que el logout blacklista múltiples tokens recientes para el mismo usuario"""
-        user = authenticated_user
         tokens = create_tokens_for_user
         
         # Usar uno de los tokens para la autenticación
@@ -142,7 +135,6 @@ class TestAdvancedLogout:
     @pytest.mark.django_db
     def test_logout_skips_already_blacklisted_tokens(self, api_client, authenticated_user, create_tokens_for_user):
         """Prueba que el logout maneja correctamente tokens ya blacklisteados"""
-        user = authenticated_user
         tokens = create_tokens_for_user
         
         # Blacklistear manualmente uno de los tokens
@@ -165,8 +157,7 @@ class TestAdvancedLogout:
     @pytest.mark.django_db
     def test_logout_handles_no_recent_tokens(self, api_client, authenticated_user):
         """Prueba que el logout maneja el caso donde no hay tokens recientes"""
-        user = authenticated_user
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(authenticated_user)
         access = str(refresh.access_token)
         
         # Simular que no hay tokens recientes modificando la fecha de creación
@@ -189,8 +180,7 @@ class TestAdvancedLogout:
     @pytest.mark.django_db
     def test_logout_validates_token_type(self, api_client, authenticated_user):
         """Prueba que el logout valida que el token sea un refresh token"""
-        user = authenticated_user
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(authenticated_user)
         access = str(refresh.access_token)
         
         # Configurar el cliente con token en authorization header
@@ -209,8 +199,7 @@ class TestAdvancedLogout:
     @pytest.mark.django_db
     def test_logout_handles_invalid_token(self, api_client, authenticated_user):
         """Prueba que el logout maneja tokens inválidos sin fallar"""
-        user = authenticated_user
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(authenticated_user)
         access = str(refresh.access_token)
         
         # Configurar el cliente con token en authorization header
@@ -231,8 +220,7 @@ class TestAdvancedLogout:
     @pytest.mark.django_db
     def test_logout_api_request(self, api_client, authenticated_user):
         """Prueba el logout para una solicitud de la API (con JWT)"""
-        user = authenticated_user
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(authenticated_user)
         access = str(refresh.access_token)
         
         # Configurar el cliente con token en authorization header (API request)
@@ -349,8 +337,7 @@ class TestAdvancedLogout:
     )
     def test_logout_cleans_cookies_from_multiple_domains(self, api_client, authenticated_user):
         """Prueba que el logout limpia cookies en múltiples dominios"""
-        user = authenticated_user
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(authenticated_user)
         access = str(refresh.access_token)
         
         # Configurar el cliente con token en authorization header
@@ -367,8 +354,6 @@ class TestAdvancedLogout:
         response = api_client.get('/api/auth/logout/')
         
         # Verificar que las cookies fueron configuradas para eliminarse
-        domains_to_check = ['api.example.com', '', None]
-        paths_to_check = ['/api']
         
         for cookie in ['refresh_token', 'access_token', 'csrftoken']:
             cookie_found = False
@@ -384,8 +369,7 @@ class TestAdvancedLogout:
     @override_settings(DEBUG=True)
     def test_logout_in_debug_mode(self, api_client, authenticated_user):
         """Prueba comportamiento específico del logout en modo debug"""
-        user = authenticated_user
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(authenticated_user)
         access = str(refresh.access_token)
         
         # Configurar el cliente con token y cookie

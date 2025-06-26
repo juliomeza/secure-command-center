@@ -1,15 +1,12 @@
 import pytest
-from django.test import RequestFactory
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 from rest_framework import status
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from .models import UserProfile, Company, Warehouse, Tab
 from .views import UserPermissionsView
 from authentication.tests import UserFactory
-from .tests import UserProfileFactory
 
 User = get_user_model()
 
