@@ -14,34 +14,28 @@ export default defineConfig({
       '/api': { // Proxy requests starting with /api
         target: 'https://localhost:8000', // Your Django backend (HTTPS)
         changeOrigin: true,
-        secure: false, // Allow self-signed certs in dev
+        secure: false, // Allow self-signed certs in dev only
         // rewrite: (path) => path.replace(/^\/api/, '/api') // Keep '/api' prefix
       },
       '/auth': { // Proxy social auth requests
         target: 'https://localhost:8000',
         changeOrigin: true,
-        secure: false,
+        secure: false, // Allow self-signed certs in dev only
       },
       '/static': { // Proxy static files if needed during dev (less common with Vite)
         target: 'https://localhost:8000',
         changeOrigin: true,
-        secure: false,
+        secure: false, // Allow self-signed certs in dev only
       },
       '/admin': { // Proxy admin
         target: 'https://localhost:8000',
         changeOrigin: true,
-        secure: false,
+        secure: false, // Allow self-signed certs in dev only
       },
-      // Eliminar la configuración anterior de /logout y usar la nueva
-      // '/logout': {
-      //   target: 'https://localhost:8000',
-      //   changeOrigin: true,
-      //   secure: false,
-      // }
       '/api/auth/logout/': { // Configuración específica para la ruta de logout
         target: 'https://localhost:8000',
         changeOrigin: true,
-        secure: false,
+        secure: false, // Allow self-signed certs in dev only
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
