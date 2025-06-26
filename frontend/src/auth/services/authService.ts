@@ -185,16 +185,10 @@ export class AuthService {
     }
 
     public clearTokens(): void {
-        console.debug("[AuthService] clearTokens called. Current tokens before removal:", 
-            `Access: ${sessionStorage.getItem(ACCESS_TOKEN_KEY)}`, 
-            `Refresh: ${sessionStorage.getItem(REFRESH_TOKEN_KEY)}`
-        );
+        console.debug("[AuthService] clearTokens called");
         sessionStorage.removeItem(ACCESS_TOKEN_KEY);
         sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-        console.debug("[AuthService] clearTokens finished. Current tokens after removal:", 
-            `Access: ${sessionStorage.getItem(ACCESS_TOKEN_KEY)}`, 
-            `Refresh: ${sessionStorage.getItem(REFRESH_TOKEN_KEY)}`
-        );
+        console.debug("[AuthService] clearTokens finished");
     }
 
     public getStoredAccessToken(): string | null {
