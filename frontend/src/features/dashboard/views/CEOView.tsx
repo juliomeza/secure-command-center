@@ -1,5 +1,6 @@
 // src/views/CEOView.tsx
 import React from 'react';
+import { useWindowResize } from '../hooks/useWindowResize';
 import KpiCard from '../cards/KpiCard';
 import Card from '../cards/Card';
 import LineChart from '../charts/LineChart';
@@ -16,19 +17,7 @@ const salesTooltipFormatter = (value: number): string => formatCurrency(value);
 
 const CEOView: React.FC = () => {
   // Detectar el ancho de la ventana para aplicar estilos responsivos
-  const [windowWidth, setWindowWidth] = React.useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
-  
-  // Actualizar el ancho de la ventana cuando cambia
-  React.useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  const windowWidth = useWindowResize();
   
   // Determine flex direction and item width based on screen size
   const isSmallScreen = windowWidth < 900;

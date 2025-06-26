@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { sendChatMessage, ChatResponse } from './ChatApi';
 import { useAuth } from '../../../auth/components/AuthProvider';
+import { useIsMobile } from '../hooks/useWindowResize';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js/auto';
 
@@ -526,18 +527,9 @@ const ChatView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any>(null);
   const [viewType, setViewType] = useState<'table' | 'bar' | 'pie' | 'line'>('table');
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile(600);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 600);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Ensure input is visible on mobile when focused (avoid keyboard covering input)
   useEffect(() => {

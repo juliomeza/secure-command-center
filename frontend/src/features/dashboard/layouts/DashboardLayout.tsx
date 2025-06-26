@@ -1,6 +1,7 @@
 // src/components/layout/DashboardLayout.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../../auth/components/AuthProvider';
+import { useWindowResize } from '../hooks/useWindowResize';
 import HamburgerMenu from '../navigation/HamburgerMenu';
 import AvatarMenu from '../navigation/AvatarMenu';
 import PeriodMenu from '../navigation/PeriodMenu';
@@ -15,19 +16,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
-  
-  // Update window width when it changes
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  const windowWidth = useWindowResize();
   
   // Get user initials from first and last name
   const getUserInitials = (): string => {
