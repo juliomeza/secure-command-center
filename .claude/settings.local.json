@@ -5,7 +5,8 @@
       "Bash(npx tsc:*)",
       "Bash(python3:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)"
     ]
   },
   "enableAllProjectMcpServers": false
